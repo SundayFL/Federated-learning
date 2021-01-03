@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a05b0ef3-920c-477d-93f9-11d6bf0a38b0" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="JupyterTrust" id="6ff6f7ce-8e69-4263-a376-c285aa348367" />
+  <component name="ProjectId" id="1i9a5oiZPKDaO305spDvS8Xu8XM" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/pysyft/my/client" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pysyft/my/client" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pysyft/my/client" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/pysyft/my" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main2" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main3" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main3.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main4" type="PythonConfigurationType" factoryName="Python">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main4.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="mnist" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/mnist.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="my_server" type="PythonConfigurationType" factoryName="Python">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft/my" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/my/server.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="plot" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plot.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulation" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="text_generation" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/text_generation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tutorial02" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/tutorial02.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tutorial04" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/tutorial04.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tutorial07" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/tutorial07.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tutorial08" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="fl_image_clasification" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pysyft" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pysyft/tutorial08.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.main2" />
+      <item itemvalue="Python.main3" />
+      <item itemvalue="Python.main4" />
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.mnist" />
+      <item itemvalue="Python.my_server" />
+      <item itemvalue="Python.plot" />
+      <item itemvalue="Python.simulation" />
+      <item itemvalue="Python.text_generation" />
+      <item itemvalue="Python.tutorial02" />
+      <item itemvalue="Python.tutorial04" />
+      <item itemvalue="Python.tutorial07" />
+      <item itemvalue="Python.tutorial08" />
+    </list>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a05b0ef3-920c-477d-93f9-11d6bf0a38b0" name="Default Changelist" comment="" />
+      <created>1601322080983</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1601322080983</updated>
+      <workItem from="1601322100797" duration="1769000" />
+      <workItem from="1601407700759" duration="4856000" />
+      <workItem from="1601412870243" duration="1888000" />
+      <workItem from="1601818004314" duration="3430000" />
+      <workItem from="1601839685979" duration="1038000" />
+      <workItem from="1601842679307" duration="3248000" />
+      <workItem from="1601918944646" duration="3180000" />
+      <workItem from="1602103698350" duration="3867000" />
+      <workItem from="1602279561233" duration="13414000" />
+      <workItem from="1602613426237" duration="639000" />
+      <workItem from="1602966549834" duration="1842000" />
+      <workItem from="1603297213889" duration="5435000" />
+      <workItem from="1604184915447" duration="7380000" />
+      <workItem from="1604351875466" duration="846000" />
+      <workItem from="1604353074620" duration="11320000" />
+      <workItem from="1604612604867" duration="4128000" />
+      <workItem from="1604741818381" duration="20988000" />
+      <workItem from="1604868305725" duration="25283000" />
+      <workItem from="1605217106946" duration="6288000" />
+      <workItem from="1605355755924" duration="115000" />
+      <workItem from="1605356003410" duration="523000" />
+      <workItem from="1605357758447" duration="5875000" />
+      <workItem from="1605377872745" duration="10200000" />
+      <workItem from="1605392764160" duration="1057000" />
+      <workItem from="1605394949816" duration="19752000" />
+      <workItem from="1605476644238" duration="36287000" />
+      <workItem from="1605826080863" duration="32000" />
+      <workItem from="1606171968301" duration="39974000" />
+      <workItem from="1606334389173" duration="14618000" />
+      <workItem from="1606387965432" duration="7919000" />
+      <workItem from="1606413227094" duration="21437000" />
+      <workItem from="1606469250455" duration="1263000" />
+      <workItem from="1606470778328" duration="1085000" />
+      <workItem from="1606687596671" duration="10000" />
+      <workItem from="1606700268817" duration="599000" />
+      <workItem from="1606780205614" duration="1088000" />
+      <workItem from="1606781310127" duration="482000" />
+      <workItem from="1609188186305" duration="1718000" />
+      <workItem from="1609271851806" duration="8424000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="430" y="193" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1606432918253">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="2377" y="257" key="#com.intellij.execution.impl.EditConfigurationsDialog/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328379141" />
+    <state x="424" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601408028812" />
+    <state x="2292" y="189" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601822124932" />
+    <state x="2292" y="189" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605041962670" />
+    <state x="430" y="193" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606261176061" />
+    <state x="430" y="193" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.27.1848.1053@72.27.1848.1053" timestamp="1606432918253" />
+    <state x="430" y="195" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.29.1848.1051@72.29.1848.1051" timestamp="1602364175627" />
+    <state x="689" y="358" width="603" height="397" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1606400091753">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="2561" y="377" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1606172063586" />
+    <state x="689" y="358" width="603" height="397" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053@72.27.1848.1053" timestamp="1606400091753" />
+    <state width="1167" height="370" key="DebuggerActiveHint" timestamp="1604745480266">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="1218" height="466" key="DebuggerActiveHint/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601822213036" />
+    <state width="1221" height="412" key="DebuggerActiveHint/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601843904668" />
+    <state width="1167" height="370" key="DebuggerActiveHint/72.27.1848.1053@72.27.1848.1053" timestamp="1604745480266" />
+    <state width="1383" height="467" key="DebuggerActiveHint/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602108960132" />
+    <state width="1444" height="409" key="DebuggerActiveHint/72.29.1848.1051@72.29.1848.1051" timestamp="1602280594696" />
+    <state x="823" y="341" width="424" height="491" key="FileChooserDialogImpl" timestamp="1606466996827">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="2700" y="357" key="FileChooserDialogImpl/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328376816" />
+    <state x="2700" y="358" key="FileChooserDialogImpl/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605041517270" />
+    <state x="823" y="341" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606261154742" />
+    <state x="823" y="341" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1606466996827" />
+    <state x="823" y="342" width="424" height="491" key="FileChooserDialogImpl/72.29.1848.1051@72.29.1848.1051" timestamp="1602364168828" />
+    <state width="1802" height="295" key="GridCell.Tab.0.bottom" timestamp="1606781791422">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="1809" height="336" key="GridCell.Tab.0.bottom/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328385092" />
+    <state width="1809" height="367" key="GridCell.Tab.0.bottom/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601412682018" />
+    <state width="1874" height="342" key="GridCell.Tab.0.bottom/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="344" key="GridCell.Tab.0.bottom/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411411" />
+    <state width="1874" height="386" key="GridCell.Tab.0.bottom/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169562" />
+    <state width="1802" height="295" key="GridCell.Tab.0.bottom/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606781791422" />
+    <state width="1802" height="312" key="GridCell.Tab.0.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1606468560591" />
+    <state width="1874" height="480" key="GridCell.Tab.0.bottom/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="278" key="GridCell.Tab.0.bottom/72.29.1848.1051@72.29.1848.1051" timestamp="1602370494418" />
+    <state width="1802" height="212" key="GridCell.Tab.0.bottom/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593838" />
+    <state width="1802" height="295" key="GridCell.Tab.0.center" timestamp="1606781791422">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="1809" height="336" key="GridCell.Tab.0.center/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328385092" />
+    <state width="1809" height="367" key="GridCell.Tab.0.center/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601412682018" />
+    <state width="1874" height="342" key="GridCell.Tab.0.center/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="344" key="GridCell.Tab.0.center/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411411" />
+    <state width="1874" height="386" key="GridCell.Tab.0.center/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169561" />
+    <state width="1802" height="295" key="GridCell.Tab.0.center/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606781791422" />
+    <state width="1802" height="312" key="GridCell.Tab.0.center/72.27.1848.1053@72.27.1848.1053" timestamp="1606468560589" />
+    <state width="1874" height="480" key="GridCell.Tab.0.center/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="278" key="GridCell.Tab.0.center/72.29.1848.1051@72.29.1848.1051" timestamp="1602370494417" />
+    <state width="1802" height="212" key="GridCell.Tab.0.center/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593837" />
+    <state width="1802" height="295" key="GridCell.Tab.0.left" timestamp="1606781791422">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="1809" height="336" key="GridCell.Tab.0.left/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328385092" />
+    <state width="1809" height="367" key="GridCell.Tab.0.left/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601412682017" />
+    <state width="1874" height="342" key="GridCell.Tab.0.left/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689678" />
+    <state width="1802" height="344" key="GridCell.Tab.0.left/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411411" />
+    <state width="1874" height="386" key="GridCell.Tab.0.left/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169561" />
+    <state width="1802" height="295" key="GridCell.Tab.0.left/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606781791422" />
+    <state width="1802" height="312" key="GridCell.Tab.0.left/72.27.1848.1053@72.27.1848.1053" timestamp="1606468560587" />
+    <state width="1874" height="480" key="GridCell.Tab.0.left/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="278" key="GridCell.Tab.0.left/72.29.1848.1051@72.29.1848.1051" timestamp="1602370494417" />
+    <state width="1802" height="212" key="GridCell.Tab.0.left/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593837" />
+    <state width="1802" height="295" key="GridCell.Tab.0.right" timestamp="1606781791422">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="1809" height="336" key="GridCell.Tab.0.right/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601328385092" />
+    <state width="1809" height="367" key="GridCell.Tab.0.right/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601412682018" />
+    <state width="1874" height="342" key="GridCell.Tab.0.right/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="344" key="GridCell.Tab.0.right/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411411" />
+    <state width="1874" height="386" key="GridCell.Tab.0.right/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169562" />
+    <state width="1802" height="295" key="GridCell.Tab.0.right/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606781791422" />
+    <state width="1802" height="312" key="GridCell.Tab.0.right/72.27.1848.1053@72.27.1848.1053" timestamp="1606468560590" />
+    <state width="1874" height="480" key="GridCell.Tab.0.right/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="278" key="GridCell.Tab.0.right/72.29.1848.1051@72.29.1848.1051" timestamp="1602370494418" />
+    <state width="1802" height="212" key="GridCell.Tab.0.right/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593837" />
+    <state width="1874" height="386" key="GridCell.Tab.1.bottom" timestamp="1605385169563">
+      <screen x="1920" y="0" width="1920" height="1200" />
+    </state>
+    <state width="1874" height="342" key="GridCell.Tab.1.bottom/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="342" key="GridCell.Tab.1.bottom/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411404" />
+    <state width="1874" height="386" key="GridCell.Tab.1.bottom/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169563" />
+    <state width="1802" height="259" key="GridCell.Tab.1.bottom/72.27.1848.1053@72.27.1848.1053" timestamp="1604859239167" />
+    <state width="1874" height="480" key="GridCell.Tab.1.bottom/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="212" key="GridCell.Tab.1.bottom/72.29.1848.1051@72.29.1848.1051" timestamp="1602281283043" />
+    <state width="1802" height="212" key="GridCell.Tab.1.bottom/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593838" />
+    <state width="1874" height="386" key="GridCell.Tab.1.center" timestamp="1605385169562">
+      <screen x="1920" y="0" width="1920" height="1200" />
+    </state>
+    <state width="1874" height="342" key="GridCell.Tab.1.center/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="342" key="GridCell.Tab.1.center/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411404" />
+    <state width="1874" height="386" key="GridCell.Tab.1.center/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169562" />
+    <state width="1802" height="259" key="GridCell.Tab.1.center/72.27.1848.1053@72.27.1848.1053" timestamp="1604859239167" />
+    <state width="1874" height="480" key="GridCell.Tab.1.center/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="212" key="GridCell.Tab.1.center/72.29.1848.1051@72.29.1848.1051" timestamp="1602281283042" />
+    <state width="1802" height="212" key="GridCell.Tab.1.center/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593838" />
+    <state width="1874" height="386" key="GridCell.Tab.1.left" timestamp="1605385169562">
+      <screen x="1920" y="0" width="1920" height="1200" />
+    </state>
+    <state width="1874" height="342" key="GridCell.Tab.1.left/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="342" key="GridCell.Tab.1.left/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411404" />
+    <state width="1874" height="386" key="GridCell.Tab.1.left/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169562" />
+    <state width="1802" height="259" key="GridCell.Tab.1.left/72.27.1848.1053@72.27.1848.1053" timestamp="1604859239166" />
+    <state width="1874" height="480" key="GridCell.Tab.1.left/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="212" key="GridCell.Tab.1.left/72.29.1848.1051@72.29.1848.1051" timestamp="1602281283042" />
+    <state width="1802" height="212" key="GridCell.Tab.1.left/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593838" />
+    <state width="1874" height="386" key="GridCell.Tab.1.right" timestamp="1605385169562">
+      <screen x="1920" y="0" width="1920" height="1200" />
+    </state>
+    <state width="1874" height="342" key="GridCell.Tab.1.right/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601843689679" />
+    <state width="1802" height="342" key="GridCell.Tab.1.right/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601846411404" />
+    <state width="1874" height="386" key="GridCell.Tab.1.right/72.27.1848.1053/1920.0.1920.1200@1920.0.1920.1200" timestamp="1605385169562" />
+    <state width="1802" height="259" key="GridCell.Tab.1.right/72.27.1848.1053@72.27.1848.1053" timestamp="1604859239167" />
+    <state width="1874" height="480" key="GridCell.Tab.1.right/72.29.1848.1051/1920.0.1920.1200@1920.0.1920.1200" timestamp="1602109304861" />
+    <state width="1802" height="212" key="GridCell.Tab.1.right/72.29.1848.1051@72.29.1848.1051" timestamp="1602281283042" />
+    <state width="1802" height="212" key="GridCell.Tab.1.right/72.29.3768.1171@72.29.3768.1171" timestamp="1602455593838" />
+    <state x="685" y="102" width="1022" height="737" key="SettingsEditor" timestamp="1609279639052">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="2406" y="234" key="SettingsEditor/65.24.1855.1056/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601327767551" />
+    <state x="535" y="230" key="SettingsEditor/65.24.1855.1056/1920.0.1920.1200@65.24.1855.1056" timestamp="1601407967228" />
+    <state x="2406" y="234" width="1022" height="737" key="SettingsEditor/72.21.1848.1059/1920.0.1920.1200@1920.0.1920.1200" timestamp="1601822147372" />
+    <state x="398" y="175" width="1022" height="737" key="SettingsEditor/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1606781268444" />
+    <state x="685" y="102" width="984" height="737" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1609279639052" />
+    <state width="924" height="529" key="XDebugger.FullValuePopup" timestamp="1601843726520">
+      <screen x="72" y="21" width="1848" height="1059" />
+    </state>
+    <state width="924" height="529" key="XDebugger.FullValuePopup/72.21.1848.1059/1920.0.1920.1200@72.21.1848.1059" timestamp="1601843726520" />
+    <state x="649" y="171" width="683" height="771" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1604955817383">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="649" y="171" width="683" height="771" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/72.27.1848.1053/1920.0.1920.1200@72.27.1848.1053" timestamp="1604955817383" />
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1605564042849">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1605564042849" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/simulation.py</url>
+          <line>59</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main5.py</url>
+          <line>32</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="len(emnist_train.client_ids)" language="Python" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/fl_image_clasification$main.coverage" NAME="main Coverage Results" MODIFIED="1606781325663" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$tutorial02.coverage" NAME="tutorial02 Coverage Results" MODIFIED="1604531631660" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$main4.coverage" NAME="main4 Coverage Results" MODIFIED="1606434827418" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$main3.coverage" NAME="main3 Coverage Results" MODIFIED="1606434607659" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$plot.coverage" NAME="plot Coverage Results" MODIFIED="1606780267734" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$my_server.coverage" NAME="my_server Coverage Results" MODIFIED="1605384740067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft/my" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$tutorial04.coverage" NAME="tutorial04 Coverage Results" MODIFIED="1604531819849" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$tutorial07.coverage" NAME="tutorial07 Coverage Results" MODIFIED="1605575060641" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$main2.coverage" NAME="main2 Coverage Results" MODIFIED="1606433632846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1604355118857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$tutorial08.coverage" NAME="tutorial08 Coverage Results" MODIFIED="1604745999781" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$text_generation.coverage" NAME="text_generation Coverage Results" MODIFIED="1602370494404" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$mnist.coverage" NAME="mnist Coverage Results" MODIFIED="1604614299013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pysyft" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$server.coverage" NAME="server Coverage Results" MODIFIED="1604355493819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fl_image_clasification$Unnamed.coverage" NAME="main Coverage Results" MODIFIED="1601328385065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
