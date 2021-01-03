@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.AkkaQuickstartTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-12-21T20:33:26" hostname="piotr-X556UQK" time="0.042">
+  <properties/>
+  <testcase name="testGreeterActorSendingOfGreeting" classname="com.example.AkkaQuickstartTest" time="0.042"/>
+  <system-out><![CDATA[[2020-12-21 21:33:26,149] [INFO] [akka.event.slf4j.Slf4jLogger] [AkkaQuickstartTest-akka.actor.default-dispatcher-3] [] - Slf4jLogger started
+[2020-12-21 21:33:26,235] [INFO] [com.example.Greeter] [AkkaQuickstartTest-akka.actor.default-dispatcher-3] [akka://AkkaQuickstartTest/user/greeter] - Hello Charles!
+]]></system-out>
+  <system-err><![CDATA[SLF4J: A number (1) of logging calls during the initialization phase have been intercepted and are
+SLF4J: now being replayed. These are subject to the filtering rules of the underlying logging system.
+SLF4J: See also http://www.slf4j.org/codes.html#replay
+]]></system-err>
+</testsuite>
