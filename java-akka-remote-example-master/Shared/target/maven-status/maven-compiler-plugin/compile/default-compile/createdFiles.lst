@@ -1,0 +1,6 @@
+example/akka/remote/shared/Messages.class
+example/akka/remote/shared/Messages$Result.class
+example/akka/remote/shared/LoggingActor.class
+example/akka/remote/shared/Messages$JoinRoundRequest.class
+example/akka/remote/shared/Messages$JoinRoundResponse.class
+example/akka/remote/shared/Messages$Sum.class
