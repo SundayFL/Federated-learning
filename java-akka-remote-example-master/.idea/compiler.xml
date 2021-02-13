@@ -16,7 +16,7 @@
       <module name="Client" target="8" />
       <module name="java-akka-remote-example-master" target="1.5" />
       <module name="LoggerEnvironment" target="1.5" />
-      <module name="Server" target="6" />
+      <module name="Server" target="8" />
       <module name="Shared" target="8" />
     </bytecodeTargetLevel>
   </component>

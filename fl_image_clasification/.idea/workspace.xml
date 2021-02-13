@@ -1,7 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a05b0ef3-920c-477d-93f9-11d6bf0a38b0" name="Default Changelist" comment="" />
+    <list default="true" id="a05b0ef3-920c-477d-93f9-11d6bf0a38b0" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_akka_akka_protobuf_2_11_2_4_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_config_1_3_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_3_10_3_Final.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/.idea/libraries/Maven__org_python_jython_2_7_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/src/main/java/example/akka/remote/client/ClientRunModuleActor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Aggregator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Coordinator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Selector.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Ticker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysyft/my/client/build/tectClient/Analysis-00.toc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysyft/my/client/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysyft/my/client/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysyft/my/client/dist/tectClient" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysyft/my/client/tectClient.spec" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysyft/my/server.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/java-akka-remote-example-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/java-akka-remote-example-master.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_core_jackson_annotations_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_core_jackson_core_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_core_jackson_databind_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_jaxrs_jackson_jaxrs_base_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_jaxrs_jackson_jaxrs_json_provider_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_fasterxml_jackson_module_jackson_module_jaxb_annotations_2_10_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_api_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_core_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_transport_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_transport_httpclient5_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_transport_jersey_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_github_docker_java_docker_java_transport_netty_3_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_google_guava_guava_19_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_google_protobuf_protobuf_java_2_5_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_kohlschutter_junixsocket_junixsocket_common_2_3_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_kohlschutter_junixsocket_junixsocket_native_common_2_3_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_sun_activation_jakarta_activation_1_2_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_akka_akka_actor_2_11_2_3_7.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_akka_akka_actor_2_11_2_4_1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_akka_akka_remote_2_11_2_3_7.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__com_typesafe_akka_akka_remote_2_11_2_4_1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__commons_codec_commons_codec_1_13.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__commons_io_commons_io_2_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__commons_lang_commons_lang_2_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_3_8_0_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_buffer_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_codec_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_codec_http_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_codec_socks_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_common_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_handler_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_handler_proxy_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_resolver_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_transport_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_transport_native_epoll_linux_x86_64_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_transport_native_kqueue_osx_x86_64_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__io_netty_netty_transport_native_unix_common_4_1_46_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__jakarta_activation_jakarta_activation_api_1_2_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__jakarta_annotation_jakarta_annotation_api_1_3_5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__jakarta_ws_rs_jakarta_ws_rs_api_2_1_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__jakarta_xml_bind_jakarta_xml_bind_api_2_3_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__net_java_dev_jna_jna_5_5_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_apache_commons_commons_compress_1_20.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_apache_httpcomponents_client5_httpclient5_5_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_apache_httpcomponents_core5_httpcore5_5_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_apache_httpcomponents_httpclient_4_5_12.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_apache_httpcomponents_httpcore_4_4_13.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_awaitility_awaitility_4_0_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_bouncycastle_bcpkix_jdk15on_1_64.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_bouncycastle_bcprov_jdk15on_1_64.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_external_aopalliance_repackaged_2_6_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_external_jakarta_inject_2_6_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_hk2_api_2_6_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_hk2_locator_2_6_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_hk2_utils_2_6_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_hk2_osgi_resource_locator_1_0_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_jersey_connectors_jersey_apache_connector_2_30_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_jersey_core_jersey_client_2_30_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_jersey_core_jersey_common_2_30_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_glassfish_jersey_inject_jersey_hk2_2_30_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_hamcrest_hamcrest_2_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_javassist_javassist_3_25_0_GA.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_scala_lang_scala_library_2_11_4.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_scala_lang_scala_library_2_11_7.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_slf4j_jcl_over_slf4j_1_7_30.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_30.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/Client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/Client.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/src/main/java/example/akka/remote/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/src/main/java/example/akka/remote/client/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/src/main/java/example/akka/remote/client/ClientActor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/src/main/java/example/akka/remote/client/ClientActor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Client/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/LoggerEnvironment.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/LoggerEnvironment.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/LoggerEnvironment/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/Server.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/Server.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/CalculatorActor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/CalculatorActor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/src/main/resources/application.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/classes/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/classes/application.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Server/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/Shared.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/Shared.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/src/main/java/example/akka/remote/shared/Messages.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/src/main/java/example/akka/remote/shared/Messages.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/Shared/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java-akka-remote-example-master/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../java-akka-remote-example-master/pom.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,8 +140,12 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="JupyterTrust" id="6ff6f7ce-8e69-4263-a376-c285aa348367" />
   <component name="ProjectId" id="1i9a5oiZPKDaO305spDvS8Xu8XM" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -37,8 +153,9 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/pysyft/my/client" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -415,6 +532,19 @@
       <workItem from="1606781310127" duration="482000" />
       <workItem from="1609188186305" duration="1718000" />
       <workItem from="1609271851806" duration="8424000" />
+      <workItem from="1609683432765" duration="3718000" />
+      <workItem from="1609687644138" duration="266000" />
+      <workItem from="1609688943675" duration="5148000" />
+      <workItem from="1609704131132" duration="3834000" />
+      <workItem from="1610055741503" duration="1265000" />
+      <workItem from="1610214025636" duration="3120000" />
+      <workItem from="1610309487963" duration="3539000" />
+      <workItem from="1610319514710" duration="611000" />
+      <workItem from="1611266241224" duration="5004000" />
+      <workItem from="1611497156037" duration="5140000" />
+      <workItem from="1612124856287" duration="599000" />
+      <workItem from="1612307530589" duration="6000" />
+      <workItem from="1612907482162" duration="1476000" />
     </task>
     <servers />
   </component>

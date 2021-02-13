@@ -1,5 +1,7 @@
 package example.akka.remote.shared;
 
+import akka.actor.ActorRef;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -19,9 +21,11 @@ public class Messages {
 
     public static class JoinRoundResponse implements Serializable {
         public boolean isLearningAvailable;
+        public ActorRef aggregator;
 
-        public JoinRoundResponse(boolean isLearningAvailable) {
+        public JoinRoundResponse(boolean isLearningAvailable, ActorRef aggregator) {
             this.isLearningAvailable = isLearningAvailable;
+            this.aggregator = aggregator;
         }
     }
 
@@ -52,6 +56,32 @@ public class Messages {
 
         public int getResult() {
             return result;
+        }
+    }
+
+    public static class InformAggregatorAboutNewParticipant implements Serializable {
+        public ActorRef deviceReference;
+        public InformAggregatorAboutNewParticipant(ActorRef deviceReference) {
+            this.deviceReference = deviceReference;
+        }
+    }
+
+    public static class StartLearningProcessCommand implements Serializable {
+        public StartLearningProcessCommand() { }
+    }
+
+    public static class StartRoundCoordinatorSelector implements Serializable {
+        public ActorRef aggregator;
+
+        public StartRoundCoordinatorSelector(ActorRef aggregator) {
+            this.aggregator = aggregator;
+        }
+    }
+
+    public static class StartLearningModule implements Serializable {
+
+        public StartLearningModule() {
+
         }
     }
 }

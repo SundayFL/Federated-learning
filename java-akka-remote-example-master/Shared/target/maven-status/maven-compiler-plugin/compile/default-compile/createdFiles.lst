@@ -1,6 +1,10 @@
-example/akka/remote/shared/Messages.class
 example/akka/remote/shared/Messages$Result.class
+example/akka/remote/shared/Messages$StartLearningModule.class
+example/akka/remote/shared/Messages$InformAggregatorAboutNewParticipant.class
+example/akka/remote/shared/Messages$StartRoundCoordinatorSelector.class
+example/akka/remote/shared/Messages.class
 example/akka/remote/shared/LoggingActor.class
+example/akka/remote/shared/Messages$StartLearningProcessCommand.class
 example/akka/remote/shared/Messages$JoinRoundRequest.class
 example/akka/remote/shared/Messages$JoinRoundResponse.class
 example/akka/remote/shared/Messages$Sum.class

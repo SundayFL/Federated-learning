@@ -1,4 +1,16 @@
-import torch
+print("Start hack")
+def script_method(fn, _rcb=None):
+    return fn
+def script(obj, optimize=True, _frames_up=0, _rcb=None):
+    return obj
+import torch.jit
+torch.jit.script_method = script_method
+torch.jit.script = script
+print("End hack")
+
+import shaloop
+
+# import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -8,12 +20,16 @@ import logging
 import syft as sy
 # from syft.workers.websocket_client import WebsocketClientWorker
 # sy.workers.websocket_client
+import sys
+from argparse import ArgumentParser
+
+
 logger = logging.getLogger(__name__)
 
 LOG_INTERVAL = 25
-epochs = 400
-use_cuda = True
-learning_rate = 0.01
+epochs = 40
+use_cuda = False
+learning_rate = 0.02
 federate_after_n_batches = 50
 batch_size = 25
 
@@ -118,6 +134,8 @@ def train(epoch, model, data, target, optimizer, criterion):
             #     model.get()
             #     return model
 
+    return model
+
 
 def test(model, device, test_loader):
     model.eval()
@@ -141,9 +159,10 @@ def test(model, device, test_loader):
     )
 
 
-def main():
+def main(data_path):
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"host": "localhost", "hook": hook}
+    # kwargs_websocket = {"host": "localhost"}
     alice = sy.workers.websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
     device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -171,7 +190,7 @@ def main():
 
     test_loader = torch.utils.data.DataLoader(
         datasets.MNIST(
-            "../data",
+            data_path,
             train=False,
             transform=transforms.Compose(
                 [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
@@ -187,6 +206,21 @@ def main():
 
 
 if __name__ == "__main__":
+    print("Start");
+    print('Number of arguments: ' + str(len(sys.argv)) + ' arguments.')
+    print('Argument List:' + str(sys.argv))
+
+    parser = ArgumentParser()
+    parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+
+    args = parser.parse_args()
+
+    # Check for --version or -V
+    if args.datapath:
+        print(args.datapath)
+    else:
+        print("no arg")
+
     FORMAT = "%(asctime)s %(levelname)s %(filename)s(l:%(lineno)d) - %(message)s"
     LOG_LEVEL = logging.DEBUG
     logging.basicConfig(format=FORMAT, level=LOG_LEVEL)
@@ -195,4 +229,4 @@ if __name__ == "__main__":
     websockets_logger.setLevel(logging.DEBUG)
     websockets_logger.addHandler(logging.StreamHandler())
 
-    main()
+    main(args.datapath)

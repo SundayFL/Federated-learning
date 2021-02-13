@@ -10,13 +10,14 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: akka:Shared:1.0-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="Shared" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-remote_2.11:2.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.4" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.3.7" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe:config:1.2.1" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty:3.8.0.Final" level="project" />
-    <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:2.5.0" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-remote_2.11:2.4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.7" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.4.1" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe:config:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-protobuf_2.11:2.4.1" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty:3.10.3.Final" level="project" />
     <orderEntry type="library" name="Maven: org.uncommons.maths:uncommons-maths:1.2.2a" level="project" />
     <orderEntry type="library" name="Maven: org.python:jython:2.7.2" level="project" />
   </component>

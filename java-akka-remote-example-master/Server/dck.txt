@@ -1,0 +1,42 @@
+sudo docker build -t server .
+sudo docker run server:latest
+
+sudo docker run --net mynet123 --ip 172.18.0.22 -p 5000:5000 server:latest
+
+
+01112609@pw.edu.pl
+
+
+docker --context myacicontext run -p 80:80 nginx
+
+sudo docker --context flserver run server:latest
+docker context use flserver
+
+
+Azure
+
+az acr build -t fl/server -r flcontainerregistery .
+
+az acr credential show -n flcontainerregistery --query "passwords[0].value" -o tsv
+az acr update -n flcontainerregistery --admin-enabled true
+
+az container create -n flcontainerregistery -g flresourcegroup --image flcontainerregistery.azurecr.io/fl/server:latest --ports 2552 4999 5000 --dns-name-label flserver --registry-username flcontainerregistery --registry-password 3CI1+Qv1QIjVSoT6etDrP3R/BS02yEST
+
+
+az container create -n flcontainerregistery -g flresourcegroup --image flcontainerregistery.azurecr.io/fl/server:latest --ports 5000 --dns-name-label flserver --vnet aci-vnet --vnet-address-prefix 10.0.0.0/16 --subnet aci-subnet --subnet-address-prefix 10.0.0.0/24 --ip-address Public
+
+
+az container create -n flcontainerregistery -g flresourcegroup --image flcontainerregistery.azurecr.io/fl/server:latest --ports 5000 --dns-name-label flserver --vnet aci-vnet --vnet-address-prefix 10.0.0.0/16 --subnet aci-subnet --subnet-address-prefix 10.0.0.0/24 --registry-username flcontainerregistery --registry-password 3CI1+Qv1QIjVSoT6etDrP3R/BS02yEST
+
+
+flcontainerregistery
+3CI1+Qv1QIjVSoT6etDrP3R/BS02yEST
+
+
+172.17.0.2   
+"flserver.eastus.azurecontainer.io"
+
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' container_name_or_id
+
+
+FROM openjdk:8-jre-oraclelinux7

@@ -1,0 +1,1 @@
+pyinstaller server.py --add-data "syft_proto:syft_proto" --add-data "shaloop:shaloop"

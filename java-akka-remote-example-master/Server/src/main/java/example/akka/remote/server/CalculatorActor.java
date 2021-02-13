@@ -1,13 +1,11 @@
 package example.akka.remote.server;
 
+import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.transport.DockerHttpClient;
 import example.akka.remote.shared.LoggingActor;
 
 import javax.script.*;
@@ -19,15 +17,20 @@ import static example.akka.remote.shared.Messages.*;
 
 public class CalculatorActor extends UntypedActor {
 
+    public CalculatorActor() {
+        log.info("Constructor executed - ERROR");
+        //getContext().system().actorOf(Props.create(CalculatorActor.class), "CalculatorActor");
+    }
+
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-    private ActorRef loggingActor = getContext().actorOf(Props.create(LoggingActor.class), "LoggingActor");
+    // private ActorRef loggingActor = getContext().actorOf(Props.create(LoggingActor.class), "LoggingActor");
 
     @Override
     public void onReceive(Object message) throws Exception {
-        log.info("onReceive({})", message);
+        log.info("ERROR", message);
 
-        if (message instanceof Sum) {
+        /*if (message instanceof Sum) {
             log.info("ERROR MESSAGE");
             Sum sum = (Sum) message;
             int result = sum.getFirst() + sum.getSecond();
@@ -41,7 +44,7 @@ public class CalculatorActor extends UntypedActor {
             getSender().tell(new JoinRoundResponse(true), getSelf());
         } else {
             unhandled(message);
-        }
+        }*/
     }
 
     /*private void runDocker() throws IOException {
@@ -65,7 +68,7 @@ public class CalculatorActor extends UntypedActor {
                 .build();
     }*/
 
-    private void RunPython() {
+    /*private void RunPython() {
         printVariables();
 
         StringWriter writer = new StringWriter();
@@ -129,5 +132,5 @@ public class CalculatorActor extends UntypedActor {
             }
             log.info("\tLanguage: " + langName + langVersion);
         }
-    }
+    }*/
 }

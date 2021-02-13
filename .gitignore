@@ -24,3 +24,5 @@ hs_err_pid*
 
 fl_image_clasification/data
 fl_image_clasification/pysyft/data
+java-akka-remote-example-master/Server/src/main/python
+java-akka-remote-example-master/Client/src/main/python

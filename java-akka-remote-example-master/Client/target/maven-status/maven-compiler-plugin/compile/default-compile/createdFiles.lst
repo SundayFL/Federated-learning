@@ -1,2 +1,4 @@
 example/akka/remote/client/ClientActor.class
 example/akka/remote/client/Client.class
+example/akka/remote/client/ClientActor$RunModule.class
+example/akka/remote/client/ClientRunModuleActor.class

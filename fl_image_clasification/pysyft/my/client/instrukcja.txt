@@ -1,0 +1,1 @@
+pyinstaller client.py -D -F --add-data "syft_proto:syft_proto" --add-data "shaloop:shaloop"

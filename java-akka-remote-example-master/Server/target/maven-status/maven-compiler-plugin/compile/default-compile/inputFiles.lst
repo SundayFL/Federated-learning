@@ -1,2 +1,6 @@
-/home/piotr/Downloads/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Server.java
-/home/piotr/Downloads/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/CalculatorActor.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Aggregator.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Ticker.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Selector.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Server.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Coordinator.java
+/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/CalculatorActor.java
