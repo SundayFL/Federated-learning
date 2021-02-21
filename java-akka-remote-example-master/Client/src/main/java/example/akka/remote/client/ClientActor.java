@@ -17,12 +17,11 @@ public class ClientActor extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     // Getting the other actor   AkkaRemoteServer@flserver.eastus.azurecontainer.io:5000
-    private ActorSelection selection = getContext().actorSelection("akka.tcp://AkkaRemoteServer@172.17.0.2:5000/user/Selector");
+    private ActorSelection selection = getContext().actorSelection("akka.tcp://AkkaRemoteServer@127.0.0.1:5000/user/Selector");
 
     @Override
     public void onReceive(Object message) throws Exception {
         if (message.equals("Start")) {
-            log.info("Selector: " + "10.244.72.5");
             selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), 1, 1), getSelf());
             log.info("After send to selector");
         } else if (message instanceof Messages.JoinRoundResponse) {

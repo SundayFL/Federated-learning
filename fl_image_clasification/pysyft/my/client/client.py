@@ -22,7 +22,8 @@ import syft as sy
 # sy.workers.websocket_client
 import sys
 from argparse import ArgumentParser
-
+import json
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,10 @@ use_cuda = False
 learning_rate = 0.02
 federate_after_n_batches = 50
 batch_size = 25
+
+class LearningMember(object):
+    def __init__(self, j):
+        self.__dict__ = json.loads(j)
 
 class Net(nn.Module):
     """
@@ -49,31 +54,6 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-
-# class Net(nn.Module):
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.conv1 = nn.Conv2d(1, 32, 3, 1)
-#         self.conv2 = nn.Conv2d(32, 64, 3, 1)
-#         self.dropout1 = nn.Dropout(0.25)
-#         self.dropout2 = nn.Dropout(0.5)
-#         self.fc1 = nn.Linear(9216, 128)
-#         self.fc2 = nn.Linear(128, 10)
-#
-#     def forward(self, x):
-#         x = self.conv1(x)
-#         x = F.relu(x)
-#         x = self.conv2(x)
-#         x = F.relu(x)
-#         x = F.max_pool2d(x, 2)
-#         x = self.dropout1(x)
-#         x = torch.flatten(x, 1)
-#         x = self.fc1(x)
-#         x = F.relu(x)
-#         x = self.dropout2(x)
-#         x = self.fc2(x)
-#         output = F.log_softmax(x, dim=1)
-#         return output
 
 def epoch_total_size(data):
     total = 0
@@ -159,15 +139,18 @@ def test(model, device, test_loader):
     )
 
 
-def main(data_path):
+def main(data_path, participants, epochs, modelpath):
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"host": "localhost", "hook": hook}
     # kwargs_websocket = {"host": "localhost"}
-    alice = sy.workers.websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
     device = torch.device("cuda" if use_cuda else "cpu")
 
+    workers = []
+    for participant in participants:
+        workers.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant.id, port=participant.port, **kwargs_websocket))
+    # alice = sy.workers.websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
+
     # workers = [alice, bob, charlie]
-    workers = [alice]
     grid = sy.PrivateGridNetwork(*workers)
 
     data = grid.search("#mnist", "#data")
@@ -176,7 +159,19 @@ def main(data_path):
     target = grid.search("#mnist", "#target")
     print(f"Search target: {len(target.keys())}")
 
-    model = Net().to(device)
+    # model = Net().to(device)
+
+    model_file = Path(modelpath)
+    if model_file.is_file():
+        model = torch.load(modelpath)
+        print(f"model loaded from file")
+        model.eval()
+        model = model.to(device)
+    else:
+        print(f"new model created")
+        model = Net().to(device)
+
+    print(f"model: {model}")
 
     data = list(data.values())
     target = list(target.values())
@@ -204,22 +199,32 @@ def main(data_path):
         m = train(epoch, model, data, target, optimizer, criterion)
         test(m, device, test_loader)
 
+    torch.save(model, modelpath)
+
 
 if __name__ == "__main__":
-    print("Start");
+    print("Start")
     print('Number of arguments: ' + str(len(sys.argv)) + ' arguments.')
     print('Argument List:' + str(sys.argv))
 
     parser = ArgumentParser()
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+    parser.add_argument("--participantsjsonlist", nargs="*", help="show program version", action="store", default="{}")
+    parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
+    parser.add_argument("--modelpath")
 
     args = parser.parse_args()
 
     # Check for --version or -V
-    if args.datapath:
-        print(args.datapath)
-    else:
-        print("no arg")
+    # if args.datapath:
+    #     print(args.datapath)
+    # else:
+    #     print("no arg")
+    #
+    # if args.participantsjsonlist:
+    #     print(args.participantsjsonlist)
+    # else:
+    #     print("no participantsjsonlist")
 
     FORMAT = "%(asctime)s %(levelname)s %(filename)s(l:%(lineno)d) - %(message)s"
     LOG_LEVEL = logging.DEBUG
@@ -229,4 +234,15 @@ if __name__ == "__main__":
     websockets_logger.setLevel(logging.DEBUG)
     websockets_logger.addHandler(logging.StreamHandler())
 
-    main(args.datapath)
+    participants = []
+    for participant in args.participantsjsonlist:
+        participants.append(LearningMember(participant))
+
+    for p in participants:
+        print(f"id: {p.id}, port: {p.port}")
+
+    # p = LearningMember(j)
+
+    main(args.datapath, participants, args.epochs, args.modelpath)
+
+# '[{"id": "alice", "port": "8777"}]'

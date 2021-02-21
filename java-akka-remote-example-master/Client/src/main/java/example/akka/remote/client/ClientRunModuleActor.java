@@ -30,7 +30,8 @@ public class ClientRunModuleActor extends UntypedActor {
         processBuilder.directory(new File(System.getProperty("user.dir")));
         //processBuilder.command("ls");
         //processBuilder.command("./src/main/python/server/server");
-        processBuilder.inheritIO().command("./src/main/python/server/server", "--datapath", "/home/piotr/Desktop/data");
+        processBuilder.inheritIO().command("python", "./src/main/python/server.py", "--datapath",
+                "./src/main/python/data", "--id", "alice", "--host", "localhost", "--port", "8777");
         try {
             System.out.println("Before start");
             Process process = processBuilder.start();

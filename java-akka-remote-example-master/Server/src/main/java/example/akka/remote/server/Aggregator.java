@@ -128,50 +128,27 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    private void startLearningProcess() {
-
-    }
-
-    private void runLearning() {
-        try {
-            System.out.println("Before run");
-            Process proc = Runtime.getRuntime().exec("./src/main/python/client/client"); //Whatever you want to execute
-            System.out.println("After exec");
-            try {
-                proc.waitFor();
-                System.out.println("After wait");
-            } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
-            }
-
-            BufferedReader read = new BufferedReader(new InputStreamReader(
-                    proc.getInputStream()));
-            while (read.ready()) {
-                System.out.println(read.readLine());
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
     private void runLearning2() {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         ProcessBuilder processBuilder2 = new ProcessBuilder();
         processBuilder2.directory(new File(System.getProperty("user.dir")));
-        System.out.println("Before ls");
-        processBuilder2.inheritIO().command("cd src/main/python");
-        processBuilder2.inheritIO().command("ls");
+        System.out.println("Check python version");
+        processBuilder2.inheritIO().command("python", "--version");
+        processBuilder2.inheritIO().command("ls", "src/main/python");
         try {
             Process process2 = processBuilder2.start();
-        } catch (IOException e) {
+            int exitCode = process2.waitFor();
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         System.out.println("After ls");
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.directory(new File(System.getProperty("user.dir")));
 
-        processBuilder.inheritIO().command("./src/main/python/client/client", "--datapath", "/home/piotr/Desktop/data");
+        processBuilder.inheritIO().command("python", "./src/main/python/client.py", "--datapath", "./src/main/python/data",
+                "--participantsjsonlist", "{\"id\": \"alice\", \"port\": \"8777\"}", "--epochs", "10", "--modelpath",
+                "./saved_model");
         try {
             System.out.println("Before start");
             Process process = processBuilder.start();
