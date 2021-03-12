@@ -1,12 +1,14 @@
 import collections
 import numpy as np
+import tensorflow as tf
 import tensorflow_federated as tff
 from matplotlib import pyplot as plt
-import tensorflow as tf
 import pickle
 
 np.random.seed(0)
 results = []
+data_masks_tmp = []
+
 for rep in range(1):
     emnist_train, emnist_test = tff.simulation.datasets.emnist.load_data()
 
@@ -36,10 +38,9 @@ for rep in range(1):
 
         return additional_dataset
 
-    sample_clients_additional = emnist_train.client_ids[NUM_CLIENTS+1:NUM_CLIENTS+4]
-    additional_data = []
-    for i in range(10):
-        additional_data.append(make_federated_data_prepared(emnist_train, sample_clients_additional, i))
+    sample_clients_additional = emnist_train.client_ids[NUM_CLIENTS+1:NUM_CLIENTS+11]
+    federated_train_data_additional = make_federated_data_prepared(emnist_train, sample_clients_additional, 0)
+
 
 
     def preprocess(dataset):
@@ -59,8 +60,9 @@ for rep in range(1):
 
     def make_federated_data(client_data, client_ids):
       return [
-          preprocess(client_data.create_tf_dataset_for_client(client_ids[i]).concatenate(additional_data[i]))
-          for i in range(len(client_ids))
+          preprocess(client_data.create_tf_dataset_for_client(x).concatenate(federated_train_data_additional)) if x == client_ids[0]
+          else preprocess(client_data.create_tf_dataset_for_client(x))
+          for x in client_ids
       ]
 
 
