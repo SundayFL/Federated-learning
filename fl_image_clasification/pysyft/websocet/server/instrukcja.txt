@@ -1,0 +1,8 @@
+pyinstaller server.py --add-data "syft_proto:syft_proto" --add-data "shaloop:shaloop"
+
+
+
+source server-env/bin/activate
+pip install torch==1.4.0
+pip install syft==0.2.9
+
