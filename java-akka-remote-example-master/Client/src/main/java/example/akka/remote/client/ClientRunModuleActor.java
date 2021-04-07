@@ -24,20 +24,26 @@ public class ClientRunModuleActor extends UntypedActor {
     }
 
     private void runLearning2() {
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        Configuration.ConfigurationDTO configuration;
+        try {
+            configuration = Configuration.get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.directory(new File(System.getProperty("user.dir")));
-        //processBuilder.command("ls");
-        //processBuilder.command("./src/main/python/server/server");
-        processBuilder.inheritIO().command("python", "./src/main/python/server.py", "--datapath",
-                "./src/main/python/data", "--id", "alice", "--host", "localhost", "--port", "8777");
+        processBuilder
+            .inheritIO()
+            .command("python", "./src/main/python/server.py",
+            "--datapath", configuration.datapath,
+            "--id", configuration.id,
+            "--host", configuration.host,
+            "--port", String.valueOf(configuration.port));
         try {
-            System.out.println("Before start");
             Process process = processBuilder.start();
-            System.out.println("After start");
             int exitCode = process.waitFor();
-            System.out.println("After execution");
             BufferedReader read = new BufferedReader(new InputStreamReader(
                     process.getInputStream()));
             while (read.ready()) {

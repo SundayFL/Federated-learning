@@ -1,0 +1,11 @@
+{
+  "useCuda": "false",
+  "RAMInGB": 8,
+  "instanceType": "Computer",
+  "datapath": "./src/main/python/data",
+  "id": "alice",
+  "host": "localhost",
+  "port": "8777",
+  "address": "127.0.0.1:5000",
+  "pathToModules": "./src/main/modules/learning/"
+}
