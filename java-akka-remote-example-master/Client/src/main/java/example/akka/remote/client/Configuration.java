@@ -26,6 +26,7 @@ public class Configuration {
         public int port;
         public String address;
         public String pathToModules;
+        public String pathToModulesList;
     }
 }
 

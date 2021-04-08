@@ -5,6 +5,8 @@ import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.remote.transport.ThrottlerTransportAdapter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import example.akka.remote.shared.LoggingActor;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
@@ -19,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static example.akka.remote.shared.Messages.*;
 
@@ -42,9 +46,10 @@ public class Aggregator extends UntypedActor {
         log.info("onReceive({})", message);
 
         if (message instanceof InformAggregatorAboutNewParticipant) {
-            ActorRef deviceReference = ((InformAggregatorAboutNewParticipant) message).deviceReference;
+            InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
+            ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
-            this.roundParticipants.add(new ParticipantData(deviceReference));
+            this.roundParticipants.add(new ParticipantData(deviceReference, messageCasted.clientId, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
             // tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
@@ -83,19 +88,22 @@ public class Aggregator extends UntypedActor {
     }
 
     private static class ParticipantData {
-        public ParticipantData(ActorRef deviceReference) {
+        public ParticipantData(ActorRef deviceReference, String clientId, int port) {
             this.deviceReference = deviceReference;
+            this.clientId = clientId;
             this.moduleStarted = false;
+            this.port = port;
         }
 
+        public String clientId;
         public ActorRef deviceReference;
         public boolean moduleStarted;
+        public int port;
     }
 
     private void startRound() {
         ActorSystem system = getContext().system();
 
-        // system.actorOf(Props.create(Aggregator.class), "CalculatorActor");
         this.roundParticipants = new ArrayList<>();
 
         ActorRef tickActor = system.actorOf(Props.create(Ticker.class), "Ticker");
@@ -128,27 +136,35 @@ public class Aggregator extends UntypedActor {
         }
     }
 
+    public class LearningData {
+        public LearningData(String id, int port) {
+            this.id = id;
+            this.port = port;
+        }
+
+        public String id;
+        public int port;
+    }
+
     private void runLearning2() {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
-        ProcessBuilder processBuilder2 = new ProcessBuilder();
-        processBuilder2.directory(new File(System.getProperty("user.dir")));
-        System.out.println("Check python version");
-        processBuilder2.inheritIO().command("python", "--version");
-        processBuilder2.inheritIO().command("ls", "src/main/python");
-        try {
-            Process process2 = processBuilder2.start();
-            int exitCode = process2.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
         System.out.println("After ls");
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.directory(new File(System.getProperty("user.dir")));
 
-        processBuilder.inheritIO().command("python", "./src/main/python/client.py", "--datapath", "./src/main/python/data",
-                "--participantsjsonlist", "{\"id\": \"alice\", \"port\": \"8777\"}", "--epochs", "10", "--modelpath",
-                "./saved_model");
+        Configuration.ConfigurationDTO configuration = Configuration.get();
+
+        String participantsJson = getParticipantsJson();
+
+        processBuilder
+            .inheritIO()
+            .command("python", configuration.serverModuleFilePath,
+            "--datapath", configuration.testDataPath,
+            "--participantsjsonlist", participantsJson,
+            "--epochs", String.valueOf(configuration.epochs),
+            "--modelpath", configuration.savedModelPath);
+
         try {
             System.out.println("Before start");
             Process process = processBuilder.start();
@@ -172,5 +188,23 @@ public class Aggregator extends UntypedActor {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getParticipantsJson() {
+        String json = "";
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            for (ParticipantData pd : this.roundParticipants) {
+                LearningData ld = new LearningData(pd.clientId, pd.port);
+                String objJson = mapper.writeValueAsString(ld);
+                json += objJson;
+                json += " ";
+            }
+
+            System.out.println("json -> " + json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return json;
     }
 }

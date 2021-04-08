@@ -36,39 +36,44 @@ public class ClientActor extends UntypedActor {
     private String pathToModules;
     private int port;
     private String clientId;
+    private String taskId;
+    private String moduleFileName;
 
     private ActorSelection selection;
     private ActorSelection injector;
 
-    //     private ActorSelection selection = getContext().actorSelection("akka.tcp://AkkaRemoteServer@127.0.0.1:2552/user/CalculatorActor");
-
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof Messages.StartLearning) {
-            ActorSelection selection2 = getContext().actorSelection("akka.tcp://AkkaRemoteServer@" + address + "/user/Selector");
-            log.info("injector -> " + injector.pathString());
-            log.info("selection -> " + selection.pathString());
-            log.info("injector -> " + "akka.tcp://AkkaRemoteServer@" + address + "/user/Injector");
-            injector.tell(new Messages.GetModulesListRequest(((Messages.StartLearning) message).id), getSelf());
+            this.taskId = ((Messages.StartLearning) message).id;
+
+            List<ModulesManager.ModuleDTO> modules = ModulesManager.GetAvailableModules();
+
+            ModulesManager.ModuleDTO module = modules
+                    .stream()
+                    .filter(x -> x.taskId == this.taskId)
+                    .findFirst()
+                    .orElse(null);
+
+            if (module == null) {
+                injector.tell(new Messages.GetModulesListRequest(((Messages.StartLearning) message).id), getSelf());
+                return;
+            }
+            this.moduleFileName = module.fileName;
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
             log.info("After send to selector, address -> " + this.address);
         } else if(message instanceof Messages.GetModulesListResponse) {
-            Messages.ModuleData module = this.findPropperModuleStrategy(((Messages.GetModulesListResponse) message).modules);
-            File moduleFile = new File(pathToModules + module.fileName);
-            if (!moduleFile.exists()) {
-                selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), 1, this.clientId, this.port), getSelf());
-            }
+            Messages.ModuleData module = this.findProperModuleStrategy(((Messages.GetModulesListResponse) message).modules);
             getSender().tell(new Messages.GetModuleRequest(module.fileName), getSelf());
         } else if (message instanceof Messages.GetModuleResponse) {
-            Messages.GetModuleResponse result = (Messages.GetModuleResponse) message;
-            log.info("File name: " + result.name + ", length: " + result.content.length);
-            try (FileOutputStream fos = new FileOutputStream(pathToModules + result.name)) {
-                fos.write(result.content);
-            } catch (Exception e) {
-                log.info("Error:");
-                e.printStackTrace();
-            }
+            Messages.GetModuleResponse module = (Messages.GetModuleResponse) message;
+            log.info("File name: " + module.fileName + ", length: " + module.content.length);
+            SaveFile(module);
             log.info("File saved");
-            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), 1, this.clientId, this.port), getSelf());
+            ModulesManager.SaveModule(this.taskId, module.fileName);
+            log.info("Module list saved");
+            this.moduleFileName = module.fileName;
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
         } else if (message instanceof Messages.JoinRoundResponse) {
             Messages.JoinRoundResponse result = (Messages.JoinRoundResponse) message;
             log.info("Got join round response {}", result.isLearningAvailable);
@@ -79,7 +84,7 @@ public class ClientActor extends UntypedActor {
 
             // Start learning module
             ActorRef moduleRummer = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRummer.tell(new RunModule(), getSelf());
+            moduleRummer.tell(new RunModule(this.moduleFileName), getSelf());
 
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
@@ -91,16 +96,25 @@ public class ClientActor extends UntypedActor {
         }
     }
 
-    private Messages.ModuleData findPropperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
+    private void SaveFile(Messages.GetModuleResponse result) {
+        try (FileOutputStream fos = new FileOutputStream(pathToModules + result.fileName)) {
+            fos.write(result.content);
+        } catch (Exception e) {
+            log.info("Error:");
+            e.printStackTrace();
+        }
+    }
+
+    private Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
         try {
-            Configuration.ConfigurationDTO resourceinformation = Configuration.get();
+            Configuration.ConfigurationDTO resourceInformation = Configuration.get();
             Messages.ModuleData m = modules.stream().findFirst().get();
             Optional<Messages.ModuleData> moduleOpt = modules
                     .stream()
                     .filter(element ->
-                            element.useCUDA.equals(resourceinformation.useCuda)
-                            && element.instanceType == resourceinformation.instanceType
-                            && element.minRAMInGB <= resourceinformation.RAMInGB)
+                            element.useCUDA.equals(resourceInformation.useCuda)
+                            && element.instanceType == resourceInformation.instanceType
+                            && element.minRAMInGB <= resourceInformation.RAMInGB)
                     .findFirst();
             Messages.ModuleData module = moduleOpt.orElse(null);
 
@@ -115,5 +129,9 @@ public class ClientActor extends UntypedActor {
     }
 
     public static class RunModule {
+        public RunModule(String moduleFileName) {
+            this.moduleFileName = moduleFileName;
+        }
+        public String moduleFileName;
     }
 }

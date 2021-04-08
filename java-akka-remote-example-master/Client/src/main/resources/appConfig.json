@@ -7,5 +7,6 @@
   "host": "localhost",
   "port": "8777",
   "address": "127.0.0.1:5000",
-  "pathToModules": "./src/main/modules/learning/"
+  "pathToModules": "./src/main/modules/learning/",
+  "pathToModulesList": "./src/main/modules/learning/modules.json"
 }

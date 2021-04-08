@@ -19,11 +19,11 @@ public class ClientRunModuleActor extends UntypedActor {
     public void onReceive(Object message) throws Exception {
         if (message instanceof ClientActor.RunModule) {
             log.info("Received RunModule command");
-            this.runLearning2();
+            this.runLearning2(((ClientActor.RunModule) message).moduleFileName);
         }
     }
 
-    private void runLearning2() {
+    private void runLearning2(String moduleFileName) {
         Configuration.ConfigurationDTO configuration;
         try {
             configuration = Configuration.get();
@@ -36,11 +36,11 @@ public class ClientRunModuleActor extends UntypedActor {
         processBuilder.directory(new File(System.getProperty("user.dir")));
         processBuilder
             .inheritIO()
-            .command("python", "./src/main/python/server.py",
-            "--datapath", configuration.datapath,
-            "--id", configuration.id,
-            "--host", configuration.host,
-            "--port", String.valueOf(configuration.port));
+            .command("python", configuration.pathToModules + moduleFileName,
+                     "--datapath", configuration.datapath,
+                     "--id", configuration.id,
+                     "--host", configuration.host,
+                     "--port", String.valueOf(configuration.port));
         try {
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

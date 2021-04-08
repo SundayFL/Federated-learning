@@ -18,5 +18,8 @@ public class Server {
 
         // Create an actor
         ActorRef coordinator = system.actorOf(Props.create(Coordinator.class), "Coordinator");
+
+        // Create an actor
+        ActorRef injector = system.actorOf(Props.create(Injector.class), "Injector");
     }
 }

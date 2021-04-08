@@ -18,13 +18,13 @@ public class Messages {
 
     public static class JoinRoundRequest implements Serializable {
         public LocalDateTime availabilityEndAt;
-        public int learningTaskId;
+        public String taskId;
         public String clientId;
         public int port;
 
-        public JoinRoundRequest(LocalDateTime availabilityEndAt, int learningTaskId, String clientId, int port) {
+        public JoinRoundRequest(LocalDateTime availabilityEndAt, String taskId, String clientId, int port) {
             this.availabilityEndAt = availabilityEndAt;
-            this.learningTaskId = learningTaskId;
+            this.taskId = taskId;
             this.clientId = clientId;
             this.port = port;
         }
@@ -126,11 +126,11 @@ public class Messages {
 
     public static class GetModuleResponse implements Serializable {
         public byte[] content;
-        public String name;
+        public String fileName;
 
-        public GetModuleResponse(byte[] content, String name) {
+        public GetModuleResponse(byte[] content, String fileName) {
             this.content = content;
-            this.name = name;
+            this.fileName = fileName;
         }
     }
 
