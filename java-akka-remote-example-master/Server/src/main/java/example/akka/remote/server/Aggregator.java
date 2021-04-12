@@ -21,31 +21,35 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static example.akka.remote.shared.Messages.*;
 
 public class Aggregator extends UntypedActor {
 
-    public Aggregator() {
+    public Aggregator(ActorRef coordinator) {
         log.info("Selector created");
-        this.startRound();
+        this.coordinator = coordinator;
+        tickActor = getContext().system().actorOf(Props.create(Ticker.class), "Ticker");
+        log.info("coordinator -> " + coordinator.path());
     }
 
     private List<ParticipantData> roundParticipants;
 
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-    private ActorRef loggingActor = getContext().actorOf(Props.create(LoggingActor.class), "LoggingActor");
-
     private Cancellable checkReadyToRunLearning;
+
+    private ActorRef coordinator;
+
+    private ActorRef tickActor;
 
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
 
-        if (message instanceof InformAggregatorAboutNewParticipant) {
+        if (message instanceof StartRound) {
+            this.startRound();
+        } else if (message instanceof InformAggregatorAboutNewParticipant) {
             InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
@@ -80,7 +84,8 @@ public class Aggregator extends UntypedActor {
             log.info("All participants started module" + allParticipantsStartedModule);
 
             if (allParticipantsStartedModule){
-                this.runLearning2();
+                this.runLearning();
+                this.coordinator.tell(new RoundEnded(), getSelf());
             }
         } else {
             unhandled(message);
@@ -105,8 +110,10 @@ public class Aggregator extends UntypedActor {
         ActorSystem system = getContext().system();
 
         this.roundParticipants = new ArrayList<>();
-
-        ActorRef tickActor = system.actorOf(Props.create(Ticker.class), "Ticker");
+        if (this.checkReadyToRunLearning != null) {
+            this.checkReadyToRunLearning.cancel();
+            this.checkReadyToRunLearning = null;
+        }
 
         FiniteDuration duration =  new FiniteDuration(60, TimeUnit.SECONDS);
         this.checkReadyToRunLearning = system
@@ -146,7 +153,7 @@ public class Aggregator extends UntypedActor {
         public int port;
     }
 
-    private void runLearning2() {
+    private void runLearning() {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         System.out.println("After ls");

@@ -19,29 +19,25 @@ public class ClientRunModuleActor extends UntypedActor {
     public void onReceive(Object message) throws Exception {
         if (message instanceof ClientActor.RunModule) {
             log.info("Received RunModule command");
-            this.runLearning2(((ClientActor.RunModule) message).moduleFileName);
+            this.runLearning(((ClientActor.RunModule) message).moduleFileName);
         }
     }
 
-    private void runLearning2(String moduleFileName) {
+    private void runLearning(String moduleFileName) {
         Configuration.ConfigurationDTO configuration;
         try {
             configuration = Configuration.get();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
 
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.directory(new File(System.getProperty("user.dir")));
-        processBuilder
-            .inheritIO()
-            .command("python", configuration.pathToModules + moduleFileName,
-                     "--datapath", configuration.datapath,
-                     "--id", configuration.id,
-                     "--host", configuration.host,
-                     "--port", String.valueOf(configuration.port));
-        try {
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            processBuilder
+                .inheritIO()
+                .command("python", configuration.pathToModules + moduleFileName,
+                         "--datapath", configuration.datapath,
+                         "--id", configuration.id,
+                         "--host", configuration.host,
+                         "--port", String.valueOf(configuration.port));
+
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
             BufferedReader read = new BufferedReader(new InputStreamReader(
@@ -57,7 +53,6 @@ public class ClientRunModuleActor extends UntypedActor {
             while (readError.ready()) {
                 System.out.println(readError.readLine());
             }
-
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

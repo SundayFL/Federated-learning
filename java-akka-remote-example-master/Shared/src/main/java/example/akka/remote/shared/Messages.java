@@ -153,6 +153,10 @@ public class Messages {
         public InstanceType instanceType;
     }
 
+    public static class StartRound implements Serializable { }
+
+    public static class RoundEnded implements Serializable { }
+
     public enum InstanceType {
         Computer,
         Phone,

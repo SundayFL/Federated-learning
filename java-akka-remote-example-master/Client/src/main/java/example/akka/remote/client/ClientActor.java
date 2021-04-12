@@ -51,7 +51,7 @@ public class ClientActor extends UntypedActor {
 
             ModulesManager.ModuleDTO module = modules
                     .stream()
-                    .filter(x -> x.taskId == this.taskId)
+                    .filter(x -> x.taskId.equals(this.taskId))
                     .findFirst()
                     .orElse(null);
 
