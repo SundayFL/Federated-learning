@@ -12,7 +12,6 @@
         <module>Shared</module>
         <module>Client</module>
         <module>Server</module>
-        <module>LoggerEnvironment</module>
     </modules>
 
     <dependencies>
