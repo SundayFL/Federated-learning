@@ -26,7 +26,8 @@ public class ClientRunModuleActor extends UntypedActor {
     private void runLearning(String moduleFileName) {
         Configuration.ConfigurationDTO configuration;
         try {
-            configuration = Configuration.get();
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
 
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
@@ -36,12 +37,12 @@ public class ClientRunModuleActor extends UntypedActor {
                          "--datapath", configuration.datapath,
                          "--id", configuration.id,
                          "--host", configuration.host,
-                         "--port", String.valueOf(configuration.port));
+                         "--port", String.valueOf(configuration.port),
+                         "--data_set_id", String.valueOf(configuration.dataSetId));
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
-            BufferedReader read = new BufferedReader(new InputStreamReader(
-                    process.getInputStream()));
+            BufferedReader read = new BufferedReader(new InputStreamReader(process.getInputStream()));
             while (read.ready()) {
                 System.out.println(read.readLine());
             }

@@ -16,7 +16,9 @@ public class ClientActor extends UntypedActor {
 
     public ClientActor() {
         try {
-            Configuration.ConfigurationDTO configuration = Configuration.get();
+            Configuration configurationHandler = new Configuration();
+            Configuration.ConfigurationDTO configuration = configurationHandler.get();
+
             this.address = configuration.address;
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
@@ -107,14 +109,16 @@ public class ClientActor extends UntypedActor {
 
     private Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
         try {
-            Configuration.ConfigurationDTO resourceInformation = Configuration.get();
+            Configuration configurationHandler = new Configuration();
+            Configuration.ConfigurationDTO configuration = configurationHandler.get();
+
             Messages.ModuleData m = modules.stream().findFirst().get();
             Optional<Messages.ModuleData> moduleOpt = modules
                     .stream()
                     .filter(element ->
-                            element.useCUDA.equals(resourceInformation.useCuda)
-                            && element.instanceType == resourceInformation.instanceType
-                            && element.minRAMInGB <= resourceInformation.RAMInGB)
+                            element.useCUDA.equals(configuration.useCuda)
+                            && element.instanceType == configuration.instanceType
+                            && element.minRAMInGB <= configuration.RAMInGB)
                     .findFirst();
             Messages.ModuleData module = moduleOpt.orElse(null);
 

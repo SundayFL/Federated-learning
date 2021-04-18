@@ -5,7 +5,12 @@ import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.remote.transport.ThrottlerTransportAdapter;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import example.akka.remote.shared.LoggingActor;
 import example.akka.remote.shared.Messages;
@@ -198,20 +203,19 @@ public class Aggregator extends UntypedActor {
     }
 
     private String getParticipantsJson() {
-        String json = "";
         ObjectMapper mapper = new ObjectMapper();
         try {
-            for (ParticipantData pd : this.roundParticipants) {
-                LearningData ld = new LearningData(pd.clientId, pd.port);
-                String objJson = mapper.writeValueAsString(ld);
-                json += objJson;
-                json += " ";
-            }
 
+            List<LearningData> listToSerialize = new ArrayList<>();
+            this.roundParticipants.stream()
+                    .forEach(pd -> listToSerialize.add(new LearningData(pd.clientId, pd.port)));
+
+            String json = mapper.writeValueAsString(listToSerialize);
             System.out.println("json -> " + json);
+            return json;
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return json;
+        return "";
     }
 }

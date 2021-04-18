@@ -78,7 +78,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
 
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
-    parser.add_argument("--participantsjsonlist", nargs="*", help="show program version", action="store", default="{}")
+    parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--modelpath")
 
@@ -158,17 +158,15 @@ async def main():
                                                                      (0.1307,), (0.3081,))
                                                              ])), batch_size=1000, shuffle=True)
 
-    participants = []
-    for participant in args.participantsjsonlist:
-        participants.append(LearningMember(participant))
+    participants = json.loads(args.participantsjsonlist)
 
-    print("Participants: ")
     for p in participants:
-        print(f"id: {p.id}, port: {p.port}")
+        print(p)
+        print(f"id: {p['id']}, port: {p['port']}")
 
     worker_instances = []
     for participant in participants:
-        worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant.id, port=participant.port, **kwargs_websocket))
+        worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
 
     # alice = websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
     # bob = websocket_client.WebsocketClientWorker(id="bob", port=8778, **kwargs_websocket)

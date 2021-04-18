@@ -23,7 +23,10 @@ public class ModulesManager {
     public static List<ModuleDTO> GetAvailableModules() {
         String path = null;
         try {
-            path = Configuration.get().pathToModulesList;
+            Configuration configurationHandler = new Configuration();
+            Configuration.ConfigurationDTO configuration = configurationHandler.get();
+
+            path = configuration.pathToModulesList;
 
             File f = new File(path);
             if(!f.exists() || f.isDirectory()) {
@@ -55,7 +58,10 @@ public class ModulesManager {
         modules.add(newModule);
 
         try {
-            String path = Configuration.get().pathToModulesList;
+            Configuration configurationHandler = new Configuration();
+            Configuration.ConfigurationDTO configuration = configurationHandler.get();
+
+            String path = configuration.pathToModulesList;
 
             File f = new File(path);
             if (!f.exists() || f.isDirectory()) {
