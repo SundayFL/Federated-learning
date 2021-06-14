@@ -4,7 +4,7 @@ Please cite us if you use our platform. The publication can be found at https://
 
 General overview:
 Akka enables federated learning here.
-Akka projects ==(calls)== &gt Python scripts.
+Akka projects ==(calls)== > Python scripts.
 
 Kindly install the below dependencies before executing python scripts:-
  pip install torch==1.4.0
@@ -17,8 +17,8 @@ python client.py --datapath '/home/piotr/Desktop/data' --participantsjsonlist '{
 
 
 Location:-
-python script server.py located in -&gt fl_image_clasification / pysyft / my / server
-python script client.py located in -&gt fl_image_clasification / pysyft / my / client
+python script server.py located in -> fl_image_clasification / pysyft / my / server
+python script client.py located in -> fl_image_clasification / pysyft / my / client
 
 Kindly ensure JDK, Maven etc are installed before executing the Akka Project:-
 These are the parameters to execute akka app. Python commands are hardcoded in the scripts, they need to be altered with respective datapath before execution: -
