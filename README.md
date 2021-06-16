@@ -23,15 +23,6 @@ pip install syft==0.2.9
 ```
 
 ## Usage
-Location:-
-
-python script server.py located in -> fl_image_clasification / pysyft / my / server
-
-python script client.py located in -> fl_image_clasification / pysyft / my / client
-```python
-python server.py --datapath /home/piotr/Desktop/data --id alice --host localhost --port 8777
-python client.py --datapath '/home/piotr/Desktop/data' --participantsjsonlist '{"id": "alice", "port": "8777"}' --epochs 10 --modelpath ./saved_model
-```
 
 Location:-
 
@@ -43,6 +34,12 @@ Kindly ensure JDK, Maven etc are installed before executing the Akka Project:-
 ```java
 mvn exec:java -Dexec.mainClass="example.akka.remote.server.Server"
 mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client"
+```
+
+The akka projects automatically calls the python files with arguments as follows:
+```python
+python server.py --datapath /home/piotr/Desktop/data --id alice --host localhost --port 8777
+python client.py --datapath '/home/piotr/Desktop/data' --participantsjsonlist '{"id": "alice", "port": "8777"}' --epochs 10 --modelpath ./saved_model
 ```
 Do remember to run mvn clean install to resolve any remaining dependency with akka before running the akka project.
 ## Project status
