@@ -19,7 +19,7 @@ pip install torch==1.4.0
  
 pip install torchvision==0.5.0
  
-pip install syft==0.2.9
+pip install syft==0.2.5
 ```
 
 ## Usage
@@ -37,6 +37,8 @@ mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client"
 ```
 
 Use the below for runing multiple clients:-
+
+
 e.g.-  2553 - akka port,
        6 id of the dataset due to TFF indexing,
        bob - client id and
