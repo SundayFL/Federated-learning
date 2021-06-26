@@ -36,6 +36,15 @@ mvn exec:java -Dexec.mainClass="example.akka.remote.server.Server"
 mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client"
 ```
 
+Use the below for runing multiple clients:-
+e.g.-  2553 - akka port,
+       6 id of the dataset due to TFF indexing,
+       bob - client id and
+       8778 python port
+```java
+mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client" -Dexec.args="2553 6 bob 8778"
+```
+
 The akka projects automatically calls the python files with arguments as follows:
 ```python
 python server.py --datapath /home/piotr/Desktop/data --id alice --host localhost --port 8777
@@ -43,7 +52,8 @@ python client.py --datapath '/home/piotr/Desktop/data' --participantsjsonlist '{
 ```
 Do remember to run mvn clean install to resolve any remaining dependency with akka before running the akka project.
 ## Project status
-The project is working flawlessly in Linux. Due to a vendor dependency with TensorFlow the execution of the project on Windows is currently under development.
+The project is working flawlessly in Linux and Windows.
+The Verificator module is currently under development.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
