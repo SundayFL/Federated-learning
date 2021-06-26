@@ -47,11 +47,6 @@ e.g.-  2553 - akka port,
 mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client" -Dexec.args="2553 6 bob 8778"
 ```
 
-The akka projects automatically calls the python files with arguments as follows:
-```python
-python server.py --datapath /home/piotr/Desktop/data --id alice --host localhost --port 8777
-python client.py --datapath '/home/piotr/Desktop/data' --participantsjsonlist '{"id": "alice", "port": "8777"}' --epochs 10 --modelpath ./saved_model
-```
 Do remember to run mvn clean install to resolve any remaining dependency with akka before running the akka project.
 ## Project status
 The project is working flawlessly in Linux and Windows.
