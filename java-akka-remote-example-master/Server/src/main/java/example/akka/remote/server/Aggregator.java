@@ -168,12 +168,13 @@ public class Aggregator extends UntypedActor {
         Configuration.ConfigurationDTO configuration = Configuration.get();
 
         String participantsJson = getParticipantsJson();
-
+        String tempvar = participantsJson.replace('"', '\'');
+        System.out.println(tempvar);
         processBuilder
             .inheritIO()
             .command("python", configuration.serverModuleFilePath,
             "--datapath", configuration.testDataPath,
-            "--participantsjsonlist", participantsJson,
+            "--participantsjsonlist", tempvar,
             "--epochs", String.valueOf(configuration.epochs),
             "--modelpath", configuration.savedModelPath);
 
@@ -189,13 +190,13 @@ public class Aggregator extends UntypedActor {
                 System.out.println(read.readLine());
             }
 
-            System.out.println("Error:");
+            /*System.out.println("Checking for errors:");
 
             BufferedReader readError = new BufferedReader(new InputStreamReader(
                     process.getErrorStream()));
             while (readError.ready()) {
                 System.out.println(readError.readLine());
-            }
+            }*/
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

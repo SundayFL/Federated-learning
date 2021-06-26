@@ -1,0 +1,18 @@
+{
+  "learningTaskId": "mnist",
+  "serverModuleFilePath": "./src/main/python/mnist.py",
+  "testDataPath": "./src/main/python/data",
+  "savedModelPath": "./saved_model",
+  "epochs": 5,
+  "minimumNumberOfDevices": 1,
+  "clientModules": [
+    {
+      "learningTaskId": "mnist",
+      "fileName": "mnist.py",
+      "description": "Server",
+      "useCUDA": false,
+      "minRAMInGB": 4,
+      "instanceType": "Computer"
+    }
+  ]
+}

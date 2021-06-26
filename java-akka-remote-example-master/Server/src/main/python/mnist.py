@@ -149,7 +149,7 @@ async def main():
 
     hook = sy.TorchHook(torch)
 
-    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": "0.0.0.0"}
+    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": "localhost"}
 
     test_loader = torch.utils.data.DataLoader(datasets.MNIST(args.datapath, train=False, download=True,
                                                              transform=transforms.Compose([
@@ -157,14 +157,22 @@ async def main():
                                                                  transforms.Normalize(
                                                                      (0.1307,), (0.3081,))
                                                              ])), batch_size=1000, shuffle=True)
+    
+    print(args.participantsjsonlist)
+    participants = args.participantsjsonlist.replace("'","\"")
+    print(participants)
+    participants = json.loads(participants)
+    print(participants)
 
-    participants = json.loads(args.participantsjsonlist)
-
-    for p in participants:
-        print(f"id: {p['id']}, port: {p['port']}")
+    #for p in participants:
+       # print(f"id: {p['id']}, port: {p['port']}")
 
     worker_instances = []
     for participant in participants:
+        print("----------------------")
+        print(participant['id'])
+        print(participant['port'])
+        print("----------------------")
         worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
 
     # alice = websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
