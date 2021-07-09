@@ -1,6 +1,8 @@
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Aggregator.java
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Ticker.java
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Selector.java
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Server.java
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/Coordinator.java
-/home/piotr/Desktop/MGR/FL-repo/Federated-learning/java-akka-remote-example-master/Server/src/main/java/example/akka/remote/server/CalculatorActor.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Server.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Coordinator.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Selector.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Ticker.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Configuration.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Aggregator.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\Injector.java
+D:\Git_Projects\FL\Federated-learning\java-akka-remote-example-master\Server\src\main\java\example\akka\remote\server\CalculatorActor.java

@@ -1,0 +1,9 @@
+example\akka\remote\client\ClientActor$RunModule.class
+example\akka\remote\client\ModulesManager$ModuleDTO.class
+example\akka\remote\client\ModulesManager.class
+example\akka\remote\client\ClientActor.class
+example\akka\remote\client\ClientRunModuleActor.class
+example\akka\remote\client\Configuration$ConfigurationDTO.class
+example\akka\remote\client\Configuration.class
+example\akka\remote\client\Client.class
+example\akka\remote\client\ModulesManager$ModuleDeserializer.class

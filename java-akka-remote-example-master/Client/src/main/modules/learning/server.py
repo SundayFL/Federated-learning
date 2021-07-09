@@ -24,7 +24,7 @@ parser.add_argument(
 )
 
 parser.add_argument("--datapath", help="pass path to data", action="store", default="../data")
-
+parser.add_argument("--data_set_id", type=int, help="id of data set", action="store", default=0)
 
 def main(datapath, **kwargs):  # pragma: no cover
     """Helper function for spinning up a websocket participant."""
