@@ -17,18 +17,21 @@ public class ClientRunModuleActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
+        // Message that says to run the module
         if (message instanceof ClientActor.RunModule) {
             log.info("Received RunModule command");
             this.runLearning(((ClientActor.RunModule) message).moduleFileName);
         }
     }
 
+    // Runs module
     private void runLearning(String moduleFileName) {
         Configuration.ConfigurationDTO configuration;
         try {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
 
+            // execute scrips with proper parameters
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder
@@ -42,18 +45,6 @@ public class ClientRunModuleActor extends UntypedActor {
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
-            BufferedReader read = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while (read.ready()) {
-                System.out.println(read.readLine());
-            }
-
-            System.out.println("Error:");
-
-            BufferedReader readError = new BufferedReader(new InputStreamReader(
-                    process.getErrorStream()));
-            while (readError.ready()) {
-                System.out.println(readError.readLine());
-            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

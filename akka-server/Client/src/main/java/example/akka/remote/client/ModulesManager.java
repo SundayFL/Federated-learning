@@ -20,6 +20,7 @@ public class ModulesManager {
     public String taskId;
     public String fileName;
 
+    // Returns saved modules. Reads data from json file
     public static List<ModuleDTO> GetAvailableModules() {
         String path = null;
         try {
@@ -29,7 +30,7 @@ public class ModulesManager {
             path = configuration.pathToModulesList;
 
             File f = new File(path);
-            if(!f.exists() || f.isDirectory()) {
+            if (!f.exists() || f.isDirectory()) {
                 return new ArrayList();
             }
             ObjectMapper mapper = GetMapper();
@@ -50,6 +51,7 @@ public class ModulesManager {
         return mapper;
     }
 
+    // Saves module received from the server
     public static void SaveModule(String taskId, String fileName) {
         ModuleDTO newModule = new ModuleDTO(taskId, fileName);
 
@@ -86,6 +88,7 @@ public class ModulesManager {
         public String fileName;
     }
 
+    // Modules deserializer
     public static class ModuleDeserializer extends JsonDeserializer {
         @Override
         public ModuleDTO deserialize(JsonParser jsonParser,

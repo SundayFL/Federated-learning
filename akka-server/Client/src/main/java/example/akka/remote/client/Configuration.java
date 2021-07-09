@@ -8,15 +8,18 @@ import java.io.IOException;
 
 public class Configuration {
 
-    public static Integer dataSetId;
-    public static String id;
-    public static Integer port;
+    public static Integer dataSetId;  // number of dataset
+    public static String id; // Id of the client e.g. alice
+    public static Integer port; // port on which the client is working
 
+    // Method which saves arguments passed as execution arguments
     public void SaveArguments(String[] args) {
         System.out.println("Len: " + args.length);
+
         if (args.length > 1) {
             this.dataSetId = Integer.parseInt(args[1]);
         }
+
         if (args.length > 2) {
             this.id = args[2];
         }
@@ -26,6 +29,7 @@ public class Configuration {
         System.out.println("dataSetId: " + this.dataSetId + ", id: " + this.id + ", port: " + this.port);
     }
 
+    // Method which returns configuration from appConfig.json file
     public ConfigurationDTO get() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 

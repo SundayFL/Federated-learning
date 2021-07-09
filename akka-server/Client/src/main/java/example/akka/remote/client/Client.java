@@ -12,9 +12,8 @@ import java.util.Properties;
 public class Client {
     public static void main(String[] args) {
 
+        // Saving passed arguments
         SaveArguments(args);
-
-        GetConfig(args);
 
         // Creating environment
         ActorSystem system = ActorSystem.create("AkkaRemoteClient", GetConfig(args));
@@ -26,6 +25,7 @@ public class Client {
         client.tell(new Messages.StartLearning("mnist"), ActorRef.noSender());
     }
 
+    // overrides default port
     private static Config GetConfig(String[] args) {
         if (args.length > 0) {
             Properties properties = new Properties();
@@ -37,6 +37,7 @@ public class Client {
         return ConfigFactory.load();
     }
 
+    // Saving arguments in static properties
     private static void SaveArguments(String[] args) {
         Configuration configuration = new Configuration();
         configuration.SaveArguments(args);
