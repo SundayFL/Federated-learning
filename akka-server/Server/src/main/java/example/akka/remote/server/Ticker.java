@@ -11,6 +11,7 @@ class Ticker extends AbstractActor {
 
     private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
+    // Checks if enough number of deices joined round
     public Ticker() {
         Configuration.ConfigurationDTO configuration = Configuration.get();
 

@@ -16,6 +16,7 @@ import java.util.List;
 
 public class Configuration {
 
+    // Returns current configuration read from appConfig.json file
     public static ConfigurationDTO get() {
         ObjectMapper mapper = new ObjectMapper();
 

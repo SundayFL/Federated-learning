@@ -27,6 +27,8 @@ public class Injector extends UntypedActor {
         log.info("Injector created " + getSelf().path());
     }
 
+    // List of modules
+    // TODO should be read from json
     private List<Messages.ModuleData> modules = new ArrayList() {{
         add(new Messages.ModuleData("mnist","server.py", "Server", false, 4, InstanceType.Computer));
     }};
@@ -38,12 +40,14 @@ public class Injector extends UntypedActor {
         log.info("onReceive({})", message);
 
         if (message instanceof GetModulesListRequest) {
+            // Returns modules list
             List<Messages.ModuleData> filteredModules = modules
                     .stream()
                     .filter(x -> x.id.equals(((GetModulesListRequest) message).id))
                     .collect(Collectors.toList());
             getSender().tell(new GetModulesListResponse(filteredModules), getSelf());
         } else if (message instanceof GetModuleRequest) {
+            // Returns module asked by device, reads it end returns content
             String name = ((GetModuleRequest) message).name;
             log.info("Searching for file: {}", name);
             byte[] bytes = Files.readAllBytes(Paths.get("./src/main/modules/learning/" + name));

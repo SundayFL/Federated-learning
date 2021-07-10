@@ -12,7 +12,6 @@ import static example.akka.remote.shared.Messages.*;
 public class Coordinator extends UntypedActor {
 
     public Coordinator() {
-        log.info("Constructor executed");
         this.selector = getContext().system().actorOf(Props.create(Selector.class), "Selector");
         this.aggregator = getContext().system().actorOf(Props.create(Aggregator.class, getSelf()), "Aggregator");
         // Start first round
@@ -23,8 +22,10 @@ public class Coordinator extends UntypedActor {
 
     private ActorRef loggingActor = getContext().actorOf(Props.create(LoggingActor.class), "LoggingActor");
 
+    // Selector actor
     private ActorRef selector;
 
+    // Aggregator actor
     private ActorRef aggregator;
 
     @Override

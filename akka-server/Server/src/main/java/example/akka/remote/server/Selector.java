@@ -28,8 +28,10 @@ public class Selector extends UntypedActor {
 
     private ActorRef loggingActor = getContext().actorOf(Props.create(LoggingActor.class), "LoggingActor");
 
+    // Flag that tels if currently is running a round
     private boolean isRoundActive = false;
 
+    // Reference to aggregator actor
     private ActorRef aggregator;
 
     @Override
@@ -37,6 +39,7 @@ public class Selector extends UntypedActor {
         log.info("onReceive({})", message);
 
         if (message instanceof JoinRoundRequest) {
+            // Receives join request from the device
             log.info("Selector received join request");
             ActorRef deviceReference = getSender();
             log.info("Selector path: " + deviceReference.path());

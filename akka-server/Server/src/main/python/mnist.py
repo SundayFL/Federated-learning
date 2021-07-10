@@ -175,11 +175,6 @@ async def main():
         print("----------------------")
         worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
 
-    # alice = websocket_client.WebsocketClientWorker(id="alice", port=8777, **kwargs_websocket)
-    # bob = websocket_client.WebsocketClientWorker(id="bob", port=8778, **kwargs_websocket)
-    # charlie = websocket_client.WebsocketClientWorker(id="charlie", port=8779, **kwargs_websocket)
-    # testing = websocket_client.WebsocketClientWorker(id="testing", port=8780, **kwargs_websocket)
-
     for wcw in worker_instances:
         wcw.clear_objects_remote()
 

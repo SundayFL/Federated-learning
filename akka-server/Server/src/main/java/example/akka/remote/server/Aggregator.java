@@ -38,14 +38,19 @@ public class Aggregator extends UntypedActor {
         log.info("coordinator -> " + coordinator.path());
     }
 
+    // Participants taking part in the round
     private List<ParticipantData> roundParticipants;
 
+    // Logger
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
+    // Event that checks if enough number of devices connected to current round
     private Cancellable checkReadyToRunLearning;
 
+    // Coordinator actor
     private ActorRef coordinator;
 
+    // Ticker actor
     private ActorRef tickActor;
 
     @Override
@@ -53,14 +58,16 @@ public class Aggregator extends UntypedActor {
         log.info("onReceive({})", message);
 
         if (message instanceof StartRound) {
+            // Message that round should start
             this.startRound();
         } else if (message instanceof InformAggregatorAboutNewParticipant) {
+            // Message about new participant taking part in the new round
             InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
             this.roundParticipants.add(new ParticipantData(deviceReference, messageCasted.clientId, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
-            // tell devices to run
+            // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
                 this.checkReadyToRunLearning.cancel();
                 for (ParticipantData participant : this.roundParticipants) {
@@ -68,6 +75,8 @@ public class Aggregator extends UntypedActor {
                 }
             }
         } else if (message instanceof StartLearningModule) {
+            // Message when any of participants started their modules and server can start his own learning module
+            // Updates corresponding device entity
             ActorRef sender = getSender();
             Optional<ParticipantData> first = roundParticipants.stream().findFirst();
             log.info("Sender: " + sender.path());
@@ -97,6 +106,7 @@ public class Aggregator extends UntypedActor {
         }
     }
 
+    // Stores information about each participant
     private static class ParticipantData {
         public ParticipantData(ActorRef deviceReference, String clientId, int port) {
             this.deviceReference = deviceReference;
@@ -111,15 +121,19 @@ public class Aggregator extends UntypedActor {
         public int port;
     }
 
+    // Starts new round
     private void startRound() {
         ActorSystem system = getContext().system();
 
+        // Clears list of participants
         this.roundParticipants = new ArrayList<>();
+        // Cancels events from previous round
         if (this.checkReadyToRunLearning != null) {
             this.checkReadyToRunLearning.cancel();
             this.checkReadyToRunLearning = null;
         }
 
+        // Event that checks if minimum participants joined current round
         FiniteDuration duration =  new FiniteDuration(60, TimeUnit.SECONDS);
         this.checkReadyToRunLearning = system
             .scheduler()
@@ -132,6 +146,7 @@ public class Aggregator extends UntypedActor {
                 ActorRef.noSender());
     }
 
+    // TODO move to messages
     public static class CheckReadyToRunLearningMessage {
         public List<ParticipantData> participants;
         public ActorRef replayTo;
@@ -141,6 +156,7 @@ public class Aggregator extends UntypedActor {
         }
     }
 
+    // TODO move to messages
     public static class ReadyToRunLearningMessageResponse {
         public Boolean canStart;
         public ReadyToRunLearningMessageResponse(Boolean canStart) {
@@ -148,20 +164,10 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    public class LearningData {
-        public LearningData(String id, int port) {
-            this.id = id;
-            this.port = port;
-        }
-
-        public String id;
-        public int port;
-    }
-
+    // Starts server learning module
     private void runLearning() {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
-        System.out.println("After ls");
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.directory(new File(System.getProperty("user.dir")));
 
@@ -169,7 +175,7 @@ public class Aggregator extends UntypedActor {
 
         String participantsJson = getParticipantsJson();
         String tempvar = participantsJson.replace('"', '\'');
-        System.out.println(tempvar);
+        // Executing module script as a command
         processBuilder
             .inheritIO()
             .command("python", configuration.serverModuleFilePath,
@@ -189,20 +195,12 @@ public class Aggregator extends UntypedActor {
             while (read.ready()) {
                 System.out.println(read.readLine());
             }
-
-            /*System.out.println("Checking for errors:");
-
-            BufferedReader readError = new BufferedReader(new InputStreamReader(
-                    process.getErrorStream()));
-            while (readError.ready()) {
-                System.out.println(readError.readLine());
-            }*/
-
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    // Returns participates data as a json
     private String getParticipantsJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -218,5 +216,16 @@ public class Aggregator extends UntypedActor {
             e.printStackTrace();
         }
         return "";
+    }
+
+    // Class for serializing modules list
+    public class LearningData {
+        public LearningData(String id, int port) {
+            this.id = id;
+            this.port = port;
+        }
+
+        public String id;
+        public int port;
     }
 }
