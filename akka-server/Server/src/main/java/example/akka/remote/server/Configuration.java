@@ -40,6 +40,8 @@ public class Configuration {
         public String testDataPath;
         public String savedModelPath;
         public int epochs;
+        public String modelConfig;
+        public int targetOutputSize;
 
         @JsonProperty(value = "clientModules")
         public List<ClientModule> clientModules;

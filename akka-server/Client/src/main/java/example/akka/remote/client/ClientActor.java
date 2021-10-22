@@ -43,6 +43,7 @@ public class ClientActor extends UntypedActor {
     private String clientId;
     private String taskId;
     private String moduleFileName;
+    private String modelConfig;
 
     private ActorSelection selection;
     private ActorSelection injector;
@@ -97,10 +98,12 @@ public class ClientActor extends UntypedActor {
             log.info("Received start learning command");
 
             ActorSystem system = getContext().system();
+            Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
+            this.modelConfig = messageWithModel.getModelConfig();
 
             // Start learning module
             ActorRef moduleRummer = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRummer.tell(new RunModule(this.moduleFileName), getSelf());
+            moduleRummer.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
@@ -151,9 +154,11 @@ public class ClientActor extends UntypedActor {
     // Run module message
     // TODO should be moved to messages
     public static class RunModule {
-        public RunModule(String moduleFileName) {
+        public RunModule(String moduleFileName, String modelConfig) {
             this.moduleFileName = moduleFileName;
+            this.modelConfig = modelConfig;
         }
         public String moduleFileName;
+        public String modelConfig;
     }
 }

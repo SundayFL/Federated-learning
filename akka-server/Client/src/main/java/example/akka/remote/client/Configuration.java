@@ -63,6 +63,8 @@ public class Configuration {
         public Messages.InstanceType instanceType;
 
         public String datapath;
+        public String datafilename;
+        public String targetfilename;
         public String id;
         public String host;
         public int port;

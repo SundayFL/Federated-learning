@@ -56,6 +56,7 @@ public class Aggregator extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
+        Configuration.ConfigurationDTO configuration = Configuration.get();
 
         if (message instanceof StartRound) {
             // Message that round should start
@@ -71,7 +72,7 @@ public class Aggregator extends UntypedActor {
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
                 this.checkReadyToRunLearning.cancel();
                 for (ParticipantData participant : this.roundParticipants) {
-                    participant.deviceReference.tell(new StartLearningProcessCommand(), getSelf());
+                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig), getSelf());
                 }
             }
         } else if (message instanceof StartLearningModule) {
@@ -182,7 +183,9 @@ public class Aggregator extends UntypedActor {
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--epochs", String.valueOf(configuration.epochs),
-            "--modelpath", configuration.savedModelPath);
+            "--modelpath", configuration.savedModelPath,
+            "--model_config", configuration.modelConfig,
+            "--model_output", String.valueOf(configuration.targetOutputSize));
 
         try {
             System.out.println("Before start");

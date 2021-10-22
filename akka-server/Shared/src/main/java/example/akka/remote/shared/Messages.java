@@ -82,7 +82,14 @@ public class Messages {
     }
 
     public static class StartLearningProcessCommand implements Serializable {
-        public StartLearningProcessCommand() { }
+        public String modelConfig;
+        public StartLearningProcessCommand( String modelConfig) {
+            this.modelConfig = modelConfig;
+         }
+
+        public String getModelConfig() {
+            return modelConfig;
+        }
     }
 
     public static class StartRoundCoordinatorSelector implements Serializable {
