@@ -1,0 +1,14 @@
+{
+  "useCuda": "false",
+  "RAMInGB": 8,
+  "instanceType": "Computer",
+  "datapath": "./src/main/modules/data",
+  "datafilename": "data_random.npy",
+  "targetfilename": "target_random.npy",
+  "id": "alice",
+  "host": "localhost",
+  "port": "8777",
+  "address": "127.0.0.1:5000",
+  "pathToModules": "./src/main/modules/learning/",
+  "pathToModulesList": "./src/main/modules/learning/modules.json"
+}

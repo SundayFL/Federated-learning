@@ -1,0 +1,20 @@
+{
+  "learningTaskId": "mnist",
+  "serverModuleFilePath": "./src/main/python/mnist.py",
+  "testDataPath": "./src/main/python/data",
+  "savedModelPath": "./saved_model",
+  "epochs": 40,
+  "modelConfig": "mobilenetv2",
+  "minimumNumberOfDevices": 3,
+  "targetOutputSize": 12,
+  "clientModules": [
+    {
+      "learningTaskId": "mnist",
+      "fileName": "mnist.py",
+      "description": "Server",
+      "useCUDA": false,
+      "minRAMInGB": 1,
+      "instanceType": "Computer"
+    }
+  ]
+}

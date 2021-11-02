@@ -1,0 +1,18 @@
+{
+    "read_from_json": true,
+    "datapath": "../data",
+    "data_file_name": "plants",
+    "target_file_name": null,
+    "delim": null,
+    "target_name": null,
+    "data_name": null,
+    "data_root": null,
+    "partitions_num": 3,
+    "partitions_size": 10,
+    "save_to_directory": "../data",
+    "data_prefix": "data_random",
+    "target_prefix": "target_random",
+    "shuffle": true,
+    "partition_mode": "random",
+    "data_asign": null
+}
