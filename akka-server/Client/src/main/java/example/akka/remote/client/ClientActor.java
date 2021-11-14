@@ -108,10 +108,13 @@ public class ClientActor extends UntypedActor {
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
 
-            // Tell server, after 60 sec, that script has been ran
+            // Tell server, after 60 sec, that script has been run
             system
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
+        } else if (message instanceof Messages.AreYouAliveQuestion){
+            ActorRef sender = getSender();
+            sender.tell(new Messages.IAmAlive(), getSelf());
         }
     }
 

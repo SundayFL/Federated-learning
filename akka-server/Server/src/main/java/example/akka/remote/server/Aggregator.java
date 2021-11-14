@@ -39,7 +39,7 @@ public class Aggregator extends UntypedActor {
     }
 
     // Participants taking part in the round
-    private List<ParticipantData> roundParticipants;
+    private Map<String, ParticipantData> roundParticipants;
 
     // Logger
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -66,12 +66,13 @@ public class Aggregator extends UntypedActor {
             InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
-            this.roundParticipants.add(new ParticipantData(deviceReference, messageCasted.clientId, messageCasted.port));
+            this.roundParticipants.put(messageCasted.clientId,
+                    new ParticipantData(deviceReference, messageCasted.clientId, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
             // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
                 this.checkReadyToRunLearning.cancel();
-                for (ParticipantData participant : this.roundParticipants) {
+                for (ParticipantData participant : this.roundParticipants.values()) {
                     participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig), getSelf());
                 }
             }
@@ -79,26 +80,48 @@ public class Aggregator extends UntypedActor {
             // Message when any of participants started their modules and server can start his own learning module
             // Updates corresponding device entity
             ActorRef sender = getSender();
-            Optional<ParticipantData> first = roundParticipants.stream().findFirst();
+            Optional<ParticipantData> first = roundParticipants.entrySet().stream().map(Map.Entry::getValue).findFirst();
             log.info("Sender: " + sender.path());
             log.info("First: " + first.get().deviceReference.path().toString());
 
             ParticipantData foundOnList = roundParticipants
+                    .entrySet()
                     .stream()
-                    .filter(participantData -> participantData.deviceReference.equals(sender))
+                    .filter(participantData -> participantData.getValue().deviceReference.equals(sender))
                     .findAny()
                     .orElse(null);
 
             foundOnList.moduleStarted = true;
 
             boolean allParticipantsStartedModule = roundParticipants
+                    .entrySet()
                     .stream()
-                    .allMatch(participantData -> participantData.moduleStarted);
+                    .allMatch(participantData -> participantData.getValue().moduleStarted);
 
             log.info("Found on list" + (foundOnList != null));
             log.info("All participants started module" + allParticipantsStartedModule);
 
-            if (allParticipantsStartedModule){
+            if (allParticipantsStartedModule)
+                for (ParticipantData participant : this.roundParticipants.values())
+                    participant.deviceReference.tell(new AreYouAliveQuestion(), getSelf());
+        } else if (message instanceof IAmAlive) {
+            // Message sent at the beginning of learning, indicating that the sender is alive
+            ActorRef sender = getSender();
+            ParticipantData foundOnList = roundParticipants
+                    .entrySet()
+                    .stream()
+                    .filter(participantData -> participantData.getValue().deviceReference.equals(sender))
+                    .findAny()
+                    .orElse(null);
+
+            foundOnList.moduleAlive = true;
+
+            boolean allParticipantsAlive = roundParticipants
+                    .entrySet()
+                    .stream()
+                    .allMatch(participantData -> participantData.getValue().moduleAlive);
+
+            if (allParticipantsAlive){
                 this.runLearning();
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
@@ -109,17 +132,22 @@ public class Aggregator extends UntypedActor {
 
     // Stores information about each participant
     private static class ParticipantData {
-        public ParticipantData(ActorRef deviceReference, String clientId, int port) {
+        public ParticipantData(ActorRef deviceReference, /*String clientId, */int port) {
             this.deviceReference = deviceReference;
-            this.clientId = clientId;
+            //this.clientId = clientId;
             this.moduleStarted = false;
+            this.moduleAlive = false;
             this.port = port;
+            this.interRes = new List<>();
         }
 
-        public String clientId;
+        //public String clientId;
         public ActorRef deviceReference;
         public boolean moduleStarted;
+        public boolean moduleAlive; // new data
         public int port;
+        public List<float> interRes; // new data
+        // Do we move moduleAlive and interRes into a separate class?
     }
 
     // Starts new round
@@ -127,7 +155,7 @@ public class Aggregator extends UntypedActor {
         ActorSystem system = getContext().system();
 
         // Clears list of participants
-        this.roundParticipants = new ArrayList<>();
+        this.roundParticipants = new HashMap<>();
         // Cancels events from previous round
         if (this.checkReadyToRunLearning != null) {
             this.checkReadyToRunLearning.cancel();
@@ -145,24 +173,6 @@ public class Aggregator extends UntypedActor {
                 new CheckReadyToRunLearningMessage(this.roundParticipants, getSelf()),
                 system.dispatcher(),
                 ActorRef.noSender());
-    }
-
-    // TODO move to messages
-    public static class CheckReadyToRunLearningMessage {
-        public List<ParticipantData> participants;
-        public ActorRef replayTo;
-        public CheckReadyToRunLearningMessage(List<ParticipantData> participants, ActorRef replayTo) {
-            this.participants = participants;
-            this.replayTo = replayTo;
-        }
-    }
-
-    // TODO move to messages
-    public static class ReadyToRunLearningMessageResponse {
-        public Boolean canStart;
-        public ReadyToRunLearningMessageResponse(Boolean canStart) {
-            this.canStart = canStart;
-        }
     }
 
     // Starts server learning module
@@ -209,7 +219,7 @@ public class Aggregator extends UntypedActor {
         try {
 
             List<LearningData> listToSerialize = new ArrayList<>();
-            this.roundParticipants.stream()
+            this.roundParticipants.entrySet().stream().map(Map.Entry::getValue)
                     .forEach(pd -> listToSerialize.add(new LearningData(pd.clientId, pd.port)));
 
             String json = mapper.writeValueAsString(listToSerialize);
