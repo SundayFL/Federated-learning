@@ -1,0 +1,18 @@
+{
+    "read_from_json": true,
+    "datapath": "../data/MNIST/processed",
+    "data_file_name": "training.pt",
+    "target_file_name": "",
+    "delim": null,
+    "target_name": null,
+    "data_name": null,
+    "data_root": null,
+    "partitions_num": 3,
+    "partitions_size": 10000,
+    "save_to_directory": "../data",
+    "data_prefix": "data_equal_pt",
+    "target_prefix": "target_equal_pt",
+    "shuffle": true,
+    "partition_mode": "equal",
+    "data_asign": null
+}
