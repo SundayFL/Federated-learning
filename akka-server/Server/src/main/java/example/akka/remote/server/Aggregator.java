@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static example.akka.remote.shared.Messages.*;
@@ -67,7 +64,7 @@ public class Aggregator extends UntypedActor {
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
             this.roundParticipants.put(messageCasted.clientId,
-                    new ParticipantData(deviceReference, messageCasted.clientId, messageCasted.port));
+                    new ParticipantData(deviceReference, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
             // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
@@ -87,7 +84,8 @@ public class Aggregator extends UntypedActor {
             ParticipantData foundOnList = roundParticipants
                     .entrySet()
                     .stream()
-                    .filter(participantData -> participantData.getValue().deviceReference.equals(sender))
+                    .map(Map.Entry::getValue)
+                    .filter(participantData -> participantData.deviceReference.equals(sender))
                     .findAny()
                     .orElse(null);
 
@@ -110,7 +108,8 @@ public class Aggregator extends UntypedActor {
             ParticipantData foundOnList = roundParticipants
                     .entrySet()
                     .stream()
-                    .filter(participantData -> participantData.getValue().deviceReference.equals(sender))
+                    .map(Map.Entry::getValue)
+                    .filter(participantData -> participantData.deviceReference.equals(sender))
                     .findAny()
                     .orElse(null);
 
@@ -131,14 +130,14 @@ public class Aggregator extends UntypedActor {
     }
 
     // Stores information about each participant
-    private static class ParticipantData {
+    public class ParticipantData { // or private static?
         public ParticipantData(ActorRef deviceReference, /*String clientId, */int port) {
             this.deviceReference = deviceReference;
             //this.clientId = clientId;
             this.moduleStarted = false;
             this.moduleAlive = false;
             this.port = port;
-            this.interRes = new List<>();
+            this.interRes = new ArrayList<>();
         }
 
         //public String clientId;
@@ -146,7 +145,7 @@ public class Aggregator extends UntypedActor {
         public boolean moduleStarted;
         public boolean moduleAlive; // new data
         public int port;
-        public List<float> interRes; // new data
+        public List<Float> interRes; // new data
         // Do we move moduleAlive and interRes into a separate class?
     }
 
@@ -213,14 +212,31 @@ public class Aggregator extends UntypedActor {
         }
     }
 
+    // move to messages?
+    public static class CheckReadyToRunLearningMessage {
+        public Map<String, ParticipantData> participants;
+        public ActorRef replayTo;
+        public CheckReadyToRunLearningMessage(Map<String, ParticipantData> participants, ActorRef replayTo) {
+            this.participants = participants;
+            this.replayTo = replayTo;
+        }
+    }
+
+    public static class ReadyToRunLearningMessageResponse {
+        public Boolean canStart;
+        public ReadyToRunLearningMessageResponse(Boolean canStart) {
+            this.canStart = canStart;
+        }
+    }
+
     // Returns participates data as a json
     private String getParticipantsJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {
 
             List<LearningData> listToSerialize = new ArrayList<>();
-            this.roundParticipants.entrySet().stream().map(Map.Entry::getValue)
-                    .forEach(pd -> listToSerialize.add(new LearningData(pd.clientId, pd.port)));
+            this.roundParticipants.entrySet().stream()
+                    .forEach(pd -> listToSerialize.add(new LearningData(pd.getKey(), pd.getValue().port)));
 
             String json = mapper.writeValueAsString(listToSerialize);
             System.out.println("json -> " + json);

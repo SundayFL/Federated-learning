@@ -160,22 +160,6 @@ public class Messages {
         public InstanceType instanceType;
     }
 
-    public static class CheckReadyToRunLearningMessage {
-        public Map<String, ParticipantData> participants;
-        public ActorRef replayTo;
-        public CheckReadyToRunLearningMessage(Map<String, ParticipantData> participants, ActorRef replayTo) {
-            this.participants = participants;
-            this.replayTo = replayTo;
-        }
-    }
-
-    public static class ReadyToRunLearningMessageResponse {
-        public Boolean canStart;
-        public ReadyToRunLearningMessageResponse(Boolean canStart) {
-            this.canStart = canStart;
-        }
-    }
-
     public static class AreYouAliveQuestion implements Serializable { }
 
     public static class IAmAlive implements Serializable { }
