@@ -25,6 +25,7 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
+            this.interclient = getContext().system().actorOf(Props.create(InterClientActor.class, this), "InterClientActor");
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -47,6 +48,7 @@ public class ClientActor extends UntypedActor {
 
     private ActorSelection selection;
     private ActorSelection injector;
+    private ActorRef interclient;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -71,7 +73,7 @@ public class ClientActor extends UntypedActor {
             // Set module filename
             this.moduleFileName = module.fileName;
             // When we confirm that we have module we can ask server to join round
-            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.address, this.port), getSelf());
             log.info("After send to selector, address -> " + this.address);
         } else if(message instanceof Messages.GetModulesListResponse) {
             // Find the best module
@@ -87,7 +89,7 @@ public class ClientActor extends UntypedActor {
             ModulesManager.SaveModule(this.taskId, module.fileName);
             log.info("Module list saved");
             this.moduleFileName = module.fileName;
-            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.address, this.port), getSelf());
         } else if (message instanceof Messages.JoinRoundResponse) {
             // Response if device can join round
             Messages.JoinRoundResponse result = (Messages.JoinRoundResponse) message;
@@ -115,6 +117,8 @@ public class ClientActor extends UntypedActor {
         } else if (message instanceof Messages.AreYouAliveQuestion){
             ActorRef sender = getSender();
             sender.tell(new Messages.IAmAlive(), getSelf());
+        } else if (message instanceof Messages.ClientDataSpread){
+            this.interclient.tell(message, getSelf());
         }
     }
 

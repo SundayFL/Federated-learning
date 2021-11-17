@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static example.akka.remote.shared.Messages.*;
 
@@ -64,7 +65,7 @@ public class Aggregator extends UntypedActor {
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
             this.roundParticipants.put(messageCasted.clientId,
-                    new ParticipantData(deviceReference, messageCasted.port));
+                    new ParticipantData(deviceReference, messageCasted.address, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
             // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
@@ -77,14 +78,13 @@ public class Aggregator extends UntypedActor {
             // Message when any of participants started their modules and server can start his own learning module
             // Updates corresponding device entity
             ActorRef sender = getSender();
-            Optional<ParticipantData> first = roundParticipants.entrySet().stream().map(Map.Entry::getValue).findFirst();
+            Optional<ParticipantData> first = roundParticipants.values().stream().findFirst();
             log.info("Sender: " + sender.path());
             log.info("First: " + first.get().deviceReference.path().toString());
 
             ParticipantData foundOnList = roundParticipants
-                    .entrySet()
+                    .values()
                     .stream()
-                    .map(Map.Entry::getValue)
                     .filter(participantData -> participantData.deviceReference.equals(sender))
                     .findAny()
                     .orElse(null);
@@ -92,9 +92,9 @@ public class Aggregator extends UntypedActor {
             foundOnList.moduleStarted = true;
 
             boolean allParticipantsStartedModule = roundParticipants
-                    .entrySet()
+                    .values()
                     .stream()
-                    .allMatch(participantData -> participantData.getValue().moduleStarted);
+                    .allMatch(participantData -> participantData.moduleStarted);
 
             log.info("Found on list" + (foundOnList != null));
             log.info("All participants started module" + allParticipantsStartedModule);
@@ -106,9 +106,8 @@ public class Aggregator extends UntypedActor {
             // Message sent at the beginning of learning, indicating that the sender is alive
             ActorRef sender = getSender();
             ParticipantData foundOnList = roundParticipants
-                    .entrySet()
+                    .values()
                     .stream()
-                    .map(Map.Entry::getValue)
                     .filter(participantData -> participantData.deviceReference.equals(sender))
                     .findAny()
                     .orElse(null);
@@ -116,11 +115,12 @@ public class Aggregator extends UntypedActor {
             foundOnList.moduleAlive = true;
 
             boolean allParticipantsAlive = roundParticipants
-                    .entrySet()
+                    .values()
                     .stream()
-                    .allMatch(participantData -> participantData.getValue().moduleAlive);
+                    .allMatch(participantData -> participantData.moduleAlive);
 
             if (allParticipantsAlive){
+                this.exchange(configuration.minimumNumberOfDevices-1);
                 this.runLearning();
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
@@ -129,24 +129,45 @@ public class Aggregator extends UntypedActor {
         }
     }
 
+    private void exchange(int numberOfKeys) {
+        int numberOfParticipants = roundParticipants.size();
+        Map<String, String> addresses = roundParticipants
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        participant -> participant.getValue().address));
+        Map<String, Integer> ports = roundParticipants
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        participant -> participant.getValue().port));
+        List<Float> publicKeys = new ArrayList<>();
+        Random keyGeneration = new Random();
+        for (int k=0; k<numberOfKeys; k++) publicKeys.add(keyGeneration.nextFloat());
+
+        for (ParticipantData participant : this.roundParticipants.values())
+            participant.deviceReference.tell(new ClientDataSpread(numberOfParticipants, addresses, ports, publicKeys), getSelf());
+    }
+
     // Stores information about each participant
-    public class ParticipantData { // or private static?
-        public ParticipantData(ActorRef deviceReference, /*String clientId, */int port) {
+    private static class ParticipantData {
+        private ParticipantData(ActorRef deviceReference, /*String clientId, */String address, int port) {
             this.deviceReference = deviceReference;
             //this.clientId = clientId;
             this.moduleStarted = false;
             this.moduleAlive = false;
             this.port = port;
+            this.address = address;
             this.interRes = new ArrayList<>();
         }
 
         //public String clientId;
         public ActorRef deviceReference;
         public boolean moduleStarted;
-        public boolean moduleAlive; // new data
+        public boolean moduleAlive;
         public int port;
-        public List<Float> interRes; // new data
-        // Do we move moduleAlive and interRes into a separate class?
+        public String address;
+        public List<Float> interRes;
     }
 
     // Starts new round
@@ -212,7 +233,7 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    // move to messages?
+    // TODO move to messages?
     public static class CheckReadyToRunLearningMessage {
         public Map<String, ParticipantData> participants;
         public ActorRef replayTo;

@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class Messages {
 
@@ -20,12 +21,14 @@ public class Messages {
         public LocalDateTime availabilityEndAt;
         public String taskId;
         public String clientId;
+        public String address;
         public int port;
 
-        public JoinRoundRequest(LocalDateTime availabilityEndAt, String taskId, String clientId, int port) {
+        public JoinRoundRequest(LocalDateTime availabilityEndAt, String taskId, String clientId, String address, int port) {
             this.availabilityEndAt = availabilityEndAt;
             this.taskId = taskId;
             this.clientId = clientId;
+            this.address = address;
             this.port = port;
         }
     }
@@ -74,10 +77,12 @@ public class Messages {
         public ActorRef deviceReference;
         public int port;
         public String clientId;
-        public InformAggregatorAboutNewParticipant(ActorRef deviceReference, String clientId, int port) {
+        public String address;
+        public InformAggregatorAboutNewParticipant(ActorRef deviceReference, String clientId, String address, int port) {
             this.deviceReference = deviceReference;
             this.port = port;
             this.clientId = clientId;
+            this.address = address;
         }
     }
 
@@ -158,6 +163,20 @@ public class Messages {
         public Boolean useCUDA;
         public int minRAMInGB;
         public InstanceType instanceType;
+    }
+
+    public static class ClientDataSpread implements Serializable {
+        public ClientDataSpread(int numberOfClients, Map<String, String> addresses, Map<String, Integer> ports, List<Float> publicKeys){
+            this.numberOfClients = numberOfClients;
+            this.addresses = addresses;
+            this.ports = ports;
+            this.publicKeys = publicKeys;
+        }
+
+        public int numberOfClients;
+        public Map<String, String> addresses;
+        public Map<String, Integer> ports;
+        public List<Float> publicKeys;
     }
 
     public static class AreYouAliveQuestion implements Serializable { }
