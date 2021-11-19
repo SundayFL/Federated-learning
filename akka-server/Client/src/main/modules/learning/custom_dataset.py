@@ -5,8 +5,9 @@ from scipy import io as sio
 import torch
 import os
 import pandas as pd
+from torch.utils.data import Dataset, DataLoader
 
-class CustomDataset():
+class CustomDataset(Dataset):
 
     def __init__(self,  transform=None, imported_data =None):
 
