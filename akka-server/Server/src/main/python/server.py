@@ -1,5 +1,6 @@
 import logging
 import argparse
+import re
 import sys
 import asyncio
 import numpy as np
@@ -11,17 +12,19 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms
 from pathlib import Path
 import json
-from torchvision.models import mobilenet_v2
+import os
+from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
-
-
 
 import syft as sy
 from syft.workers import websocket_client
 from syft.frameworks.torch.fl import utils
 
+
+websocket_client.TIMEOUT_INTERVAL = 60
 LOG_INTERVAL = 25
+
 logger = logging.getLogger("run_websocket_client")
 
 
@@ -39,9 +42,14 @@ class MockUp():
 
 
 # Loss function
+#@torch.jit.script
+#def loss_fn(pred, target):
+#    return F.nll_loss(input=pred, target=target.long())
+
+
 @torch.jit.script
 def loss_fn(pred, target):
-    return F.nll_loss(input=pred, target=target.long())
+    return F.cross_entropy(input=pred, target=target.long())
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
@@ -60,7 +68,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
         default=10,
         help="number of training steps performed on each remote worker before averaging",
     )
-    parser.add_argument("--lr", type=float, default=0.1, help="learning rate")
+    parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
     parser.add_argument("--cuda", action="store_true", help="use cuda")
     parser.add_argument("--seed", type=int, default=1, help="seed used for randomization")
     parser.add_argument("--save_model", action="store_true", help="if set, model will be saved")
@@ -74,9 +82,9 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
-    parser.add_argument("--model_config", default="mobilenetv2")
+    parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default=12)
-    parser.add_argument("--modelpath")
+    parser.add_argument("--modelpath", default = 'saved_model')
 
     args = parser.parse_args(args=args)
     return args
@@ -99,8 +107,8 @@ async def fit_model_on_worker(
             shuffle=True,
             max_nr_batches=max_nr_batches,
             epochs=1,
-            optimizer="SGD",
-            optimizer_args={"lr": lr},
+            optimizer="Adam",
+            optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
     train_config.send(worker)
     loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
@@ -108,7 +116,7 @@ async def fit_model_on_worker(
     return worker.id, model, loss
 
 
-async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate):
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
     
     model_config = sy.TrainConfig(
         model=traced_model,
@@ -117,20 +125,21 @@ async def test(test_worker, traced_model, batch_size, federate_after_n_batches, 
         shuffle=True,
         max_nr_batches=federate_after_n_batches,
         epochs=1,
-        optimizer="SGD",
-        optimizer_args={"lr": learning_rate},
+        optimizer="Adam",
+        optimizer_args={"lr": learning_rate, "weight_decay": learning_rate*0.1},
     )
     with torch.no_grad():
         model_config.send(test_worker)
-        worker_result = test_worker.evaluate(dataset_key="mnist")
-    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss']
+        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
+    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
 
 def define_model(model_config, device, modelpath, model_output): 
     model_file = Path(modelpath)
     test_tensor = torch.zeros([1, 3, 224, 224])
-    if (model_config == 'mobilenetv2'):
-        model = mobilenet_v2(pretrained = True)
-        model.classifier[1].out_features = model_output
+    if (model_config == 'vgg'):
+        model = vgg11(pretrained = True)
+        model.classifier[6].out_features = model_output
+        print(model.classifier)
         model.eval()
         model.to(device)
         transform = transforms.Compose([
@@ -181,10 +190,11 @@ def define_participants_lists(participantsjsonlist, **kwargs_websocket):
 async def main():
     #set up environment
     args = define_and_get_arguments()
+    #os.chdir('./akka-server/Server/')
     torch.manual_seed(args.seed)
+    print(args)
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
-
     #define participants
     print(args.participantsjsonlist)
     worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
@@ -192,7 +202,9 @@ async def main():
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    model, test_tensor = define_model(args.model_config, device, args.modelpath, args.model_output)
+    model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
+    #for p in model.parameters():
+    #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
     traced_model = torch.jit.trace(model,  test_tensor.to(device))
     traced_model.train()
 
@@ -224,25 +236,36 @@ async def main():
                 loss_values.append(worker_loss)
 
         traced_model = utils.federated_avg(models)
+        if args.model_config != 'cnn':
+            print(traced_model.classifier.state_dict())
+        else:
+            print(traced_model.fc2.weight.data)
         learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
 
         correct_predictions = 0
         all_predictions = 0     
         traced_model.eval()
-        results = await asyncio.gather(
-            *[
-                test(worker_test, traced_model, 
-                args.batch_size, args.federate_after_n_batches, learning_rate)    
-                for worker_test in worker_instances_test      
-            ]         
-        )
-        test_loss = []
-        for curr_correct, total_predictions, loss in results:
-            correct_predictions += curr_correct
-            all_predictions += total_predictions
-            test_loss.append(loss)
+        if len(worker_instances_test) > 0 :
+            results = await asyncio.gather(
+                *[
+                    test(worker_test, traced_model, 
+                    args.batch_size,
+                    args.federate_after_n_batches, learning_rate, int(args.model_output))    
+                    for worker_test in worker_instances_test      
+                ]         
+            )
+            test_loss = []
+            for curr_correct, total_predictions, loss , target_hist, predictions_hist in results:
+                correct_predictions += curr_correct
+                all_predictions += total_predictions
+                test_loss.append(loss)
+                print('Got predictions: \n')
+                print(predictions_hist)
+                print('Expected: \n')
+                print(target_hist)
   
-        print("Currrent accuracy: " + str(correct_predictions/all_predictions))            
+            print("Currrent accuracy: " + str(correct_predictions/all_predictions))  
+            print(test_loss)          
         traced_model.train()
 
     if args.modelpath:
