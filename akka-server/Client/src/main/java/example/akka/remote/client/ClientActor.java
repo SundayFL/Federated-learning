@@ -25,7 +25,9 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
-            this.interclient = getContext().system().actorOf(Props.create(InterClientActor.class, this), "InterClientActor");
+            this.interclient = getContext()
+                    .system()
+                    .actorOf(Props.create(InterClientActor.class, this.clientId, this), "InterClientActor");
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
