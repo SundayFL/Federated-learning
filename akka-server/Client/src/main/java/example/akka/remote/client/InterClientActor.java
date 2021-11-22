@@ -11,13 +11,13 @@ import java.util.HashMap;
 
 public class InterClientActor extends UntypedActor {
 
-    public InterClientActor(String clientId, ActorRef clientActor){
+    public InterClientActor(String clientId, ClientActor clientActor){
         this.clientId = clientId;
         this.clientActor = clientActor;
     }
 
     private String clientId;
-    private ActorRef clientActor;
+    private ClientActor clientActor;
     private int numberOfClientstoAwait;
     private Map<String, Float> RValues;
     private List<Float> ownRValues;

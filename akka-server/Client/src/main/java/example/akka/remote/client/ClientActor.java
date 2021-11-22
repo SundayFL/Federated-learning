@@ -106,8 +106,8 @@ public class ClientActor extends UntypedActor {
             this.modelConfig = messageWithModel.getModelConfig();
 
             // Start learning module
-            ActorRef moduleRummer = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRummer.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
+            ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
+            moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
