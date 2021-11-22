@@ -17,7 +17,7 @@ class CNN(nn.Module):
 		 	kernel_size=(5, 5))
 	    self.relu2 = nn.ReLU()
 	    self.maxpool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
-	    self.fc1 = nn.Linear(in_features=5 * 35 * 35, out_features=500)
+	    self.fc1 = nn.Linear(in_features=5 * 53 * 53, out_features=500)
 	    self.relu3 = nn.ReLU()
 	    self.fc2 = nn.Linear(in_features=500, out_features=classes)
 	    self.logSoftmax = nn.Softmax(dim=1)
@@ -34,4 +34,4 @@ class CNN(nn.Module):
         x = self.relu3(x)
         x = self.fc2(x)
         output = self.logSoftmax(x)
-        return output
+        return output#F.log_softmax(x, dim=1)

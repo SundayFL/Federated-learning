@@ -1,16 +1,16 @@
 {
   "learningTaskId": "mnist",
-  "serverModuleFilePath": "./src/main/python/mnist.py",
+  "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "savedModelPath": "./saved_model",
-  "epochs": 40,
-  "modelConfig": "mnist",
+  "epochs": 50,
+  "modelConfig": "cnn",
   "minimumNumberOfDevices": 3,
-  "targetOutputSize": 10,
+  "targetOutputSize": 12,
   "clientModules": [
     {
       "learningTaskId": "mnist",
-      "fileName": "mnist.py",
+      "fileName": "server.py",
       "description": "Server",
       "useCUDA": true,
       "minRAMInGB": 1,
