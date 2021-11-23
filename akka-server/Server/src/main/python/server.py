@@ -236,7 +236,7 @@ async def main():
                 loss_values.append(worker_loss)
 
         traced_model = utils.federated_avg(models)
-        if args.model_config != 'cnn':
+        if args.model_config != 'cnn' and args.model_config != 'mnist':
             print(traced_model.classifier.state_dict())
         else:
             print(traced_model.fc2.weight.data)
