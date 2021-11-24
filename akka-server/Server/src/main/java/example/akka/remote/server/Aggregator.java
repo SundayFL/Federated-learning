@@ -120,7 +120,7 @@ public class Aggregator extends UntypedActor {
                     .allMatch(participantData -> participantData.moduleAlive);
 
             if (allParticipantsAlive){
-                this.exchange(configuration.minimumNumberOfDevices-1);
+                this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices-1);
                 this.runLearning();
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
@@ -129,7 +129,7 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    private void exchange(int numberOfKeys) {
+    private void exchange(int numberOfKeys, int minimum) {
         int numberOfParticipants = roundParticipants.size();
         Map<String, String> addresses = roundParticipants
                 .entrySet()
@@ -145,15 +145,21 @@ public class Aggregator extends UntypedActor {
         Random keyGeneration = new Random();
         for (int k=0; k<numberOfKeys; k++) publicKeys.add(keyGeneration.nextFloat());
 
-        for (ParticipantData participant : this.roundParticipants.values())
-            participant.deviceReference.tell(new ClientDataSpread(numberOfParticipants, addresses, ports, publicKeys), getSelf());
+        for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
+            participant.getValue().deviceReference.tell(new ClientDataSpread(
+                    participant.getKey(),
+                    numberOfParticipants,
+                    minimum,
+                    addresses,
+                    ports,
+                    publicKeys
+            ), getSelf());
     }
 
     // Stores information about each participant
     private static class ParticipantData {
-        private ParticipantData(ActorRef deviceReference, /*String clientId, */String address, int port) {
+        private ParticipantData(ActorRef deviceReference, String address, int port) {
             this.deviceReference = deviceReference;
-            //this.clientId = clientId;
             this.moduleStarted = false;
             this.moduleAlive = false;
             this.port = port;
@@ -161,7 +167,6 @@ public class Aggregator extends UntypedActor {
             this.interRes = new ArrayList<>();
         }
 
-        //public String clientId;
         public ActorRef deviceReference;
         public boolean moduleStarted;
         public boolean moduleAlive;

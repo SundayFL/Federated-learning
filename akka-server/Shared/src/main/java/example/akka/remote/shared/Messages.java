@@ -166,14 +166,18 @@ public class Messages {
     }
 
     public static class ClientDataSpread implements Serializable {
-        public ClientDataSpread(int numberOfClients, Map<String, String> addresses, Map<String, Integer> ports, List<Float> publicKeys){
+        public ClientDataSpread(String clientId, int numberOfClients, int minimum, Map<String, String> addresses, Map<String, Integer> ports, List<Float> publicKeys){
+            this.clientId = clientId;
             this.numberOfClients = numberOfClients;
+            this.minimum = minimum;
             this.addresses = addresses;
             this.ports = ports;
             this.publicKeys = publicKeys;
         }
 
+        public String clientId;
         public int numberOfClients;
+        public int minimum;
         public Map<String, String> addresses;
         public Map<String, Integer> ports;
         public List<Float> publicKeys;

@@ -25,9 +25,6 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
-            this.interclient = getContext()
-                    .system()
-                    .actorOf(Props.create(InterClientActor.class, this.clientId, this), "InterClientActor");
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -50,7 +47,7 @@ public class ClientActor extends UntypedActor {
 
     private ActorSelection selection;
     private ActorSelection injector;
-    private ActorRef interclient;
+    private ActorRef moduleRunner;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -106,8 +103,8 @@ public class ClientActor extends UntypedActor {
             this.modelConfig = messageWithModel.getModelConfig();
 
             // Start learning module
-            ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
+            this.moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
+            this.moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
@@ -120,7 +117,7 @@ public class ClientActor extends UntypedActor {
             ActorRef sender = getSender();
             sender.tell(new Messages.IAmAlive(), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
-            this.interclient.tell(message, getSelf());
+            this.moduleRunner.tell(message, getSelf());
         }
     }
 

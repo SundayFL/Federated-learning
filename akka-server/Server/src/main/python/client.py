@@ -201,14 +201,6 @@ def main(data_path, participants, epochs, modelpath):
 
     torch.save(model, modelpath)
 
-    """
-        to be done on a local model:
-        W = [module.weights for module in model.modules() if type(module)!=nn.Sequential]
-        publicKeys = // read public keys from JSON
-        privateValues = [random.random() for x in range(m-1)] // what is m-1?
-        R = [sum([privateValues[x]*publicKeys[y]**x for x in range(len(privateValues))])+W for y in range(len(publicKeys)]
-    """
-
 
 if __name__ == "__main__":
     print("Start")
