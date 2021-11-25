@@ -119,9 +119,15 @@ public class Aggregator extends UntypedActor {
                     .stream()
                     .allMatch(participantData -> participantData.moduleAlive);
 
+            log.info("Found on list" + (foundOnList != null));
+            log.info("Everyone alive" + allParticipantsAlive);
+
             if (allParticipantsAlive){
+                log.info("Spreading data");
                 this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices-1);
+                log.info("Run learning");
                 this.runLearning();
+                log.info("Round ended");
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
         } else {

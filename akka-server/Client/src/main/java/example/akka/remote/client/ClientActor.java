@@ -114,9 +114,11 @@ public class ClientActor extends UntypedActor {
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
         } else if (message instanceof Messages.AreYouAliveQuestion){
+            log.info("I am alive!");
             ActorRef sender = getSender();
             sender.tell(new Messages.IAmAlive(), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
+            log.info("Passing data");
             this.moduleRunner.tell(message, getSelf());
         }
     }

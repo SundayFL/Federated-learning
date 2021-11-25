@@ -114,8 +114,8 @@ async def fit_model_on_worker(
     loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
     model = train_config.model_ptr.get().obj
     # to be moved if does not belong here!
-    W = np.array([module.weights for module in model.modules() if type(module)!=nn.Sequential])
 """
+        W = np.array([module.weights for module in model.modules() if type(module)!=nn.Sequential])
         publicKeys = // how are they accessed? how do we enter websockets?
         privateValues = [random.random() for x in range(m-1)] // what is m-1?
         R = [sum([privateValues[x]*publicKeys[y]**x for x in range(len(privateValues))])+W for y in range(len(publicKeys))]

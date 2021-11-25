@@ -15,15 +15,23 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ClientRunModuleActor extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     private String clientId;
     private int numberOfClientstoAwait, minimum;
-    private Map<String, Object> RValues;
-    private List<Object> ownRValues;
+    private Object RValues;
+    private Map<String, Object> ownRValues;
+    private Map<String, String> addresses;
+    private Map<String, Integer> ports;
     private List<Float> publicKeys;
+
+    public <K, V> Map<K, V> getMeOut(Map<K, V> m){
+        return m.entrySet().stream().filter(entry -> !entry.getKey().equals(clientId)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -37,13 +45,18 @@ public class ClientRunModuleActor extends UntypedActor {
             this.clientId = ((Messages.ClientDataSpread) message).clientId;
             this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
             this.minimum = ((Messages.ClientDataSpread) message).minimum;
+            this.addresses = getMeOut(((Messages.ClientDataSpread) message).addresses);
+            this.ports = getMeOut(((Messages.ClientDataSpread) message).ports);
             this.publicKeys = ((Messages.ClientDataSpread) message).publicKeys;
+
+             /* do we need it?
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> JSONmap = new HashMap<>();
-            JSONmap.put("addresses", ((Messages.ClientDataSpread) message).addresses);
-            JSONmap.put("ports", ((Messages.ClientDataSpread) message).ports);
-            JSONmap.put("publicKeys", ((Messages.ClientDataSpread) message).publicKeys);
+            JSONmap.put("addresses", addresses);
+            JSONmap.put("ports", ports);
+            JSONmap.put("publicKeys", publicKeys);
             mapper.writeValue(new File("./src/main/resources/"+clientId+".json"), JSONmap);
+             */
         }
     }
 
@@ -61,6 +74,8 @@ public class ClientRunModuleActor extends UntypedActor {
             processBuilder
                 .inheritIO()
                 .command("python", configuration.pathToModules + moduleFileName,
+                         "--foreign_addresses", addresses.toString(),
+                         "--foreign_ports", ports.toString(),
                          "--public_keys", publicKeys.toString(),
                          "--min_devices", String.valueOf(minimum),
                          "--datapath", configuration.datapath,
