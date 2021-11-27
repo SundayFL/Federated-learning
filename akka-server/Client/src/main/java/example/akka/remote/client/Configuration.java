@@ -63,14 +63,17 @@ public class Configuration {
         public Messages.InstanceType instanceType;
 
         public String datapath;
+        public String testdatapath;
         public String datafilename;
         public String targetfilename;
+        public int epochs;
         public String id;
         public String host;
         public int port;
         public String address;
         public String pathToModules;
         public String pathToModulesList;
+        public String pathToChannel;
         public int dataSetId;
     }
 }

@@ -1,6 +1,7 @@
 package example.akka.remote.client;
 
 import akka.actor.*;
+import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
@@ -48,6 +49,7 @@ public class ClientActor extends UntypedActor {
     private ActorSelection selection;
     private ActorSelection injector;
     private ActorRef moduleRunner;
+    private ActorRef secureWorker;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -120,6 +122,10 @@ public class ClientActor extends UntypedActor {
         } else if (message instanceof Messages.ClientDataSpread){
             log.info("Passing data");
             this.moduleRunner.tell(message, getSelf());
+        } else if (message instanceof Messages.OpenSecureWorker){
+            ActorSystem system = getContext().system();
+            this.secureWorker = system.actorOf(Props.create(SecureWorker.class), "SecureWorker");
+            this.secureWorker.tell(new Messages.MakeChannel(((Messages.OpenSecureWorker) message).participants), getSelf());
         }
     }
 

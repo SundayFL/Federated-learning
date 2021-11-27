@@ -51,6 +51,12 @@ public class Aggregator extends UntypedActor {
     // Ticker actor
     private ActorRef tickActor;
 
+    // First client
+    private ActorRef firstClient;
+
+    // Number of clients to await
+    private int numberOfClientsToAwait;
+
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
@@ -64,6 +70,7 @@ public class Aggregator extends UntypedActor {
             InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
+            if (roundParticipants.size()==0) this.firstClient = deviceReference;
             this.roundParticipants.put(messageCasted.clientId,
                     new ParticipantData(deviceReference, messageCasted.address, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
@@ -122,9 +129,18 @@ public class Aggregator extends UntypedActor {
             log.info("Found on list" + (foundOnList != null));
             log.info("Everyone alive" + allParticipantsAlive);
 
-            if (allParticipantsAlive){
+            if (allParticipantsAlive) {
                 log.info("Spreading data");
-                this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices-1);
+                this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices - 1);
+                String participantsJson = getParticipantsJson();
+                String tempvar = participantsJson.replace('"', '\'');
+                this.firstClient.tell(new OpenSecureWorker(tempvar), getSelf());
+            }
+        } else if (message instanceof InterResReceived) {
+            // save InterRes
+            this.numberOfClientsToAwait--;
+            if (numberOfClientsToAwait==0) {
+                // Learning through deciphering learned models' equation
                 log.info("Run learning");
                 this.runLearning();
                 log.info("Round ended");
@@ -207,7 +223,7 @@ public class Aggregator extends UntypedActor {
     }
 
     // Starts server learning module
-    private void runLearning() {
+    private void runLearning() { // to be modified!
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         ProcessBuilder processBuilder = new ProcessBuilder();
