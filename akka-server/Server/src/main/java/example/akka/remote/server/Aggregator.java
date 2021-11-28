@@ -51,9 +51,6 @@ public class Aggregator extends UntypedActor {
     // Ticker actor
     private ActorRef tickActor;
 
-    // First client
-    private ActorRef firstClient;
-
     // Number of clients to await
     private int numberOfClientsToAwait;
 
@@ -70,7 +67,6 @@ public class Aggregator extends UntypedActor {
             InformAggregatorAboutNewParticipant messageCasted = (InformAggregatorAboutNewParticipant)message;
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
-            if (roundParticipants.size()==0) this.firstClient = deviceReference;
             this.roundParticipants.put(messageCasted.clientId,
                     new ParticipantData(deviceReference, messageCasted.address, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
@@ -132,9 +128,6 @@ public class Aggregator extends UntypedActor {
             if (allParticipantsAlive) {
                 log.info("Spreading data");
                 this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices - 1);
-                String participantsJson = getParticipantsJson();
-                String tempvar = participantsJson.replace('"', '\'');
-                this.firstClient.tell(new OpenSecureWorker(tempvar), getSelf());
             }
         } else if (message instanceof InterResReceived) {
             // save InterRes

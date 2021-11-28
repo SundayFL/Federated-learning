@@ -30,10 +30,6 @@ parser.add_argument(
     help="if set, websocket server worker will be started in verbose mode",
 )
 
-parser.add_argument("--foreign_addresses", help="other participants' addresses", action="store")
-parser.add_argument("--foreign_ports", help="other participants' ports", action="store")
-parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
-parser.add_argument("--min_devices", help="how many private keys to generate", action="store")
 parser.add_argument("--datapath", help="pass path to data", action="store", default="../data")
 parser.add_argument("--data_file_name", help="name of to data file", action="store", default="data.npy")
 parser.add_argument("--target_file_name", help="name of targets file", action="store", default="target.npy")
@@ -100,10 +96,6 @@ def main(details_dict, **kwargs):  # pragma: no cover
         data_file_name = str(data_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
         target_file_name= str(target_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
 
-    foreign_addresses = details_dict["foreign_addresses"]
-    foreign_ports = details_dict["foreign_ports"]
-    public_keys = details_dict["public_keys"][1:-1].split(', ')
-    min_devices = int(details_dict["min_devices"])
     dataset = ImportData(data_path = data_file_name, target_path = target_file_name)
     dataset.data = [Image.fromarray(np.uint8(im)) for im in dataset.data]
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
@@ -150,10 +142,6 @@ if __name__ == "__main__":
     }
 
     details_dict = {
-        "public_keys": args.public_keys,
-        "foreign_addresses": args.foreign_addresses;
-        "foreign_ports": args.foreign_ports;
-        "min_devices": args.min_devices,
         "data_set_id": args.data_set_id, 
         "data_file_name": args.data_file_name,
         "target_file_name": args.target_file_name,

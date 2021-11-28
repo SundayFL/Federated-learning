@@ -73,7 +73,8 @@ public class Configuration {
         public String address;
         public String pathToModules;
         public String pathToModulesList;
-        public String pathToChannel;
+        public String pathToResources;
+        public String pathToClientLog;
         public int dataSetId;
     }
 }

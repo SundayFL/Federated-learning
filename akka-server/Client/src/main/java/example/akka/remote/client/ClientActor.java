@@ -122,10 +122,6 @@ public class ClientActor extends UntypedActor {
         } else if (message instanceof Messages.ClientDataSpread){
             log.info("Passing data");
             this.moduleRunner.tell(message, getSelf());
-        } else if (message instanceof Messages.OpenSecureWorker){
-            ActorSystem system = getContext().system();
-            this.secureWorker = system.actorOf(Props.create(SecureWorker.class), "SecureWorker");
-            this.secureWorker.tell(new Messages.MakeChannel(((Messages.OpenSecureWorker) message).participants), getSelf());
         }
     }
 

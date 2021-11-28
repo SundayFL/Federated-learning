@@ -80,8 +80,16 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
 
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
-    parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
+    parser.add_argument(
+        "--id", type=str, help="name (id) of the websocket server worker, e.g. --id alice"
+    )
+    parser.add_argument(
+        "--port", "-p", type=int, help="port number of the websocket server worker, e.g. --port 8777"
+    )
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
+    parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
+    parser.add_argument("--minimum", help="how many private keys to generate", action="store")
+    parser.add_argument("--pathToResources", help="pass path to resources", action="store")
 
     args = parser.parse_args(args=args)
     return args
@@ -89,12 +97,12 @@ def define_and_get_arguments(args=sys.argv[1:]):
 
 async def fit_model_on_worker(
     worker: websocket_client.WebsocketClientWorker,
-
     traced_model: torch.jit.ScriptModule,
     batch_size: int,
     curr_round: int,
     max_nr_batches: int,
     lr: float,
+    epochs: int,
 ):
 
     train_config = sy.TrainConfig(
@@ -103,7 +111,7 @@ async def fit_model_on_worker(
             batch_size = batch_size,
             shuffle=True,
             max_nr_batches=max_nr_batches,
-            epochs=1,
+            epochs=epochs,
             optimizer="Adam",
             optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
@@ -119,23 +127,6 @@ async def fit_model_on_worker(
 """
     return worker.id, model, loss
 
-
-async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
-
-    model_config = sy.TrainConfig(
-        model=traced_model,
-        loss_fn=loss_fn,
-        batch_size=batch_size,
-        shuffle=True,
-        max_nr_batches=federate_after_n_batches,
-        epochs=1,
-        optimizer="Adam",
-        optimizer_args={"lr": learning_rate, "weight_decay": learning_rate*0.1},
-    )
-    with torch.no_grad():
-        model_config.send(test_worker)
-        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
-    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
 
 def define_model(model_config, device, modelpath, model_output):
     model_file = Path(modelpath)
@@ -162,34 +153,10 @@ def define_model(model_config, device, modelpath, model_output):
         model.load_state_dict(torch.load(modelpath))
     return model, test_tensor
 
-def define_participants_lists(participantsjsonlist, **kwargs_websocket):
-
-    participants = participantsjsonlist.replace("'","\"")
-    participants = json.loads(participants)
-    print(participants)
-
-    for_test = random.choices(participants, k=np.int(np.round(len(participants)*0.3)))
-    print('Clients picked for test: \n')
-    print(for_test)
-    worker_instances = []
-    worker_instances_test = []
-    for participant in participants:
-        print("----------------------")
-        print(participant['id'])
-        print(participant['port'])
-        print("----------------------")
-        if participant not in for_test:
-            worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
-        else:
-            worker_instances_test.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
-
-    for wcw in worker_instances:
-        wcw.clear_objects_remote()
-
-    for wcw in worker_instances_test:
-        wcw.clear_objects_remote()
-
-    return worker_instances, worker_instances_test
+def define_participant(id, port, **kwargs_websocket):
+    worker_instance = sy.workers.websocket_client.WebsocketClientWorker(id=id, port=port, **kwargs_websocket)
+    worker_instance.clear_objects_remote()
+    return worker_instance
 
 async def main():
     #set up environment
@@ -200,8 +167,7 @@ async def main():
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
-    print(args.participantsjsonlist)
-    worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
+    worker_instance = define_participant(args.id, args.port, **kwargs_websocket)
 
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
@@ -215,68 +181,29 @@ async def main():
     # modify the following to get separate models
 
     learning_rate = args.lr
-    for curr_round in range(1, args.epochs + 1):
-        logger.info("Training epoch %s/%s", curr_round, args.epochs)
-        results = await asyncio.gather(
-            *[
-                fit_model_on_worker(
+    worker_id, model, loss_value = fit_model_on_worker(
+        worker=worker_instance,
+        traced_model=traced_model,
+        batch_size=args.batch_size,
+        curr_round=curr_round,
+        max_nr_batches=args.federate_after_n_batches,
+        lr=learning_rate,
+        epochs=args.epochs
+    )
 
-                    worker=worker,
-                    traced_model=traced_model,
-                    batch_size=args.batch_size,
-                    curr_round=curr_round,
-                    max_nr_batches=args.federate_after_n_batches,
-                    lr=learning_rate,
-                )
-                for worker in worker_instances
-            ]
-        )
-        models = {}
-        models_list =[]
-        loss_values = []
-
-        for worker_id, worker_model, worker_loss in results:
-            if worker_model is not None:
-                models[worker_id] = worker_model
-                models_list.append(worker_model)
-                loss_values.append(worker_loss)
-
-        traced_model = utils.federated_avg(models)
-        if args.model_config != 'cnn' and args.model_config != 'mnist':
-            print(traced_model.classifier.state_dict())
-        else:
-            print(traced_model.fc2.weight.data)
-        learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
-
-        correct_predictions = 0
-        all_predictions = 0
-        traced_model.eval()
-        if len(worker_instances_test) > 0 :
-            results = await asyncio.gather(
-                *[
-                    test(worker_test, traced_model,
-                    args.batch_size,
-                    args.federate_after_n_batches, learning_rate, int(args.model_output))
-                    for worker_test in worker_instances_test
-                ]
-            )
-            test_loss = []
-            for curr_correct, total_predictions, loss , target_hist, predictions_hist in results:
-                correct_predictions += curr_correct
-                all_predictions += total_predictions
-                test_loss.append(loss)
-                print('Got predictions: \n')
-                print(predictions_hist)
-                print('Expected: \n')
-                print(target_hist)
-
-            print("Currrent accuracy: " + str(correct_predictions/all_predictions))
-            print(test_loss)
-        traced_model.train()
-
-    if args.modelpath:
-        torch.save(traced_model.state_dict(), args.modelpath)
-
+    # get weights and make R values
+    if args.model_config != 'cnn' and args.model_config != 'mnist':
+        weights = model.classifier.state_dict()
+    else:
+        weights = model.fc2.weight.data
+    weights = np.array(weights)
+    polynomial = np.array([0 for n in range(public_keys)])
+    for m in range(minimum):
+        polynomial = np.multiply(polynomial + random.random(), public_keys)
+    rValues = []
+    for n in range(public_keys):
+        rValues.append(weights+polynomial[n])
+    np.save(pathToResources+id+"_r.npy")
 
 if __name__ == "__main__":
     # Logging setup

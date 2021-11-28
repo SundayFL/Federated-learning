@@ -23,7 +23,7 @@ public class ClientRunModuleActor extends UntypedActor {
 
     private String clientId;
     private int numberOfClientstoAwait, minimum;
-    private Object RValues;
+    private Map<String, Object> RValues;
     private Map<String, Object> ownRValues;
     private Map<String, String> addresses;
     private Map<String, Integer> ports;
@@ -67,17 +67,13 @@ public class ClientRunModuleActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
 
-            // execute scrips with proper parameters
+            // execute scripts with proper parameters
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
             log.info( configuration.pathToModules + moduleFileName);
             processBuilder
                 .inheritIO()
                 .command("python", configuration.pathToModules + moduleFileName,
-                         "--foreign_addresses", addresses.toString(),
-                         "--foreign_ports", ports.toString(),
-                         "--public_keys", publicKeys.toString(),
-                         "--min_devices", String.valueOf(minimum),
                          "--datapath", configuration.datapath,
                          "--data_file_name", configuration.datafilename,
                          "--target_file_name", configuration.targetfilename,
@@ -89,6 +85,23 @@ public class ClientRunModuleActor extends UntypedActor {
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
+
+            // another script
+            processBuilder = new ProcessBuilder();
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            processBuilder
+                    .inheritIO()
+                    .command("python", configuration.pathToClientLog,
+                            "--datapath", configuration.testdatapath,
+                            "--id", this.clientId,
+                            "--port", String.valueOf(configuration.port),
+                            "--public_keys", "["+this.publicKeys.stream().map(Object::toString).collect(Collectors.joining(", "))+"]",
+                            "--minimum", String.valueOf(this.minimum),
+                            "--pathToResources", configuration.pathToResources,
+                            "--epochs", String.valueOf(configuration.epochs));
+
+            process = processBuilder.start();
+            exitCode = process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

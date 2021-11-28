@@ -189,20 +189,6 @@ public class Messages {
 
     public static class StartRound implements Serializable { }
 
-    public static class OpenSecureWorker implements Serializable {
-        public String participants;
-        public OpenSecureWorker(String participants){
-            this.participants = participants;
-        }
-    }
-
-    public static class MakeChannel implements Serializable {
-        public String participants;
-        public MakeChannel(String participants){
-            this.participants = participants;
-        }
-    }
-
     public static class InterResReceived implements Serializable {
 
     }
