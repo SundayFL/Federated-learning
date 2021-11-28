@@ -40,13 +40,15 @@ public class ClientRunModuleActor extends UntypedActor {
             log.info("Received RunModule command");
             ClientActor.RunModule receivedMessage = (ClientActor.RunModule) message;
             this.runLearning(receivedMessage.moduleFileName, receivedMessage.modelConfig);
+
+            // to do next: save RValues, pass RValues as JSONs,
         }
         if (message instanceof Messages.ClientDataSpread){
             this.clientId = ((Messages.ClientDataSpread) message).clientId;
             this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
             this.minimum = ((Messages.ClientDataSpread) message).minimum;
-            this.addresses = getMeOut(((Messages.ClientDataSpread) message).addresses);
-            this.ports = getMeOut(((Messages.ClientDataSpread) message).ports);
+            this.addresses = ((Messages.ClientDataSpread) message).addresses;
+            this.ports = ((Messages.ClientDataSpread) message).ports;
             this.publicKeys = ((Messages.ClientDataSpread) message).publicKeys;
 
              /* do we need it?
@@ -57,6 +59,8 @@ public class ClientRunModuleActor extends UntypedActor {
             JSONmap.put("publicKeys", publicKeys);
             mapper.writeValue(new File("./src/main/resources/"+clientId+".json"), JSONmap);
              */
+
+            this.readRValues();
         }
     }
 
@@ -70,24 +74,33 @@ public class ClientRunModuleActor extends UntypedActor {
             // execute scripts with proper parameters
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
-            log.info( configuration.pathToModules + moduleFileName);
+            log.info(configuration.pathToModules + moduleFileName);
             processBuilder
-                .inheritIO()
-                .command("python", configuration.pathToModules + moduleFileName,
-                         "--datapath", configuration.datapath,
-                         "--data_file_name", configuration.datafilename,
-                         "--target_file_name", configuration.targetfilename,
-                         "--id", configuration.id,
-                         "--host", configuration.host,
-                         "--port", String.valueOf(configuration.port),
-                         "--data_set_id", String.valueOf(configuration.dataSetId),
-                         "--model_config", modelConfig);
+                    .inheritIO()
+                    .command("python", configuration.pathToModules + moduleFileName,
+                            "--datapath", configuration.datapath,
+                            "--data_file_name", configuration.datafilename,
+                            "--target_file_name", configuration.targetfilename,
+                            "--id", configuration.id,
+                            "--host", configuration.host,
+                            "--port", String.valueOf(configuration.port),
+                            "--data_set_id", String.valueOf(configuration.dataSetId),
+                            "--model_config", modelConfig);
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    private void readRValues(){
+        Configuration.ConfigurationDTO configuration;
+        try {
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
 
             // another script
-            processBuilder = new ProcessBuilder();
+            ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder
                     .inheritIO()
@@ -100,8 +113,8 @@ public class ClientRunModuleActor extends UntypedActor {
                             "--pathToResources", configuration.pathToResources,
                             "--epochs", String.valueOf(configuration.epochs));
 
-            process = processBuilder.start();
-            exitCode = process.waitFor();
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

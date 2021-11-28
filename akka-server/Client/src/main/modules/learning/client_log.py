@@ -13,6 +13,7 @@ from torchvision import datasets, transforms
 from pathlib import Path
 import json
 import os
+import codecs
 from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
@@ -203,7 +204,9 @@ async def main():
     rValues = []
     for n in range(public_keys):
         rValues.append(weights+polynomial[n])
-    np.save(pathToResources+id+"_r.npy")
+    # save as json with ids?
+    # np.save(pathToResources+id+"_r.npy", np.array(rValues))
+    json.dump(rValues, codecs.open(pathToResources+id+"_r.npy", 'w'), separators=(',', ':'), indent=4)
 
 if __name__ == "__main__":
     # Logging setup
