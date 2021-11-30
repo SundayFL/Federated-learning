@@ -8,8 +8,11 @@ import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +52,10 @@ public class ClientActor extends UntypedActor {
     private ActorSelection selection;
     private ActorSelection injector;
     private ActorRef moduleRunner;
-    private ActorRef secureWorker;
+    private ActorRef server;
+
+    private Map<String, ActorRef> references;
+    private int numberOfClientstoAwait;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -117,11 +123,37 @@ public class ClientActor extends UntypedActor {
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
         } else if (message instanceof Messages.AreYouAliveQuestion){
             log.info("I am alive!");
-            ActorRef sender = getSender();
-            sender.tell(new Messages.IAmAlive(), getSelf());
+            this.server = getSender(); // from here we save the server reference
+            this.server.tell(new Messages.IAmAlive(), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
             log.info("Passing data");
+            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
+            this.references = ((Messages.ClientDataSpread) message).references;
+            ((Messages.ClientDataSpread) message).references = null; // ClientRunModuleActor will need no actor references
             this.moduleRunner.tell(message, getSelf());
+        } else if (message instanceof Messages.RValuesReady){
+            // sending R values to other clients
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            byte[] bytes;
+            for (Map.Entry<String, ActorRef> client: this.references.entrySet()) {
+                bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".npy"));
+                client.getValue().tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
+            }
+        } else if (message instanceof Messages.SendRValue){
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            numberOfClientstoAwait--;
+            byte[] bytes = ((Messages.SendRValue) message).bytes;
+            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".npy"), bytes);
+
+            if (numberOfClientstoAwait==0){
+                this.calculateInterRes();
+                byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.npy"));
+                this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+            }
         }
     }
 
@@ -131,6 +163,29 @@ public class ClientActor extends UntypedActor {
             fos.write(result.content);
         } catch (Exception e) {
             log.info("Error:");
+            e.printStackTrace();
+        }
+    }
+
+    private void calculateInterRes(){
+        Configuration.ConfigurationDTO configuration;
+        try {
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+
+            // execute scripts with proper parameters
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            log.info(configuration.pathToModules + moduleFileName);
+            processBuilder
+                    .inheritIO()
+                    .command("python", configuration.pathToModules + moduleFileName,
+                            "--pathToResources", configuration.pathToResources,
+                            "--id", configuration.id);
+
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

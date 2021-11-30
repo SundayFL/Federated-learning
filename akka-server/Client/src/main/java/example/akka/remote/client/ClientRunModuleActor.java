@@ -1,5 +1,7 @@
 package example.akka.remote.client;
 
+import akka.actor.ActorPath;
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
@@ -12,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,16 +25,10 @@ public class ClientRunModuleActor extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     private String clientId;
-    private int numberOfClientstoAwait, minimum;
-    private Map<String, Object> RValues;
-    private Map<String, Object> ownRValues;
+    private int minimum;
     private Map<String, String> addresses;
     private Map<String, Integer> ports;
     private List<Float> publicKeys;
-
-    public <K, V> Map<K, V> getMeOut(Map<K, V> m){
-        return m.entrySet().stream().filter(entry -> !entry.getKey().equals(clientId)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -40,27 +37,16 @@ public class ClientRunModuleActor extends UntypedActor {
             log.info("Received RunModule command");
             ClientActor.RunModule receivedMessage = (ClientActor.RunModule) message;
             this.runLearning(receivedMessage.moduleFileName, receivedMessage.modelConfig);
-
-            // to do next: save RValues, pass RValues as JSONs,
         }
         if (message instanceof Messages.ClientDataSpread){
             this.clientId = ((Messages.ClientDataSpread) message).clientId;
-            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
             this.minimum = ((Messages.ClientDataSpread) message).minimum;
             this.addresses = ((Messages.ClientDataSpread) message).addresses;
             this.ports = ((Messages.ClientDataSpread) message).ports;
             this.publicKeys = ((Messages.ClientDataSpread) message).publicKeys;
 
-             /* do we need it?
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> JSONmap = new HashMap<>();
-            JSONmap.put("addresses", addresses);
-            JSONmap.put("ports", ports);
-            JSONmap.put("publicKeys", publicKeys);
-            mapper.writeValue(new File("./src/main/resources/"+clientId+".json"), JSONmap);
-             */
-
             this.readRValues();
+            getSender().tell(new Messages.RValuesReady(), getSelf());
         }
     }
 
@@ -99,6 +85,8 @@ public class ClientRunModuleActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
 
+            List<String> ids = new ArrayList<>(this.addresses.keySet());
+
             // another script
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
@@ -108,6 +96,7 @@ public class ClientRunModuleActor extends UntypedActor {
                             "--datapath", configuration.testdatapath,
                             "--id", this.clientId,
                             "--port", String.valueOf(configuration.port),
+                            "--foreign_ids", "["+ids.stream().map(Object::toString).collect(Collectors.joining(", "))+"]",
                             "--public_keys", "["+this.publicKeys.stream().map(Object::toString).collect(Collectors.joining(", "))+"]",
                             "--minimum", String.valueOf(this.minimum),
                             "--pathToResources", configuration.pathToResources,

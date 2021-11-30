@@ -2,6 +2,7 @@
   "learningTaskId": "mnist",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
+  "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",
   "epochs": 50,
   "modelConfig": "mnist",

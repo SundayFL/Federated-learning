@@ -89,6 +89,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
+    parser.add_argument("--foreign_ids", help="foreign ids to save R values", action="store")
     parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
 
@@ -203,10 +204,8 @@ async def main():
         polynomial = np.multiply(polynomial + random.random(), public_keys)
     rValues = []
     for n in range(public_keys):
-        rValues.append(weights+polynomial[n])
-    # save as json with ids?
-    # np.save(pathToResources+id+"_r.npy", np.array(rValues))
-    json.dump(rValues, codecs.open(pathToResources+id+"_r.npy", 'w'), separators=(',', ':'), indent=4)
+        np.save(pathToResources+id+"/"+id+"_"+foreign_ids[n]+".npy", np.array(weights+polynomial[n]))
+    # R values are stored in a new directory in order to simplify storage while working in localhost
 
 if __name__ == "__main__":
     # Logging setup

@@ -20,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -129,9 +131,13 @@ public class Aggregator extends UntypedActor {
                 log.info("Spreading data");
                 this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices - 1);
             }
-        } else if (message instanceof InterResReceived) {
+        } else if (message instanceof SendInterRes) {
             // save InterRes
             this.numberOfClientsToAwait--;
+            byte[] bytes = ((SendInterRes) message).bytes;
+            String clientId = ((SendInterRes) message).sender;
+            Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".npy"), bytes);
+
             if (numberOfClientsToAwait==0) {
                 // Learning through deciphering learned models' equation
                 log.info("Run learning");
@@ -156,6 +162,11 @@ public class Aggregator extends UntypedActor {
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         participant -> participant.getValue().port));
+        Map<String, ActorRef> references = roundParticipants
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        participant -> participant.getValue().deviceReference));
         List<Float> publicKeys = new ArrayList<>();
         Random keyGeneration = new Random();
         for (int k=0; k<numberOfKeys; k++) publicKeys.add(keyGeneration.nextFloat());
@@ -167,6 +178,7 @@ public class Aggregator extends UntypedActor {
                     minimum,
                     addresses,
                     ports,
+                    references,
                     publicKeys
             ), getSelf());
     }

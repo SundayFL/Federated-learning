@@ -166,12 +166,19 @@ public class Messages {
     }
 
     public static class ClientDataSpread implements Serializable {
-        public ClientDataSpread(String clientId, int numberOfClients, int minimum, Map<String, String> addresses, Map<String, Integer> ports, List<Float> publicKeys){
+        public ClientDataSpread(String clientId,
+                                int numberOfClients,
+                                int minimum,
+                                Map<String, String> addresses,
+                                Map<String, Integer> ports,
+                                Map<String, ActorRef> references,
+                                List<Float> publicKeys){
             this.clientId = clientId;
             this.numberOfClients = numberOfClients;
             this.minimum = minimum;
             this.addresses = addresses;
             this.ports = ports;
+            this.references = references;
             this.publicKeys = publicKeys;
         }
 
@@ -180,6 +187,7 @@ public class Messages {
         public int minimum;
         public Map<String, String> addresses;
         public Map<String, Integer> ports;
+        public Map<String, ActorRef> references;
         public List<Float> publicKeys;
     }
 
@@ -189,8 +197,26 @@ public class Messages {
 
     public static class StartRound implements Serializable { }
 
-    public static class InterResReceived implements Serializable {
+    public static class RValuesReady implements Serializable { }
 
+    public static class SendRValue implements Serializable {
+        public String sender;
+        public byte[] bytes;
+
+        public SendRValue(String sender, byte[] bytes){
+            this.sender=sender;
+            this.bytes=bytes;
+        }
+    }
+
+    public static class SendInterRes implements Serializable {
+        public String sender;
+        public byte[] bytes;
+
+        public SendInterRes(String sender, byte[] bytes){
+            this.sender=sender;
+            this.bytes=bytes;
+        }
     }
 
     public static class RoundEnded implements Serializable { }
