@@ -138,7 +138,7 @@ public class ClientActor extends UntypedActor {
             configuration = configurationHandler.get();
             byte[] bytes;
             for (Map.Entry<String, ActorRef> client: this.references.entrySet()) {
-                bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".npy"));
+                bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
                 client.getValue().tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
         } else if (message instanceof Messages.SendRValue){
@@ -147,11 +147,11 @@ public class ClientActor extends UntypedActor {
             configuration = configurationHandler.get();
             numberOfClientstoAwait--;
             byte[] bytes = ((Messages.SendRValue) message).bytes;
-            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".npy"), bytes);
+            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
 
             if (numberOfClientstoAwait==0){
                 this.calculateInterRes();
-                byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.npy"));
+                byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
             }
         }

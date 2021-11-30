@@ -1,6 +1,6 @@
 {
   "learningTaskId": "mnist",
-  "serverModuleFilePath": "./src/main/python/server.py",
+  "serverModuleFilePath": "./src/main/python/polynomial.py",
   "testDataPath": "./src/main/python/data",
   "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",

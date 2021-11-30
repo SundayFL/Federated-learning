@@ -1,6 +1,7 @@
 import argparse
 import os
 import numpy as np
+import torch
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
@@ -16,15 +17,15 @@ def define_and_get_arguments(args=sys.argv[1:]):
 
 async def main():
     args = define_and_get_arguments()
-    InterRes = np.load(pathToResources+id+"/"+id+"_"+id+".npy")
+    InterRes = torch.load(pathToResources+"/"+id+"/"+id+"_"+id+".pt")
     filelist = []
     with os.scandir(pathToResources+id) as dirs:
         for entry in dirs:
-            if entry.name != (id+"_"+id+".npy") and re.search(".*\_"+id+".npy", entry.name):
+            if entry.name != (id+"_"+id+".npy") and re.search(".*\_"+id+".pt", entry.name):
                 filelist.append(entry.name)
     for R in filelist:
-        InterRes = InterRes + np.load(pathToResources+id+"/"+R)
-    np.save(pathToResources+id+"/"+"interRes.npy", InterRes)
+        InterRes = InterRes + torch.load(pathToResources+"/"+id+"/"+R)
+    torch.save(pathToResources+"/"+id+"/interRes.pt", InterRes)
 
 if __name__ == "__main__":
     main()

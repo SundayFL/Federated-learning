@@ -198,14 +198,14 @@ async def main():
         weights = model.classifier.state_dict()
     else:
         weights = model.fc2.weight.data
-    weights = np.array(weights)
+    weights = torch.tensor(weights) # how about tensors?
     polynomial = np.array([0 for n in range(public_keys)])
     for m in range(minimum):
-        polynomial = np.multiply(polynomial + random.random(), public_keys)
+        polynomial = np.multiply(polynomial + random.random(), args.public_keys)
     rValues = []
     for n in range(public_keys):
-        np.save(pathToResources+id+"/"+id+"_"+foreign_ids[n]+".npy", np.array(weights+polynomial[n]))
-    # R values are stored in a new directory in order to simplify storage while working in localhost
+        np.save(pathToResources+id+"/"+id+"_"+foreign_ids[n]+".pt", torch.tensor(weights+polynomial[n]))
+    # R values are stored in their own directory in order to simplify storage while working in localhost
 
 if __name__ == "__main__":
     # Logging setup

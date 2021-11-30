@@ -1,4 +1,3 @@
-"""
 import logging
 import argparse
 import re
@@ -286,4 +285,3 @@ if __name__ == "__main__":
 
     # Run main
     asyncio.get_event_loop().run_until_complete(main())
-"""

@@ -56,6 +56,9 @@ public class Aggregator extends UntypedActor {
     // Number of clients to await
     private int numberOfClientsToAwait;
 
+    // Public keys
+    private List<Float> publics;
+
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
@@ -136,7 +139,7 @@ public class Aggregator extends UntypedActor {
             this.numberOfClientsToAwait--;
             byte[] bytes = ((SendInterRes) message).bytes;
             String clientId = ((SendInterRes) message).sender;
-            Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".npy"), bytes);
+            Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".pt"), bytes);
 
             if (numberOfClientsToAwait==0) {
                 // Learning through deciphering learned models' equation
@@ -170,6 +173,7 @@ public class Aggregator extends UntypedActor {
         List<Float> publicKeys = new ArrayList<>();
         Random keyGeneration = new Random();
         for (int k=0; k<numberOfKeys; k++) publicKeys.add(keyGeneration.nextFloat());
+        this.publics=publicKeys;
 
         for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
             participant.getValue().deviceReference.tell(new ClientDataSpread(
@@ -228,7 +232,7 @@ public class Aggregator extends UntypedActor {
     }
 
     // Starts server learning module
-    private void runLearning() { // to be modified!
+    private void runLearning() {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
         ProcessBuilder processBuilder = new ProcessBuilder();
@@ -244,8 +248,10 @@ public class Aggregator extends UntypedActor {
             .command("python", configuration.serverModuleFilePath,
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
+            "--publicKeys", this.publics.toString(),
             "--epochs", String.valueOf(configuration.epochs),
             "--modelpath", configuration.savedModelPath,
+            "--pathToResources", configuration.pathToResources,
             "--model_config", configuration.modelConfig,
             "--model_output", String.valueOf(configuration.targetOutputSize));
 

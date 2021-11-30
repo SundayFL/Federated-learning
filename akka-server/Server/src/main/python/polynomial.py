@@ -1,0 +1,124 @@
+import argparse
+import numpy as np
+import os
+import torch
+from torchvision.models import vgg11
+from model_configurations.simple_cnn import CNN
+from model_configurations.mnist_model import MNIST
+
+def define_and_get_arguments(args=sys.argv[1:]):
+    parser = argparse.ArgumentParser(
+        description="Run federated learning using websocket client workers."
+    )
+    parser.add_argument("--batch_size", type=int, default=32, help="batch size of the training")
+    parser.add_argument(
+        "--test_batch_size", type=int, default=128, help="batch size used for the test data"
+    )
+    parser.add_argument(
+        "--training_rounds", type=int, default=40, help="number of federated learning rounds"
+    )
+    parser.add_argument(
+        "--federate_after_n_batches",
+        type=int,
+        default=10,
+        help="number of training steps performed on each remote worker before averaging",
+    )
+    parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
+    parser.add_argument("--cuda", action="store_true", help="use cuda")
+    parser.add_argument("--seed", type=int, default=1, help="seed used for randomization")
+    parser.add_argument("--save_model", action="store_true", help="if set, model will be saved")
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="if set, websocket client workers will be started in verbose mode",
+    )
+    parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+    parser.add_argument("--publicKeys", help="public keys", action="store")
+    parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
+    parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
+    parser.add_argument("--model_config", default="vgg")
+    parser.add_argument("--model_output", default=12)
+    parser.add_argument("--modelpath", default = 'saved_model')
+
+    args = parser.parse_args(args=args)
+    return args
+
+def define_model(model_config, device, modelpath, model_output):
+    model_file = Path(modelpath)
+    test_tensor = torch.zeros([1, 3, 224, 224])
+    if (model_config == 'vgg'):
+       model = vgg11(pretrained = True)
+       model.classifier[6].out_features = model_output
+       print(model.classifier)
+       model.eval()
+       model.to(device)
+       transform = transforms.Compose([
+           transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+       ])
+       test_tensor[0] = transform(test_tensor[0])
+
+    if (model_config == 'cnn'):
+       model = CNN(3, model_output).to(device)
+
+    if (model_config == 'mnist'):
+       model = MNIST().to(device)
+       test_tensor = torch.zeros([1, 1, 28, 28])
+
+    if model_file.is_file():
+       model.load_state_dict(torch.load(modelpath))
+    return model, test_tensor
+
+async def main():
+    #set up environment
+    args = define_and_get_arguments()
+    #os.chdir('./akka-server/Server/')
+    torch.manual_seed(args.seed)
+    print(args)
+    hook = sy.TorchHook(torch)
+    #define participants
+    print(args.participantsjsonlist)
+
+    #define model
+    use_cuda = args.cuda and torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+    model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
+    #for p in model.parameters():
+    #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
+    traced_model = torch.jit.trace(model,  test_tensor.to(device))
+    traced_model.train()
+
+    # extract interRes values
+    interResList = []
+    participants = list(args.participantsjsonlist.keys())
+    participants.sort()
+    for participant in participants:
+        interResList.append(torch.load(pathToResources+"/interRes/"+participant+".pt").numpy())
+    publicKeys = args.publicKeys
+    # TODO: numpy.poly
+
+"""
+    learning_rate = args.lr
+    for curr_round in range(1, args.epochs + 1):
+        learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
+
+        correct_predictions = 0
+        all_predictions = 0
+        traced_model.eval()
+        results = test(worker_test, traced_model, args.batch_size, args.federate_after_n_batches, learning_rate, int(args.model_output))
+        test_loss = []
+        for curr_correct, total_predictions, loss, target_hist, predictions_hist in results:
+            correct_predictions += curr_correct
+            all_predictions += total_predictions
+            test_loss.append(loss)
+            print('Got predictions: \n')
+            print(predictions_hist)
+            print('Expected: \n')
+            print(target_hist)
+
+        print("Currrent accuracy: " + str(correct_predictions/all_predictions))
+        print(test_loss)
+    traced_model.train()
+"""
+    if args.modelpath:
+        torch.save(traced_model.state_dict(), args.modelpath)
