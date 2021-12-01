@@ -35,6 +35,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
     parser.add_argument("--publicKeys", help="public keys", action="store")
+    parser.add_argument("--degree", help="public keys", action="store")
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
@@ -95,7 +96,13 @@ async def main():
     for participant in participants:
         interResList.append(torch.load(pathToResources+"/interRes/"+participant+".pt").numpy())
     publicKeys = args.publicKeys
-    # TODO: numpy.poly
+
+    # calculate aggregated weights
+    aggregatedWeights = interResList[0]
+    for i, x in enumerate(aggregatedWeights):
+        for j, y in enumerate(x):
+            aggregatedWeights[i][j] = np.polyfit(publicKeys, np.array([interRes[i][j] for interRes in interResList]), )
+    model.load_state_dict(aggregatedWeights) # fit the model's structure
 
 """
     learning_rate = args.lr
@@ -121,4 +128,7 @@ async def main():
     traced_model.train()
 """
     if args.modelpath:
-        torch.save(traced_model.state_dict(), args.modelpath)
+        torch.save(model.state_dict(), args.modelpath)
+
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())

@@ -137,6 +137,10 @@ public class Aggregator extends UntypedActor {
         } else if (message instanceof SendInterRes) {
             // save InterRes
             this.numberOfClientsToAwait--;
+            if (numberOfClientsToAwait>0)
+                log.info("Tensor received, "+numberOfClientsToAwait+" tensor"+(numberOfClientsToAwait==1?"s":"")+" left");
+            else
+                log.info("All tensors received");
             byte[] bytes = ((SendInterRes) message).bytes;
             String clientId = ((SendInterRes) message).sender;
             Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".pt"), bytes);
@@ -249,6 +253,7 @@ public class Aggregator extends UntypedActor {
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--publicKeys", this.publics.toString(),
+            "--degree", String.valueOf(this.numberOfClientsToAwait),
             "--epochs", String.valueOf(configuration.epochs),
             "--modelpath", configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,
