@@ -35,6 +35,7 @@ parser.add_argument("--data_file_name", help="name of to data file", action="sto
 parser.add_argument("--target_file_name", help="name of targets file", action="store", default="target.npy")
 parser.add_argument("--data_set_id", type=int, help="id of data set", action="store", default= 1)
 parser.add_argument("--model_config", type=str, help="chosen nn configuration", action="store", default='vgg')
+parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
 
 possible_augmentations = A.Compose(
                             [A.Blur(blur_limit=3), 

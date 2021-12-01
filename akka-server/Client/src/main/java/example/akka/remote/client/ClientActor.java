@@ -1,7 +1,6 @@
 package example.akka.remote.client;
 
 import akka.actor.*;
-import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
@@ -51,11 +50,11 @@ public class ClientActor extends UntypedActor {
 
     private ActorSelection selection;
     private ActorSelection injector;
-    private ActorRef moduleRunner;
-    private ActorRef server;
+    private ActorRef moduleRunner; //M
+    private ActorRef server; //M
 
-    private Map<String, ActorRef> references;
-    private int numberOfClientstoAwait;
+     //M, --> P ->  moved to ClientTunModuleActor
+    private int numberOfClientsToAwait; //M
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -107,31 +106,38 @@ public class ClientActor extends UntypedActor {
             log.info("Received start learning command");
 
             ActorSystem system = getContext().system();
-            Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
-            this.modelConfig = messageWithModel.getModelConfig();
+            Messages.StartLearningProcessCommand castedMessage = (Messages.StartLearningProcessCommand) message;
+            this.modelConfig = castedMessage.getModelConfig();
 
-            // Start learning module
+            // Start learning module MM
             this.moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            this.moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
+            this.moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig, castedMessage.getRoundParticipants()), getSelf());
 
-            ActorRef server = getSender();
+            this.server = getSender();//P
             FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
 
             // Tell server, after 60 sec, that script has been run
             system
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
-        } else if (message instanceof Messages.AreYouAliveQuestion){
+        }
+
+
+        // MM
+        else if (message instanceof Messages.AreYouAliveQuestion){
             log.info("I am alive!");
-            this.server = getSender(); // from here we save the server reference
+            // this.server = getSender(); // from here we save the server reference
             this.server.tell(new Messages.IAmAlive(), getSelf());
-        } else if (message instanceof Messages.ClientDataSpread){
+        }// MM
+        else if (message instanceof Messages.ClientDataSpread){
+            Messages.ClientDataSpread castedMessage = (Messages.ClientDataSpread) message;
             log.info("Passing data");
-            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
-            this.references = ((Messages.ClientDataSpread) message).references;
-            ((Messages.ClientDataSpread) message).references = null; // ClientRunModuleActor will need no actor references
-            this.moduleRunner.tell(message, getSelf());
-        } else if (message instanceof Messages.RValuesReady){
+            this.numberOfClientsToAwait = castedMessage.numberOfClients;
+            this.references = castedMessage.references;
+            castedMessage.references = null; // ClientRunModuleActor will need no actor references
+            this.moduleRunner.tell(castedMessage, getSelf());
+        }//MM
+        else if (message instanceof Messages.RValuesReady){
             // sending R values to other clients
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
@@ -141,20 +147,24 @@ public class ClientActor extends UntypedActor {
                 bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
                 client.getValue().tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
-        } else if (message instanceof Messages.SendRValue){
+        }//MM
+        else if (message instanceof Messages.SendRValue){
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            numberOfClientstoAwait--;
+            numberOfClientsToAwait--;
             byte[] bytes = ((Messages.SendRValue) message).bytes;
             Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
 
-            if (numberOfClientstoAwait==0){
+            if (numberOfClientsToAwait ==0){
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
             }
         }
+
+
+
     }
 
     // Saves file - module
@@ -216,14 +226,5 @@ public class ClientActor extends UntypedActor {
         }
     }
 
-    // Run module message
-    // TODO should be moved to messages
-    public static class RunModule {
-        public RunModule(String moduleFileName, String modelConfig) {
-            this.moduleFileName = moduleFileName;
-            this.modelConfig = modelConfig;
-        }
-        public String moduleFileName;
-        public String modelConfig;
-    }
+
 }

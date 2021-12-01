@@ -6,6 +6,7 @@ import akka.actor.ActorSelection;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import example.akka.remote.shared.Messages;
 
@@ -23,18 +24,26 @@ public class ClientRunModuleActor extends UntypedActor {
 
     private String clientId;
     private int minimum;
-    private Map<String, String> addresses;
-    private Map<String, Integer> ports;
-    private List<Float> publicKeys;
+    private Map<String, String> addresses; // ???? P
+    private Map<String, Integer> ports; // ???? P
+    private List<Float> publicKeys; // ???? P
+
+    private Map<String, Messages.ParticipantData> roundParticipants;
+
+
 
     @Override
     public void onReceive(Object message) throws Exception {
         // Message that says to run the module
-        if (message instanceof ClientActor.RunModule) {
+        if (message instanceof Messages.RunModule) {
             log.info("Received RunModule command");
-            ClientActor.RunModule receivedMessage = (ClientActor.RunModule) message;
+            Messages.RunModule receivedMessage = (Messages.RunModule) message;
             this.runLearning(receivedMessage.moduleFileName, receivedMessage.modelConfig);
         }
+
+
+        // P, already done via  'roundParticipants' field
+
         if (message instanceof Messages.ClientDataSpread){
             this.clientId = ((Messages.ClientDataSpread) message).clientId;
             this.minimum = ((Messages.ClientDataSpread) message).minimum;
@@ -45,6 +54,9 @@ public class ClientRunModuleActor extends UntypedActor {
             this.readRValues();
             getSender().tell(new Messages.RValuesReady(), getSelf());
         }
+
+
+
     }
 
     // Runs module
@@ -53,6 +65,9 @@ public class ClientRunModuleActor extends UntypedActor {
         try {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
+
+            String participantsJson = getParticipantsJson();
+            String tempvar = participantsJson.replace('"', '\'');
 
             // execute scripts with proper parameters
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -68,7 +83,8 @@ public class ClientRunModuleActor extends UntypedActor {
                             "--host", configuration.host,
                             "--port", String.valueOf(configuration.port),
                             "--data_set_id", String.valueOf(configuration.dataSetId),
-                            "--model_config", modelConfig);
+                            "--model_config", modelConfig,
+                            "--participantsjsonlist", tempvar);
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
@@ -76,6 +92,9 @@ public class ClientRunModuleActor extends UntypedActor {
             e.printStackTrace();
         }
     }
+
+    //P, IN PYTHON !!!
+
     private void readRValues(){
         Configuration.ConfigurationDTO configuration;
         try {
@@ -106,4 +125,37 @@ public class ClientRunModuleActor extends UntypedActor {
             e.printStackTrace();
         }
     }
+
+
+
+
+    // Returns participates data as a json
+    private String getParticipantsJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+
+            List<LearningData> listToSerialize = new ArrayList<>();
+            this.roundParticipants.entrySet().stream()
+                    .forEach(pd -> listToSerialize.add(new LearningData(pd.getKey(), pd.getValue().port)));
+
+            String json = mapper.writeValueAsString(listToSerialize);
+            System.out.println("json -> " + json);
+            return json;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    // Class for serializing modules list
+    public class LearningData {
+        public LearningData(String id, int port) {
+            this.id = id;
+            this.port = port;
+        }
+
+        public String id;
+        public int port;
+    }
+
 }

@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,8 @@ public class Messages {
         }
     }
 
+
+    // P , ??? whats that?
     public static class Sum implements Serializable {
         private int first;
         private int second;
@@ -73,6 +76,34 @@ public class Messages {
         }
     }
 
+    // moved to messages, P
+    public static class CheckReadyToRunLearningMessage implements Serializable{
+        public Map<String, ParticipantData> participants;
+        public ActorRef replayTo;
+        public CheckReadyToRunLearningMessage(Map<String, ParticipantData> participants, ActorRef replayTo) {
+            this.participants = participants;
+            this.replayTo = replayTo;
+        }
+    }
+
+    // moved to messages, P
+    public static class RunModule implements Serializable{
+        public RunModule(String moduleFileName, String modelConfig, Map<String, Messages.ParticipantData> roundParticipants) {
+            this.moduleFileName = moduleFileName;
+            this.modelConfig = modelConfig;
+            this.roundParticipants = roundParticipants;
+        }
+        public String moduleFileName;
+        public String modelConfig;
+        public Map<String, ParticipantData> roundParticipants;
+
+
+        public Map<String, ParticipantData> getRoundParticipants() {
+            return roundParticipants;
+        }
+    }
+
+
     public static class InformAggregatorAboutNewParticipant implements Serializable {
         public ActorRef deviceReference;
         public int port;
@@ -88,12 +119,19 @@ public class Messages {
 
     public static class StartLearningProcessCommand implements Serializable {
         public String modelConfig;
-        public StartLearningProcessCommand( String modelConfig) {
+        public Map<String, Messages.ParticipantData> roundParticipants;
+        public StartLearningProcessCommand( String modelConfig, Map<String, ParticipantData> roundParticipants) {
+            this.roundParticipants = roundParticipants;
             this.modelConfig = modelConfig;
          }
 
         public String getModelConfig() {
             return modelConfig;
+        }
+
+
+        public Map<String, ParticipantData> getRoundParticipants() {
+            return roundParticipants;
         }
     }
 
@@ -165,6 +203,26 @@ public class Messages {
         public InstanceType instanceType;
     }
 
+    // Stores information about each participant - same for server and client ,P
+    public static class ParticipantData {
+        public ParticipantData(ActorRef deviceReference, String address, int port) {
+            this.deviceReference = deviceReference;
+            this.moduleStarted = false;
+            this.moduleAlive = false;
+            this.port = port;
+            this.address = address;
+            this.interRes = new ArrayList<>();
+        }
+
+        public ActorRef deviceReference;
+        public boolean moduleStarted;
+        public boolean moduleAlive;
+        public int port;
+        public String address;
+        public List<Float> interRes;
+    }
+
+    // not to use????
     public static class ClientDataSpread implements Serializable {
         public ClientDataSpread(String clientId,
                                 int numberOfClients,

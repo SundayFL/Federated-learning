@@ -1,3 +1,4 @@
+import copy
 import logging
 import argparse
 import re
@@ -107,6 +108,7 @@ async def fit_model_on_worker(
     epochs: int,
 ):
 
+
     train_config = sy.TrainConfig(
             model=traced_model,
             loss_fn=loss_fn,
@@ -117,18 +119,50 @@ async def fit_model_on_worker(
             optimizer="Adam",
             optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
+
+    saved_model = copy.deepcopy(traced_model)
     train_config.send(worker)
     loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
     model = train_config.model_ptr.get().obj
     # to be moved if does not belong here!
-"""
+    """
         W = np.array([module.weights for module in model.modules() if type(module)!=nn.Sequential])
         publicKeys = // how are they accessed? how do we enter websockets?
         privateValues = [random.random() for x in range(m-1)] // what is m-1?
         R = [sum([privateValues[x]*publicKeys[y]**x for x in range(len(privateValues))])+W for y in range(len(publicKeys))]
-"""
+    """
+    # DP
+
+    # getting old weights
+    old_weights = saved_model.state_dict()
+
+    # getting new weights
+    new_weights = model.state_dict()
+
+    weights_incr = copy.deepcopy(new_weights)
+
+    # calculating weights increment
+    weights_incr = setWeights(old_weights, new_weights, weights_incr, 100)
+
+    # updating weights' increment in returned model
+    model.state_dict = weights_incr
+
+    # returning updated weights
     return worker.id, model, loss
 
+# used in differential privacy
+def setWeights(list_old, list_new, list_incr, threshold):
+    for i, x in enumerate(list_old):
+        if np.isscalar(x):
+            list_incr[i] = list_new[i] - list_old[i]
+            list_incr[i] = list_incr[i] + random.gauss(0, 1)
+            if list_incr[i] > threshold:
+                list_incr[i] = threshold
+            if list_incr[i] < -threshold:
+                list_incr[i] = -threshold
+        else:
+            list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], threshold)
+    return list_incr
 
 def define_model(model_config, device, modelpath, model_output):
     model_file = Path(modelpath)

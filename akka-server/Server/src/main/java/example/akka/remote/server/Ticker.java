@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
+import example.akka.remote.shared.Messages;
 
 import java.io.IOException;
 
@@ -16,7 +17,7 @@ class Ticker extends AbstractActor {
         Configuration.ConfigurationDTO configuration = Configuration.get();
 
         receive(ReceiveBuilder.
-                match(Aggregator.CheckReadyToRunLearningMessage.class, s -> {
+                match( Messages.CheckReadyToRunLearningMessage.class, s -> {
                     log.info("Received CheckReadyToRunLearningMessage message");
                     log.info("Ticker: numberOfDevices: " + s.participants.size());
                     s.replayTo.tell(new Aggregator.ReadyToRunLearningMessageResponse
