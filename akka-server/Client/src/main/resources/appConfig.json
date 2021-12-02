@@ -7,7 +7,7 @@
   "datafilename": "data_equal_pt.npy",
   "targetfilename": "target_equal_pt.npy",
   "epochs": 50,
-  "minimumNumberOfDevices": 3,
+  "modelConfig": "mnist",
   "id": "alice",
   "host": "localhost",
   "port": "8777",
@@ -16,5 +16,5 @@
   "pathToModules": "./src/main/modules/learning/",
   "pathToModulesList": "./src/main/modules/learning/modules.json",
   "pathToClientLog": "./src/main/modules/learning/client_log.py",
-  "verbose": "true"
+  "pathToInterRes": "./src/main/python/interres.py"
 }

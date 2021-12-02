@@ -17,7 +17,7 @@ class Ticker extends AbstractActor {
         Configuration.ConfigurationDTO configuration = Configuration.get();
 
         receive(ReceiveBuilder.
-                match( Messages.CheckReadyToRunLearningMessage.class, s -> {
+                match(Aggregator.CheckReadyToRunLearningMessage.class, s -> {
                     log.info("Received CheckReadyToRunLearningMessage message");
                     log.info("Ticker: numberOfDevices: " + s.participants.size());
                     s.replayTo.tell(new Aggregator.ReadyToRunLearningMessageResponse

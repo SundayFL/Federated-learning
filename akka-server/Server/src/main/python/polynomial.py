@@ -1,10 +1,16 @@
 import argparse
 import numpy as np
 import os
+import sys
+import asyncio
 import torch
+import json
+from copy import deepcopy
 from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
+from pathlib import Path
+import syft as sy
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
@@ -34,6 +40,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
         help="if set, websocket client workers will be started in verbose mode",
     )
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+    parser.add_argument("--pathToResources", help="where to store", action="store")
     parser.add_argument("--publicKeys", help="public keys", action="store")
     parser.add_argument("--degree", help="public keys", action="store")
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
@@ -90,21 +97,30 @@ async def main():
     traced_model.train()
 
     # extract interRes values
-    interResList = []
-    participants = list(args.participantsjsonlist.keys())
-    participants.sort()
-    for participant in participants:
-        interResList.append(torch.load(pathToResources+"/interRes/"+participant+".pt").numpy())
-    publicKeys = args.publicKeys
+    publicKeys = json.loads(args.publicKeys.replace("=", ":"))
+    interResList = {}
+    for participant in publicKeys:
+        interResList[participant] = {'publicKey': publicKeys[participant], 'weights': torch.load(args.pathToResources+"/interRes/"+participant+".pt")}
 
     # calculate aggregated weights
-    aggregatedWeights = interResList[0]
-    for i, x in enumerate(aggregatedWeights):
-        for j, y in enumerate(x):
-            aggregatedWeights[i][j] = np.polyfit(publicKeys, np.array([interRes[i][j] for interRes in interResList]), )
+    aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
+    def setWeights(list0, lists, keys): # recurrent calculations
+        for i, x in enumerate(list0):
+            if np.isscalar(x):
+                list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))/len(interResList)
+            else:
+                list0[i] = setWeights(list0[i], [list1[i] for list1 in lists], keys)
+        return list0
+    for tens in aggregatedWeights:
+        aggregatedWeights[tens] = setWeights(
+            np.array(aggregatedWeights[tens]),
+            np.array([np.array(interResList[interRes]['weights'][tens]) for interRes in interResList]),
+            np.array([interResList[interRes]['publicKey'] for interRes in interResList])
+        )
+        aggregatedWeights[tens] = torch.tensor(aggregatedWeights[tens])
     model.load_state_dict(aggregatedWeights) # fit the model's structure
 
-"""
+    """
     learning_rate = args.lr
     for curr_round in range(1, args.epochs + 1):
         learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
@@ -126,7 +142,8 @@ async def main():
         print("Currrent accuracy: " + str(correct_predictions/all_predictions))
         print(test_loss)
     traced_model.train()
-"""
+    """
+
     if args.modelpath:
         torch.save(model.state_dict(), args.modelpath)
 

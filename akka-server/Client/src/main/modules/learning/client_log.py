@@ -89,8 +89,9 @@ def define_and_get_arguments(args=sys.argv[1:]):
         "--port", "-p", type=int, help="port number of the websocket server worker, e.g. --port 8777"
     )
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
+    parser.add_argument("--model_config", default="vgg")
+    parser.add_argument("--model_output", default="12")
     parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
-    parser.add_argument("--foreign_ids", help="foreign ids to save R values", action="store")
     parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
 
@@ -102,12 +103,10 @@ async def fit_model_on_worker(
     worker: websocket_client.WebsocketClientWorker,
     traced_model: torch.jit.ScriptModule,
     batch_size: int,
-    curr_round: int,
     max_nr_batches: int,
     lr: float,
     epochs: int,
 ):
-
 
     train_config = sy.TrainConfig(
             model=traced_model,
@@ -120,21 +119,13 @@ async def fit_model_on_worker(
             optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
 
-    saved_model = copy.deepcopy(traced_model)
     train_config.send(worker)
     loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
     model = train_config.model_ptr.get().obj
-    # to be moved if does not belong here!
-    """
-        W = np.array([module.weights for module in model.modules() if type(module)!=nn.Sequential])
-        publicKeys = // how are they accessed? how do we enter websockets?
-        privateValues = [random.random() for x in range(m-1)] // what is m-1?
-        R = [sum([privateValues[x]*publicKeys[y]**x for x in range(len(privateValues))])+W for y in range(len(publicKeys))]
-    """
-    # DP
+    # differential privacy
 
     # getting old weights
-    old_weights = saved_model.state_dict()
+    old_weights = traced_model.state_dict()
 
     # getting new weights
     new_weights = model.state_dict()
@@ -142,10 +133,16 @@ async def fit_model_on_worker(
     weights_incr = copy.deepcopy(new_weights)
 
     # calculating weights increment
-    weights_incr = setWeights(old_weights, new_weights, weights_incr, 100)
+    for layer in weights_incr:
+        weights_incr[layer] = torch.tensor(setWeights(
+            np.array(old_weights[layer]),
+            np.array(new_weights[layer]),
+            np.array(weights_incr[layer]),
+            100
+        ))
 
     # updating weights' increment in returned model
-    model.state_dict = weights_incr
+    model.load_state_dict(weights_incr)
 
     # returning updated weights
     return worker.id, model, loss
@@ -164,8 +161,7 @@ def setWeights(list_old, list_new, list_incr, threshold):
             list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], threshold)
     return list_incr
 
-def define_model(model_config, device, modelpath, model_output):
-    model_file = Path(modelpath)
+def define_model(model_config, device, model_output):
     test_tensor = torch.zeros([1, 3, 224, 224])
     if (model_config == 'vgg'):
         model = vgg11(pretrained = True)
@@ -184,9 +180,6 @@ def define_model(model_config, device, modelpath, model_output):
     if (model_config == 'mnist'):
         model = MNIST().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
-
-    if model_file.is_file():
-        model.load_state_dict(torch.load(modelpath))
     return model, test_tensor
 
 def define_participant(id, port, **kwargs_websocket):
@@ -200,6 +193,8 @@ async def main():
     #os.chdir('./akka-server/Client/')
     torch.manual_seed(args.seed)
     print(args)
+    if not os.path.exists(args.pathToResources+args.id):
+        os.mkdir(args.pathToResources+args.id)
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
@@ -208,37 +203,39 @@ async def main():
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
+    model, test_tensor = define_model(args.model_config, device, int(args.model_output))
     #for p in model.parameters():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
     traced_model = torch.jit.trace(model,  test_tensor.to(device))
     traced_model.train()
 
-    # modify the following to get separate models
-
     learning_rate = args.lr
-    worker_id, model, loss_value = fit_model_on_worker(
+    worker_id, model, loss_value = await fit_model_on_worker(
         worker=worker_instance,
         traced_model=traced_model,
         batch_size=args.batch_size,
-        curr_round=curr_round,
         max_nr_batches=args.federate_after_n_batches,
         lr=learning_rate,
         epochs=args.epochs
     )
 
     # get weights and make R values
-    if args.model_config != 'cnn' and args.model_config != 'mnist':
+    """if args.model_config != 'cnn' and args.model_config != 'mnist':
         weights = model.classifier.state_dict()
     else:
-        weights = model.fc2.weight.data
-    weights = torch.tensor(weights) # how about tensors?
-    polynomial = np.array([0 for n in range(public_keys)])
-    for m in range(minimum):
-        polynomial = np.multiply(polynomial + random.random(), args.public_keys)
-    rValues = []
-    for n in range(public_keys):
-        np.save(pathToResources+id+"/"+id+"_"+foreign_ids[n]+".pt", torch.tensor(weights+polynomial[n]))
+        weights = model.fc2.weight.data"""
+    weights = model.state_dict()
+    polynomial = {}
+    public_keys = json.loads(args.public_keys.replace('=', ':'))
+    for client in public_keys:
+        polynomial[client] = 0
+    for client in public_keys:
+        for m in range(int(args.minimum)):
+            polynomial[client] = (polynomial[client]+random.random())*public_keys[client]
+    for w in weights:
+        weights[w] = weights[w]+polynomial[client]
+    for client in public_keys:
+        torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 
 if __name__ == "__main__":

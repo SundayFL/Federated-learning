@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import example.akka.remote.shared.LoggingActor;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
+import scala.util.control.TailCalls;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,7 +58,7 @@ public class Aggregator extends UntypedActor {
     private int numberOfClientsToAwait;
 
     // Public keys
-    private List<Float> publics;
+    private Map<String, Float> publics;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -73,16 +74,17 @@ public class Aggregator extends UntypedActor {
             ActorRef deviceReference = messageCasted.deviceReference;
             log.info("Path: " + deviceReference.path());
             this.roundParticipants.put(messageCasted.clientId,
-                    new Messages.ParticipantData(deviceReference, messageCasted.address, messageCasted.port));
+                    new ParticipantData(deviceReference, messageCasted.address, messageCasted.port));
         } else if (message instanceof ReadyToRunLearningMessageResponse) {
             // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
                 this.checkReadyToRunLearning.cancel();
                 for (ParticipantData participant : this.roundParticipants.values()) {
-                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig, roundParticipants), getSelf());
+                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig), getSelf());
                 }
             }
         } else if (message instanceof StartLearningModule) {
+            this.numberOfClientsToAwait = roundParticipants.size();
             // Message when any of participants started their modules and server can start his own learning module
             // Updates corresponding device entity
             ActorRef sender = getSender();
@@ -127,22 +129,25 @@ public class Aggregator extends UntypedActor {
                     .stream()
                     .allMatch(participantData -> participantData.moduleAlive);
 
-            log.info("Found on list " + (foundOnList != null));
-            log.info("Everyone alive " + allParticipantsAlive);
+            log.info("Found on list" + (foundOnList != null));
+            log.info("Everyone alive" + allParticipantsAlive);
 
             if (allParticipantsAlive) {
                 log.info("Spreading data");
-                this.exchange(roundParticipants.size(), configuration.minimumNumberOfDevices - 1);
+                this.exchange(configuration.minimumNumberOfDevices - 1);
             }
         } else if (message instanceof SendInterRes) {
             // save InterRes
             this.numberOfClientsToAwait--;
             if (numberOfClientsToAwait>0)
-                log.info("Tensor received, "+numberOfClientsToAwait+" tensor"+(numberOfClientsToAwait==1?"s":"")+" left");
+                log.info("Tensor received, "+numberOfClientsToAwait+" tensor"+(numberOfClientsToAwait==1?"":"s")+" left");
             else
                 log.info("All tensors received");
             byte[] bytes = ((SendInterRes) message).bytes;
             String clientId = ((SendInterRes) message).sender;
+            File dir = new File(configuration.pathToResources+"/interRes");
+            boolean make;
+            if (!dir.exists()) make = dir.mkdir();
             Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".pt"), bytes);
 
             if (numberOfClientsToAwait==0) {
@@ -157,41 +162,47 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    private void exchange(int numberOfKeys, int minimum) {
+    private void exchange(int minimum) {
         int numberOfParticipants = roundParticipants.size();
-        Map<String, String> addresses = roundParticipants
-                .entrySet()
-                .stream()
-                .collect( Collectors.toMap( Map.Entry::getKey,
-                        participant -> participant.getValue().address ) );
-        Map<String, Integer> ports = roundParticipants
-                .entrySet()
-                .stream()
-                .collect( Collectors.toMap( Map.Entry::getKey,
-                        participant -> participant.getValue().port ) );
-        Map<String, ActorRef> references = roundParticipants
-                .entrySet()
-                .stream()
-                .collect( Collectors.toMap( Map.Entry::getKey,
-                        participant -> participant.getValue().deviceReference ) );
-        List<Float> publicKeys = new ArrayList<>();
+        List<String> ids = new ArrayList<>(roundParticipants.keySet());
         Random keyGeneration = new Random();
-        for ( int k = 0; k < numberOfKeys; k++ ) publicKeys.add( keyGeneration.nextFloat() );
-        this.publics=publicKeys;
+        Map<String, Messages.ContactData> contactMap = roundParticipants
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        participant -> new Messages.ContactData(participant.getValue().deviceReference, keyGeneration.nextFloat())));
 
-        for ( Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet() )
-            participant.getValue().deviceReference.tell( new ClientDataSpread(
+        this.publics = contactMap
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(participant -> '"'+participant.getKey()+'"', participant -> participant.getValue().publicKey));
+        for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
+            participant.getValue().deviceReference.tell(new ClientDataSpread(
                     participant.getKey(),
                     numberOfParticipants,
                     minimum,
-                    addresses,
-                    ports,
-                    references,
-                    publicKeys
-            ), getSelf() );
+                    contactMap
+            ), getSelf());
     }
 
+    // Stores information about each participant
+    private static class ParticipantData {
+        private ParticipantData(ActorRef deviceReference, String address, int port) {
+            this.deviceReference = deviceReference;
+            this.moduleStarted = false;
+            this.moduleAlive = false;
+            this.port = port;
+            this.address = address;
+            this.interRes = new ArrayList<>();
+        }
 
+        public ActorRef deviceReference;
+        public boolean moduleStarted;
+        public boolean moduleAlive;
+        public int port;
+        public String address;
+        public List<Float> interRes;
+    }
 
     // Starts new round
     private void startRound() {
@@ -229,6 +240,7 @@ public class Aggregator extends UntypedActor {
 
         String participantsJson = getParticipantsJson();
         String tempvar = participantsJson.replace('"', '\'');
+
         // Executing module script as a command
         processBuilder
             .inheritIO()
@@ -259,7 +271,15 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-
+    // TODO move to messages?
+    public static class CheckReadyToRunLearningMessage {
+        public Map<String, ParticipantData> participants;
+        public ActorRef replayTo;
+        public CheckReadyToRunLearningMessage(Map<String, ParticipantData> participants, ActorRef replayTo) {
+            this.participants = participants;
+            this.replayTo = replayTo;
+        }
+    }
 
     public static class ReadyToRunLearningMessageResponse {
         public Boolean canStart;

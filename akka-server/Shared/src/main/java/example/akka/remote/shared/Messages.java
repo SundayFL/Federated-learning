@@ -44,8 +44,6 @@ public class Messages {
         }
     }
 
-
-    // P , ??? whats that?
     public static class Sum implements Serializable {
         private int first;
         private int second;
@@ -76,34 +74,6 @@ public class Messages {
         }
     }
 
-    // moved to messages, P
-    public static class CheckReadyToRunLearningMessage implements Serializable{
-        public Map<String, ParticipantData> participants;
-        public ActorRef replayTo;
-        public CheckReadyToRunLearningMessage(Map<String, ParticipantData> participants, ActorRef replayTo) {
-            this.participants = participants;
-            this.replayTo = replayTo;
-        }
-    }
-
-    // moved to messages, P
-    public static class RunModule implements Serializable{
-        public RunModule(String moduleFileName, String modelConfig, Map<String, Messages.ParticipantData> roundParticipants) {
-            this.moduleFileName = moduleFileName;
-            this.modelConfig = modelConfig;
-            this.roundParticipants = roundParticipants;
-        }
-        public String moduleFileName;
-        public String modelConfig;
-        public Map<String, ParticipantData> roundParticipants;
-
-
-        public Map<String, ParticipantData> getRoundParticipants() {
-            return roundParticipants;
-        }
-    }
-
-
     public static class InformAggregatorAboutNewParticipant implements Serializable {
         public ActorRef deviceReference;
         public int port;
@@ -119,19 +89,12 @@ public class Messages {
 
     public static class StartLearningProcessCommand implements Serializable {
         public String modelConfig;
-        public Map<String, Messages.ParticipantData> roundParticipants;
-        public StartLearningProcessCommand( String modelConfig, Map<String, ParticipantData> roundParticipants) {
-            this.roundParticipants = roundParticipants;
+        public StartLearningProcessCommand( String modelConfig) {
             this.modelConfig = modelConfig;
          }
 
         public String getModelConfig() {
             return modelConfig;
-        }
-
-
-        public Map<String, ParticipantData> getRoundParticipants() {
-            return roundParticipants;
         }
     }
 
@@ -203,50 +166,30 @@ public class Messages {
         public InstanceType instanceType;
     }
 
-    // Stores information about each participant - same for server and client ,P
-    public static class ParticipantData {
-        public ParticipantData(ActorRef deviceReference, String address, int port) {
-            this.deviceReference = deviceReference;
-            this.moduleStarted = false;
-            this.moduleAlive = false;
-            this.port = port;
-            this.address = address;
-            this.interRes = new ArrayList<>();
+    public static class ContactData implements Serializable {
+        public ContactData(ActorRef reference, Float publicKey){
+            this.reference=reference;
+            this.publicKey=publicKey;
         }
-
-        public ActorRef deviceReference;
-        public boolean moduleStarted;
-        public boolean moduleAlive;
-        public int port;
-        public String address;
-        public List<Float> interRes;
+        public ActorRef reference;
+        public Float publicKey;
     }
 
-    // not to use????
     public static class ClientDataSpread implements Serializable {
         public ClientDataSpread(String clientId,
                                 int numberOfClients,
                                 int minimum,
-                                Map<String, String> addresses,
-                                Map<String, Integer> ports,
-                                Map<String, ActorRef> references,
-                                List<Float> publicKeys){
+                                Map<String, ContactData> contactMap){
             this.clientId = clientId;
             this.numberOfClients = numberOfClients;
             this.minimum = minimum;
-            this.addresses = addresses;
-            this.ports = ports;
-            this.references = references;
-            this.publicKeys = publicKeys;
+            this.contactMap = contactMap;
         }
 
         public String clientId;
         public int numberOfClients;
         public int minimum;
-        public Map<String, String> addresses;
-        public Map<String, Integer> ports;
-        public Map<String, ActorRef> references;
-        public List<Float> publicKeys;
+        public Map<String, ContactData> contactMap;
     }
 
     public static class AreYouAliveQuestion implements Serializable { }
