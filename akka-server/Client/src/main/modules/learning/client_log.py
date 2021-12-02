@@ -122,7 +122,9 @@ async def fit_model_on_worker(
     train_config.send(worker)
     loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
     model = train_config.model_ptr.get().obj
-    # differential privacy
+
+
+    # Differential Privacy
 
     # getting old weights
     old_weights = traced_model.state_dict()
@@ -138,7 +140,7 @@ async def fit_model_on_worker(
             np.array(old_weights[layer]),
             np.array(new_weights[layer]),
             np.array(weights_incr[layer]),
-            100
+            0.2
         ))
 
     # updating weights' increment in returned model
@@ -153,10 +155,10 @@ def setWeights(list_old, list_new, list_incr, threshold):
         if np.isscalar(x):
             list_incr[i] = list_new[i] - list_old[i]
             list_incr[i] = list_incr[i] + random.gauss(0, 1)
-            if list_incr[i] > threshold:
-                list_incr[i] = threshold
-            if list_incr[i] < -threshold:
-                list_incr[i] = -threshold
+            if list_incr[i] > list_old[i]*threshold:
+                list_incr[i] = list_old[i]*threshold
+            elif list_incr[i] < -list_old[i]*threshold:
+                list_incr[i] = -list_old[i]*threshold
         else:
             list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], threshold)
     return list_incr
