@@ -11,6 +11,7 @@ from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from pathlib import Path
 import syft as sy
+from torchvision import datasets, transforms
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(

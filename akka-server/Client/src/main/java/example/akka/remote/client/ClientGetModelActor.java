@@ -53,8 +53,7 @@ public class ClientGetModelActor extends UntypedActor {
                             "--minimum", String.valueOf(this.minimum),
                             "--pathToResources", configuration.pathToResources,
                             "--model_config", configuration.modelConfig,
-                            "--epochs", String.valueOf(configuration.epochs),
-                            "--save_model", configuration.saveModel?"True":"False");
+                            "--epochs", String.valueOf(configuration.epochs));
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

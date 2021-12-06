@@ -11,7 +11,7 @@ from custom_dataset import CustomDataset
 from torch.utils.data import Dataset, DataLoader
 import syft as sy
 import numpy as np
-from torchvision import  transforms
+from torchvision import transforms
 from PIL import Image
 # Arguments
 parser = argparse.ArgumentParser(description="Run websocket server worker.")
@@ -42,7 +42,7 @@ possible_augmentations = A.Compose(
                             A.GridDistortion(), 
                             A.OpticalDistortion(),
                             A.RandomRotate90(), 
-                            A.HorizontalFlip(0.2) , 
+                            A.HorizontalFlip(0.2),
                             A.GaussNoise(),
                             A.Sharpen()])
 
@@ -52,7 +52,7 @@ def augument_classes(data, target, mean_entries_per_class):
     entries_to_generate = int(mean_entries_per_class - len(target))
     for i in range(entries_to_generate):
         ind = np.random.choice(list(range(0, len(target))))
-        new_entry =  Image.fromarray(np.uint8(possible_augmentations(image=np.array(data[ind]))['image']))
+        new_entry = Image.fromarray(np.uint8(possible_augmentations(image=np.array(data[ind]))['image']))
         new_entries.append(new_entry)
         new_targets.append(target[0])
     return new_entries, new_targets
@@ -112,9 +112,9 @@ def main(details_dict, **kwargs):  # pragma: no cover
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
     transformation_seq = get_transformation_seq(details_dict["model_config"])
     train_base = CustomDataset(imported_data=dataset, 
-     transform = transformation_seq)
+    transform = transformation_seq)
     train_base.targets = th.tensor(train_base.targets, dtype = th.int64)
-    #check if tensors have correct dims
+    # check if tensors have correct dims
     sizes = list(map(np.shape, train_base.data))
     print(sizes[0])
 
