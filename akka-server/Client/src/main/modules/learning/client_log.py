@@ -146,6 +146,8 @@ async def fit_model_on_worker(
     # updating weights' increment in returned model
     model.load_state_dict(weights_incr)
 
+    print("Differential privacy enabled")
+
     # returning updated weights
     return worker.id, model, loss
 
@@ -227,16 +229,21 @@ async def main():
     else:
         weights = model.fc2.weight.data"""
     weights = model.state_dict()
+    if args.save_model:
+        torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
     polynomial = {}
     public_keys = json.loads(args.public_keys.replace('=', ':'))
     for client in public_keys:
         polynomial[client] = 0
+    private_keys = []
+    for m in range(int(args.minimum)):
+        private_keys.append(random.random())
     for client in public_keys:
+        weights = copy.deepcopy(model.state_dict())
         for m in range(int(args.minimum)):
-            polynomial[client] = (polynomial[client]+random.random())*public_keys[client]
-    for w in weights:
-        weights[w] = weights[w]+polynomial[client]
-    for client in public_keys:
+            polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
+        for w in weights:
+            weights[w] = weights[w]+polynomial[client]
         torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 

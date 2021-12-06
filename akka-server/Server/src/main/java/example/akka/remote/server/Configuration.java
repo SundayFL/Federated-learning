@@ -36,6 +36,7 @@ public class Configuration {
     public static class ConfigurationDTO {
         public int minimumNumberOfDevices;
         public String learningTaskId;
+        public String serverModuleFilePathSA;
         public String serverModuleFilePath;
         public String testDataPath;
         public String pathToResources;

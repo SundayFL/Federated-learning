@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -60,6 +61,12 @@ public class Aggregator extends UntypedActor {
     // Public keys
     private Map<String, Float> publics;
 
+    // Time measurement
+    Instant start, finish;
+
+    // Enable secure aggregation
+    boolean secureAgg = true;
+
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
@@ -79,6 +86,7 @@ public class Aggregator extends UntypedActor {
             // Tell devices to run
             if (((ReadyToRunLearningMessageResponse) message).canStart) {
                 this.checkReadyToRunLearning.cancel();
+                start = Instant.now();
                 for (ParticipantData participant : this.roundParticipants.values()) {
                     participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig), getSelf());
                 }
@@ -110,8 +118,17 @@ public class Aggregator extends UntypedActor {
             log.info("All participants started module" + allParticipantsStartedModule);
 
             if (allParticipantsStartedModule)
-                for (ParticipantData participant : this.roundParticipants.values())
+                if (secureAgg) for (ParticipantData participant : this.roundParticipants.values())
                     participant.deviceReference.tell(new AreYouAliveQuestion(), getSelf());
+                else {
+                    log.info("Run learning");
+                    this.runLearning();
+                    log.info("Round ended");
+                    finish = Instant.now();
+                    float timeOfLearning = (float) (Duration.between(start, finish).toMillis()/1000.0);
+                    log.info("Time of learning round: "+timeOfLearning);
+                    this.coordinator.tell(new RoundEnded(), getSelf());
+                }
         } else if (message instanceof IAmAlive) {
             // Message sent at the beginning of learning, indicating that the sender is alive
             ActorRef sender = getSender();
@@ -155,6 +172,9 @@ public class Aggregator extends UntypedActor {
                 log.info("Run learning");
                 this.runLearning();
                 log.info("Round ended");
+                finish = Instant.now();
+                float timeOfLearning = (float) (Duration.between(start, finish).toMillis()/1000.0);
+                log.info("Time of learning round: "+timeOfLearning);
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
         } else {
@@ -217,7 +237,7 @@ public class Aggregator extends UntypedActor {
         }
 
         // Event that checks if minimum participants joined current round
-        FiniteDuration duration =  new FiniteDuration(60, TimeUnit.SECONDS);
+        FiniteDuration duration =  new FiniteDuration(10, TimeUnit.SECONDS);
         this.checkReadyToRunLearning = system
             .scheduler()
             .schedule(
@@ -244,7 +264,7 @@ public class Aggregator extends UntypedActor {
         // Executing module script as a command
         processBuilder
             .inheritIO()
-            .command("python", configuration.serverModuleFilePath,
+            .command("python", secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--publicKeys", this.publics.toString(),

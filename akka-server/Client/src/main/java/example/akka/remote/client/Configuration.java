@@ -78,6 +78,8 @@ public class Configuration {
         public String pathToInterRes;
         public String modelConfig;
         public int dataSetId;
+
+        public boolean saveModel;
     }
 }
 

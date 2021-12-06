@@ -114,9 +114,9 @@ public class ClientActor extends UntypedActor {
             moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
-            FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
+            FiniteDuration delay =  new FiniteDuration(10, TimeUnit.SECONDS);
 
-            // Tell server, after 10 sec, that script has been run
+            // Tell server, after 60 sec, that script has been run
             system
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());

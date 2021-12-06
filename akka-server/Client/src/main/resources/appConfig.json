@@ -16,5 +16,6 @@
   "pathToModules": "./src/main/modules/learning/",
   "pathToModulesList": "./src/main/modules/learning/modules.json",
   "pathToClientLog": "./src/main/modules/learning/client_log.py",
-  "pathToInterRes": "./src/main/python/interres.py"
+  "pathToInterRes": "./src/main/python/interres.py",
+  "save_model": "true"
 }
