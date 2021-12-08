@@ -163,7 +163,7 @@ public class ClientActor extends UntypedActor {
     }
 
     // Saves file - module
-    private void SaveFile(Messages.GetModuleResponse result) {
+    public void SaveFile(Messages.GetModuleResponse result) {
         try (FileOutputStream fos = new FileOutputStream(pathToModules + result.fileName)) {
             fos.write(result.content);
         } catch (Exception e) {
@@ -172,7 +172,7 @@ public class ClientActor extends UntypedActor {
         }
     }
 
-    private void calculateInterRes(){
+    public void calculateInterRes(){
         log.info("Calculation");
         Configuration.ConfigurationDTO configuration;
         try {
@@ -197,7 +197,7 @@ public class ClientActor extends UntypedActor {
     }
 
     // Finds module that meets requirements
-    private Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
+    public Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
         try {
             Configuration configurationHandler = new Configuration();
             Configuration.ConfigurationDTO configuration = configurationHandler.get();
