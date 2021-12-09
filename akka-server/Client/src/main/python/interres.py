@@ -26,7 +26,7 @@ def main():
     filelist = []
     with os.scandir(pathToResources+id) as dirs:
         for entry in dirs:
-            if entry.name != (id+"_"+id+".npy") and re.search(".*\_"+id+".pt", entry.name):
+            if entry.name != (id+"_"+id+".pt") and re.search(".*\_"+id+".pt", entry.name):
                 filelist.append(entry.name)
     for R in filelist:
         nextR = torch.load(pathToResources+"/"+id+"/"+R)

@@ -12,6 +12,8 @@ from model_configurations.mnist_model import MNIST
 from pathlib import Path
 import syft as sy
 from torchvision import datasets, transforms
+import warnings
+warnings.simplefilter("ignore", np.RankWarning)
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
@@ -105,21 +107,23 @@ async def main():
 
     # calculate aggregated weights
     aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
-    def setWeights(list0, lists, keys): # recurrent calculations
+
+    def setWeights(list0, lists, keys):  # recurrent calculations
         for i, x in enumerate(list0):
             if np.isscalar(x):
-                list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))/len(interResList)
+                list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))[-1]/len(interResList)
             else:
                 list0[i] = setWeights(list0[i], [list1[i] for list1 in lists], keys)
         return list0
-    for tens in aggregatedWeights:
-        aggregatedWeights[tens] = setWeights(
-            np.array(aggregatedWeights[tens]),
-            np.array([np.array(interResList[interRes]['weights'][tens]) for interRes in interResList]),
+
+    for weighttensor in aggregatedWeights:
+        aggregatedWeights[weighttensor] = setWeights(
+            np.array(aggregatedWeights[weighttensor]),
+            np.array([np.array(interResList[interRes]['weights'][weighttensor]) for interRes in interResList]),
             np.array([interResList[interRes]['publicKey'] for interRes in interResList])
         )
-        aggregatedWeights[tens] = torch.tensor(aggregatedWeights[tens])
-    model.load_state_dict(aggregatedWeights) # fit the model's structure
+        aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
+    model.load_state_dict(aggregatedWeights)  # fit the model's structure
 
     """
     learning_rate = args.lr
