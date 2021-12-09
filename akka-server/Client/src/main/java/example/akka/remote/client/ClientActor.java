@@ -159,6 +159,8 @@ public class ClientActor extends UntypedActor {
             }
         } else if (message instanceof Messages.SendRValue){
             clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
+            log.info(clientsFromWhomWeReceivedRValues.toString());
+            log.info(String.valueOf(clientsFromWhomWeReceivedRValues.size()));
 
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();

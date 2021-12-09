@@ -289,7 +289,7 @@ public class Aggregator extends UntypedActor {
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--publicKeys", configuration.secureAgg?this.publics.toString():"",
-            "--degree", String.valueOf(this.numberOfClientsToAwait),
+            "--degree", String.valueOf(this.roundParticipants.size()),
             "--epochs", String.valueOf(configuration.epochs),
             "--modelpath", configuration.secureAgg?configuration.savedModelPathSA:configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,

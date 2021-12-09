@@ -236,8 +236,6 @@ async def main():
     weights = model.state_dict()
     if args.save_model:
         torch.save(weights, args.pathToResources+args.id+"/saved_model")
-    else:
-        print(str(args.save_model)+": model not saved")
     polynomial = {}
     public_keys = json.loads(args.public_keys.replace('=', ':'))
     for client in public_keys:
@@ -246,7 +244,7 @@ async def main():
     for m in range(int(args.minimum)):
         private_keys.append(random.random())
     for client in public_keys:
-        weights = copy.deepcopy(model.state_dict())
+        weights = model.state_dict()
         for m in range(int(args.minimum)):
             polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
         for w in weights:
