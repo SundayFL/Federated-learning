@@ -134,7 +134,7 @@ public class Aggregator extends UntypedActor {
                     this.coordinator.tell(new RoundEnded(), getSelf());
                 }
         } else if (message instanceof IAmAlive) {
-            log.info( "RECEIVED I AM ALIVED" );
+            log.info( "Received IAmAlive" );
             // Message sent at the beginning of learning, indicating that the sender is alive
             ActorRef sender = getSender();
             ParticipantData foundOnList = roundParticipants
@@ -156,7 +156,7 @@ public class Aggregator extends UntypedActor {
             log.info("Everyone alive {}", allParticipantsAlive);
 
             if (allParticipantsAlive) { // everybody is alive
-                log.info( "ALL PARTICIPANTS ALIVE" );
+                log.info( "Everyone alive!" );
                 log.info("Spreading data");
                 this.exchange(configuration.minimumNumberOfDevices - 1);
                 // spreading references to let clients exchange data
@@ -204,7 +204,7 @@ public class Aggregator extends UntypedActor {
         Random keyGeneration = new Random();
 
         // participants of the round with their devices' references and public keys
-        // public keys are being freshly generated
+        // public keys are generated right here
         Map<String, Messages.ContactData> contactMap = roundParticipants
                 .entrySet()
                 .stream()
@@ -213,6 +213,7 @@ public class Aggregator extends UntypedActor {
 
         // keep public keys in a map for later re-use
         String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
+        // Windows and Linux handle parsing maps differently when it comes to quotation marks
         this.publics = contactMap
                 .entrySet()
                 .stream()

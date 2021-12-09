@@ -128,7 +128,7 @@ public class ClientActor extends UntypedActor {
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(10, TimeUnit.SECONDS);
 
-            // Tell server, after 60 sec, that script has been run
+            // Tell server, after 10 sec, that script has been run
             system
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
@@ -171,6 +171,7 @@ public class ClientActor extends UntypedActor {
                 client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
         } else if (message instanceof Messages.SendRValue){
+            // who has sent the values so far?
             clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
             log.info(clientsFromWhomWeReceivedRValues.toString());
             log.info(String.valueOf(clientsFromWhomWeReceivedRValues.size()));
@@ -180,7 +181,7 @@ public class ClientActor extends UntypedActor {
             configuration = configurationHandler.get();
             log.info("Received R value from "+((Messages.SendRValue) message).sender);
             log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
-            // save the R value
+            // retrieve and save the R value
             byte[] bytes = ((Messages.SendRValue) message).bytes;
             Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
 

@@ -112,6 +112,7 @@ async def main():
         for i, x in enumerate(list0):
             if np.isscalar(x):
                 list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))[-1]/len(interResList)
+                # polynomial fit
             else:
                 list0[i] = setWeights(list0[i], [list1[i] for list1 in lists], keys)
         return list0
@@ -125,6 +126,7 @@ async def main():
         aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
     model.load_state_dict(aggregatedWeights)  # fit the model's structure
 
+    # model testing; to be brought back later
     """
     learning_rate = args.lr
     for curr_round in range(1, args.epochs + 1):

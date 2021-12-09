@@ -24,14 +24,18 @@ public class ClientGetModelActor extends UntypedActor {
         if (message instanceof Messages.ClientDataSpread){
             log.info("Reading R values");
             Messages.ClientDataSpread castedMessage = ((Messages.ClientDataSpread) message);
-            this.clientId = castedMessage.clientId;
-            this.minimum = castedMessage.minimum;
+            // prepare arguments to pass to the script
+            this.clientId = castedMessage.clientId; // client id
+            this.minimum = castedMessage.minimum; // minimum number of clients (for generating private keys)
             String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
+            // Windows and Linux handle parsing maps differently when it comes to quotation marks
             this.publicKeys = castedMessage.contactMap
                     .entrySet()
                     .stream()
                     .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
+            // public keys extracted to another map
 
+            // differential privacy arguments
             this.DP_noiseVariance = castedMessage.DP_noiseVariance;
             this.DP_threshold = castedMessage.DP_threshold;
             this.readRValues();
@@ -45,7 +49,7 @@ public class ClientGetModelActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
 
-            // another script
+            // execute script in order to retrieve weights and make R values of them
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder
