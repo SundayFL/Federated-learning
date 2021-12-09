@@ -40,6 +40,10 @@ public class Aggregator extends UntypedActor {
         log.info("coordinator -> " + coordinator.path());
     }
 
+    public Aggregator(){
+
+    }
+
     // Participants taking part in the round
     private Map<String, ParticipantData> roundParticipants;
 
@@ -126,10 +130,11 @@ public class Aggregator extends UntypedActor {
                     log.info("Round ended");
                     finish = Instant.now();
                     float timeOfLearning = (float) (Duration.between(start, finish).toMillis()/1000.0);
-                    log.info("Time of learning round: "+timeOfLearning);
+                    log.info("Time of learning round: " + timeOfLearning);
                     this.coordinator.tell(new RoundEnded(), getSelf());
                 }
         } else if (message instanceof IAmAlive) {
+            log.info( "RECEIVED I AM ALIVED" );
             // Message sent at the beginning of learning, indicating that the sender is alive
             ActorRef sender = getSender();
             ParticipantData foundOnList = roundParticipants
@@ -139,6 +144,7 @@ public class Aggregator extends UntypedActor {
                     .findAny()
                     .orElse(null);
 
+            if(foundOnList == null) return;
             foundOnList.moduleAlive = true;
 
             boolean allParticipantsAlive = roundParticipants
@@ -146,10 +152,11 @@ public class Aggregator extends UntypedActor {
                     .stream()
                     .allMatch(participantData -> participantData.moduleAlive);
 
-            log.info("Found on list" + (foundOnList != null));
-            log.info("Everyone alive" + allParticipantsAlive);
+            log.info("Found on list {}", true);
+            log.info("Everyone alive {}", allParticipantsAlive);
 
             if (allParticipantsAlive) { // everybody is alive
+                log.info( "ALL PARTICIPANTS ALIVE" );
                 log.info("Spreading data");
                 this.exchange(configuration.minimumNumberOfDevices - 1);
                 // spreading references to let clients exchange data
@@ -192,7 +199,7 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    private void exchange(int minimum) {
+    public void exchange(int minimum) {
         int numberOfParticipants = roundParticipants.size();
         Random keyGeneration = new Random();
 
@@ -220,8 +227,8 @@ public class Aggregator extends UntypedActor {
     }
 
     // Stores information about each participant
-    private static class ParticipantData {
-        private ParticipantData(ActorRef deviceReference, String address, int port) {
+    public static class ParticipantData {
+        public ParticipantData(ActorRef deviceReference, String address, int port) {
             this.deviceReference = deviceReference;
             this.moduleStarted = false;
             this.moduleAlive = false;
@@ -349,5 +356,90 @@ public class Aggregator extends UntypedActor {
 
         public String id;
         public int port;
+    }
+
+
+
+    // GETTERS & SETTERS
+
+
+    public Map<String, ParticipantData> getRoundParticipants() {
+        return roundParticipants;
+    }
+
+    public void setRoundParticipants(Map<String, ParticipantData> roundParticipants) {
+        this.roundParticipants = roundParticipants;
+    }
+
+    public LoggingAdapter getLog() {
+        return log;
+    }
+
+    public void setLog(LoggingAdapter log) {
+        this.log = log;
+    }
+
+    public Cancellable getCheckReadyToRunLearning() {
+        return checkReadyToRunLearning;
+    }
+
+    public void setCheckReadyToRunLearning(Cancellable checkReadyToRunLearning) {
+        this.checkReadyToRunLearning = checkReadyToRunLearning;
+    }
+
+    public ActorRef getCoordinator() {
+        return coordinator;
+    }
+
+    public void setCoordinator(ActorRef coordinator) {
+        this.coordinator = coordinator;
+    }
+
+    public ActorRef getTickActor() {
+        return tickActor;
+    }
+
+    public void setTickActor(ActorRef tickActor) {
+        this.tickActor = tickActor;
+    }
+
+    public int getNumberOfClientsToAwait() {
+        return numberOfClientsToAwait;
+    }
+
+    public void setNumberOfClientsToAwait(int numberOfClientsToAwait) {
+        this.numberOfClientsToAwait = numberOfClientsToAwait;
+    }
+
+    public Map<String, Float> getPublics() {
+        return publics;
+    }
+
+    public void setPublics(Map<String, Float> publics) {
+        this.publics = publics;
+    }
+
+    public Instant getStart() {
+        return start;
+    }
+
+    public void setStart(Instant start) {
+        this.start = start;
+    }
+
+    public Instant getFinish() {
+        return finish;
+    }
+
+    public void setFinish(Instant finish) {
+        this.finish = finish;
+    }
+
+    public boolean isSecureAgg() {
+        return secureAgg;
+    }
+
+    public void setSecureAgg(boolean secureAgg) {
+        this.secureAgg = secureAgg;
     }
 }

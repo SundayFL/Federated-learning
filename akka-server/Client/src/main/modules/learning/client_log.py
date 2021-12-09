@@ -251,6 +251,7 @@ async def main():
             polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
         for w in weights:
             weights[w] = weights[w]+polynomial[client]
+        print("saving R vales for a specific client")
         torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 

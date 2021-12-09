@@ -11,12 +11,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ClientActor extends UntypedActor {
+
+    public ClientActor(String forTesting){
+
+    }
 
     public ClientActor() {
         try {
@@ -34,6 +36,7 @@ public class ClientActor extends UntypedActor {
             // // flserver.eastus.azurecontainer.io:5000 - azure address
             this.selection = getContext().actorSelection("akka.tcp://AkkaRemoteServer@" + address + "/user/Selector");
             this.injector = getContext().actorSelection("akka.tcp://AkkaRemoteServer@" + address + "/user/Injector");
+            this.clientsFromWhomWeReceivedRValues = new HashSet<>();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,6 +57,7 @@ public class ClientActor extends UntypedActor {
     private ActorRef server;
 
     private Map<String, Messages.ContactData> contactMap;
+    private Set<String> clientsFromWhomWeReceivedRValues;
     private int numberOfClientstoAwait;
 
     @Override
@@ -124,7 +128,14 @@ public class ClientActor extends UntypedActor {
             log.info("I am alive!");
             // The client is alive
             this.server = getSender(); // from here we save the server reference
+            //double cos = new Random().nextDouble();
+            //log.info("double = {}", cos);
+            //if( cos < 0.6) // for testing
             this.server.tell(new Messages.IAmAlive(), getSelf());
+            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
+            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
+
+
         } else if (message instanceof Messages.ClientDataSpread){
             this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients; // number of clients
             this.contactMap = ((Messages.ClientDataSpread) message).contactMap; // clients, references and public keys
@@ -147,18 +158,18 @@ public class ClientActor extends UntypedActor {
                 client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
         } else if (message instanceof Messages.SendRValue){
+            clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
+
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            // one client less to await
-            numberOfClientstoAwait--;
             log.info("Received R value from "+((Messages.SendRValue) message).sender);
-            log.info("R values left: "+numberOfClientstoAwait);
+            log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
             // save the R value
             byte[] bytes = ((Messages.SendRValue) message).bytes;
             Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
 
-            if (numberOfClientstoAwait==0){
+            if (numberOfClientstoAwait == clientsFromWhomWeReceivedRValues.size()){
                 // all R values received, InterRes can be calculated
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
@@ -238,5 +249,114 @@ public class ClientActor extends UntypedActor {
         }
         public String moduleFileName;
         public String modelConfig;
+    }
+
+
+
+    // GETTERS & SETTERS
+
+
+    public LoggingAdapter getLog() {
+        return log;
+    }
+
+    public void setLog(LoggingAdapter log) {
+        this.log = log;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPathToModules() {
+        return pathToModules;
+    }
+
+    public void setPathToModules(String pathToModules) {
+        this.pathToModules = pathToModules;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
+
+    public String getModuleFileName() {
+        return moduleFileName;
+    }
+
+    public void setModuleFileName(String moduleFileName) {
+        this.moduleFileName = moduleFileName;
+    }
+
+    public String getModelConfig() {
+        return modelConfig;
+    }
+
+    public void setModelConfig(String modelConfig) {
+        this.modelConfig = modelConfig;
+    }
+
+    public ActorSelection getSelection() {
+        return selection;
+    }
+
+    public void setSelection(ActorSelection selection) {
+        this.selection = selection;
+    }
+
+    public ActorSelection getInjector() {
+        return injector;
+    }
+
+    public void setInjector(ActorSelection injector) {
+        this.injector = injector;
+    }
+
+    public ActorRef getServer() {
+        return server;
+    }
+
+    public void setServer(ActorRef server) {
+        this.server = server;
+    }
+
+    public Map<String, Messages.ContactData> getContactMap() {
+        return contactMap;
+    }
+
+    public void setContactMap(Map<String, Messages.ContactData> contactMap) {
+        this.contactMap = contactMap;
+    }
+
+    public int getNumberOfClientstoAwait() {
+        return numberOfClientstoAwait;
+    }
+
+    public void setNumberOfClientstoAwait(int numberOfClientstoAwait) {
+        this.numberOfClientstoAwait = numberOfClientstoAwait;
     }
 }
