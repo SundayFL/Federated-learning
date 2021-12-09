@@ -31,6 +31,8 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
+            this.DP_noiseVariance = configuration.DP_noiseVariance;
+            this.DP_threshold = configuration.DP_threshold;
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -51,6 +53,8 @@ public class ClientActor extends UntypedActor {
     private String taskId;
     private String moduleFileName;
     private String modelConfig;
+    private double DP_noiseVariance;
+    private double DP_threshold;
 
     private ActorSelection selection;
     private ActorSelection injector;
@@ -113,9 +117,13 @@ public class ClientActor extends UntypedActor {
             Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
             this.modelConfig = messageWithModel.getModelConfig();
 
+            // if diff privacy parameteres are not set on client's side - set them using server's config
+            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
+            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
+
             // Start learning module
             ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRunner.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
+            moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
             FiniteDuration delay =  new FiniteDuration(10, TimeUnit.SECONDS);
@@ -137,8 +145,13 @@ public class ClientActor extends UntypedActor {
 
 
         } else if (message instanceof Messages.ClientDataSpread){
-            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients; // number of clients
-            this.contactMap = ((Messages.ClientDataSpread) message).contactMap; // clients, references and public keys
+            Messages.ClientDataSpread castedMessage = (Messages.ClientDataSpread) message;
+            this.numberOfClientstoAwait = castedMessage.numberOfClients; // number of clients
+            this.contactMap = castedMessage.contactMap; // clients, references and public keys
+
+            // DP config update
+            castedMessage.DP_noiseVariance = this.DP_noiseVariance;
+            castedMessage.DP_threshold = this.DP_threshold;
 
             ActorSystem system = getContext().system();
             // Start reading R values through a new actor
@@ -238,17 +251,6 @@ public class ClientActor extends UntypedActor {
             e.printStackTrace();
             throw e;
         }
-    }
-
-    // Run module message
-    // TODO should be moved to messages
-    public static class RunModule {
-        public RunModule(String moduleFileName, String modelConfig) {
-            this.moduleFileName = moduleFileName;
-            this.modelConfig = modelConfig;
-        }
-        public String moduleFileName;
-        public String modelConfig;
     }
 
 

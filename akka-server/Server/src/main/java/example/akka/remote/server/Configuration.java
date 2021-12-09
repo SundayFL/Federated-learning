@@ -46,6 +46,8 @@ public class Configuration {
         public int epochs;
         public String modelConfig;
         public int targetOutputSize;
+        public double DP_noiseVariance;
+        public double DP_threshold;
 
         @JsonProperty(value = "clientModules")
         public List<ClientModule> clientModules;
