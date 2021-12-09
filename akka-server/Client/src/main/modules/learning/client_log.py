@@ -171,7 +171,7 @@ def setWeights(list_old, list_new, list_incr, variance, threshold):
             elif list_incr[i] < -list_old[i]*threshold:
                 list_incr[i] = -list_old[i]*threshold
         else:
-            list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], threshold)
+            list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], variance, threshold)
     return list_incr
 
 def define_model(model_config, device, model_output):
