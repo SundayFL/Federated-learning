@@ -212,10 +212,11 @@ public class Aggregator extends UntypedActor {
                         participant -> new Messages.ContactData(participant.getValue().deviceReference, keyGeneration.nextFloat())));
 
         // keep public keys in a map for later re-use
+        String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
         this.publics = contactMap
                 .entrySet()
                 .stream()
-                .collect(Collectors.toMap(participant -> '"'+participant.getKey()+'"', participant -> participant.getValue().publicKey));
+                .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
         // spread the data
         for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
             participant.getValue().deviceReference.tell(new ClientDataSpread(

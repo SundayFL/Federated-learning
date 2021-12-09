@@ -24,10 +24,11 @@ public class ClientGetModelActor extends UntypedActor {
             Messages.ClientDataSpread castedMessage = ((Messages.ClientDataSpread) message);
             this.clientId = castedMessage.clientId;
             this.minimum = castedMessage.minimum;
+            String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
             this.publicKeys = castedMessage.contactMap
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(participant -> '"'+participant.getKey()+'"', participant -> participant.getValue().publicKey));
+                    .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
 
             System.out.println(this.publicKeys.toString());
             this.readRValues();
