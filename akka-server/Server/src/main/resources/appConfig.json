@@ -20,5 +20,7 @@
       "minRAMInGB": 1,
       "instanceType": "Computer"
     }
-  ]
+  ],
+  "DP_noiseVariance": 1,
+  "DP_threshold": 0.2
 }

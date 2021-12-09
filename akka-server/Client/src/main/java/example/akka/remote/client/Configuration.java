@@ -11,6 +11,8 @@ public class Configuration {
     public static Integer dataSetId;  // number of dataset
     public static String id; // Id of the client e.g. alice
     public static Integer port; // port on which the client is working
+    public double DP_noiseVariance;
+    public double DP_threshold;
 
     // Method which saves arguments passed as execution arguments
     public void SaveArguments(String[] args) {
@@ -79,6 +81,8 @@ public class Configuration {
         public String pathToInterRes;
         public String modelConfig;
         public int dataSetId;
+        public double DP_noiseVariance;
+        public double DP_threshold;
     }
 }
 

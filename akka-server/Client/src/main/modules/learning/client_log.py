@@ -94,7 +94,9 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
     parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
-    parser.add_argument("--diff_priv", help="differential privacy", action="store")
+    parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
+    parser.add_argument("--dp_noise_variance", help="variance for differential privacy noise", action="store")
+    parser.add_argument("--dp_threshold", help="threshold for differential privacy max weight incr", action="store")
 
     args = parser.parse_args(args=args)
     return args
@@ -107,7 +109,9 @@ async def fit_model_on_worker(
     max_nr_batches: int,
     lr: float,
     epochs: int,
-    diff_priv: bool
+    diff_priv: bool,
+    dp_noise_variance: float,
+    dp_threshold: float
 ):
 
     train_config = sy.TrainConfig(
@@ -143,7 +147,8 @@ async def fit_model_on_worker(
                 np.array(old_weights[layer]),
                 np.array(new_weights[layer]),
                 np.array(weights_incr[layer]),
-                0.2
+                dp_noise_variance,
+                dp_threshold
             ))
 
         # updating weights' increment in returned model
@@ -156,11 +161,11 @@ async def fit_model_on_worker(
     return worker.id, model, loss
 
 # used in differential privacy
-def setWeights(list_old, list_new, list_incr, threshold):
+def setWeights(list_old, list_new, list_incr, variance, threshold):
     for i, x in enumerate(list_old):
         if np.isscalar(x):
             list_incr[i] = list_new[i] - list_old[i]
-            list_incr[i] = list_incr[i] + random.gauss(0, 1)
+            list_incr[i] = list_incr[i] + random.gauss(0, variance)
             if list_incr[i] > list_old[i]*threshold:
                 list_incr[i] = list_old[i]*threshold
             elif list_incr[i] < -list_old[i]*threshold:
@@ -225,7 +230,9 @@ async def main():
         max_nr_batches=args.federate_after_n_batches,
         lr=learning_rate,
         epochs=args.epochs,
-        diff_priv=args.diff_priv
+        diff_priv=args.diff_priv,
+        dp_noise_variance=args.dp_noise_variance,
+        dp_threshold=args.dp_threshold
     )
 
     # get weights and make R values

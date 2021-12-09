@@ -16,6 +16,8 @@ public class ClientGetModelActor extends UntypedActor {
     private String clientId;
     private int minimum;
     private Map<String, Float> publicKeys;
+    private double DP_noiseVariance;
+    private double DP_threshold;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -30,7 +32,8 @@ public class ClientGetModelActor extends UntypedActor {
                     .stream()
                     .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
 
-            System.out.println(this.publicKeys.toString());
+            this.DP_noiseVariance = castedMessage.DP_noiseVariance;
+            this.DP_threshold = castedMessage.DP_threshold;
             this.readRValues();
             log.info("R values ready");
             getSender().tell(new Messages.RValuesReady(), getSelf());
@@ -48,7 +51,6 @@ public class ClientGetModelActor extends UntypedActor {
             processBuilder
                     .inheritIO()
                     .command("python", configuration.pathToClientLog,
-                            "--diff_priv", configuration.diffPriv?"True":"False",
                             "--datapath", configuration.testdatapath,
                             "--id", this.clientId,
                             "--port", String.valueOf(configuration.port),
@@ -56,7 +58,10 @@ public class ClientGetModelActor extends UntypedActor {
                             "--minimum", String.valueOf(this.minimum),
                             "--pathToResources", configuration.pathToResources,
                             "--model_config", configuration.modelConfig,
-                            "--epochs", String.valueOf(configuration.epochs));
+                            "--epochs", String.valueOf(configuration.epochs),
+                            "--diff_priv", configuration.diffPriv?"True":"False",
+                            "--dp_noise_variance", String.valueOf(DP_noiseVariance),
+                            "--dp_threshold", String.valueOf(DP_threshold));
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

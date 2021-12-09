@@ -25,15 +25,16 @@ public class ClientRunModuleActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
         // Message that says to run the module
-        if (message instanceof ClientActor.RunModule) {
-            log.info("Received RunModule command");
-            ClientActor.RunModule receivedMessage = (ClientActor.RunModule) message;
-            this.runLearning(receivedMessage.moduleFileName, receivedMessage.modelConfig);
+        if (message instanceof Messages.RunModule) {
+            log.info( "Received RunModule command" );
+            Messages.RunModule receivedMessage = (Messages.RunModule) message;
+            this.runLearning( receivedMessage.moduleFileName,
+                    receivedMessage.modelConfig );
         }
     }
 
     // Runs module
-    private void runLearning(String moduleFileName, String modelConfig) {
+    private void runLearning(String moduleFileName, String modelConfig ) {
         Configuration.ConfigurationDTO configuration;
         try {
             Configuration configurationHandler = new Configuration();
