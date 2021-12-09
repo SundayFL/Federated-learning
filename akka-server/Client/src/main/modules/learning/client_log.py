@@ -73,7 +73,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
     parser.add_argument("--cuda", action="store_true", help="use cuda")
     parser.add_argument("--seed", type=int, default=1, help="seed used for randomization")
-    parser.add_argument("--save_model", action="store_true", help="if set, model will be saved")
+    parser.add_argument("--save_model", action="store_false", help="if set, model will be saved")
     parser.add_argument(
         "--verbose",
         "-v",
@@ -94,6 +94,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
     parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
+    parser.add_argument("--diff_priv", help="differential privacy", action="store")
 
     args = parser.parse_args(args=args)
     return args
@@ -106,6 +107,7 @@ async def fit_model_on_worker(
     max_nr_batches: int,
     lr: float,
     epochs: int,
+    diff_priv: bool
 ):
 
     train_config = sy.TrainConfig(
@@ -125,28 +127,30 @@ async def fit_model_on_worker(
 
 
     # Differential Privacy
+    if diff_priv=="True":
+        print("Differential privacy enabled")
+        # getting old weights
+        old_weights = traced_model.state_dict()
 
-    # getting old weights
-    old_weights = traced_model.state_dict()
+        # getting new weights
+        new_weights = model.state_dict()
 
-    # getting new weights
-    new_weights = model.state_dict()
+        weights_incr = copy.deepcopy(new_weights)
 
-    weights_incr = copy.deepcopy(new_weights)
+        # calculating weights increment
+        for layer in weights_incr:
+            weights_incr[layer] = torch.tensor(setWeights(
+                np.array(old_weights[layer]),
+                np.array(new_weights[layer]),
+                np.array(weights_incr[layer]),
+                0.2
+            ))
 
-    # calculating weights increment
-    for layer in weights_incr:
-        weights_incr[layer] = torch.tensor(setWeights(
-            np.array(old_weights[layer]),
-            np.array(new_weights[layer]),
-            np.array(weights_incr[layer]),
-            0.2
-        ))
+        # updating weights' increment in returned model
+        model.load_state_dict(weights_incr)
+    else:
+        print("Differential privacy disabled")
 
-    # updating weights' increment in returned model
-    model.load_state_dict(weights_incr)
-
-    print("Differential privacy enabled")
 
     # returning updated weights
     return worker.id, model, loss
@@ -220,7 +224,8 @@ async def main():
         batch_size=args.batch_size,
         max_nr_batches=args.federate_after_n_batches,
         lr=learning_rate,
-        epochs=args.epochs
+        epochs=args.epochs,
+        diff_priv=args.diff_priv
     )
 
     # get weights and make R values
@@ -230,7 +235,9 @@ async def main():
         weights = model.fc2.weight.data"""
     weights = model.state_dict()
     if args.save_model:
-        torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
+        torch.save(weights, args.pathToResources+args.id+"/saved_model")
+    else:
+        print(str(args.save_model)+": model not saved")
     polynomial = {}
     public_keys = json.loads(args.public_keys.replace('=', ':'))
     for client in public_keys:

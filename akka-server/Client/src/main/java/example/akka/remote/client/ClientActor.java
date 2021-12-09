@@ -122,14 +122,15 @@ public class ClientActor extends UntypedActor {
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
         } else if (message instanceof Messages.AreYouAliveQuestion){
             log.info("I am alive!");
+            // The client is alive
             this.server = getSender(); // from here we save the server reference
             this.server.tell(new Messages.IAmAlive(), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
-            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients;
-            this.contactMap = ((Messages.ClientDataSpread) message).contactMap;
+            this.numberOfClientstoAwait = ((Messages.ClientDataSpread) message).numberOfClients; // number of clients
+            this.contactMap = ((Messages.ClientDataSpread) message).contactMap; // clients, references and public keys
 
             ActorSystem system = getContext().system();
-            // Start reading R values
+            // Start reading R values through a new actor
             ActorRef modelReader = system.actorOf(Props.create(ClientGetModelActor.class), "ClientGetModelActor");
             modelReader.tell(message, getSelf());
         } else if (message instanceof Messages.RValuesReady){
@@ -137,26 +138,32 @@ public class ClientActor extends UntypedActor {
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            byte[] bytes;
+            byte[] bytes; // file to send
             for (Map.Entry<String, Messages.ContactData> client: this.contactMap.entrySet()) {
+                // send R value to every client
                 log.info("Sending R value to "+client.getKey());
                 bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
+                // read a file with an R value earlier prepared and send
                 client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
         } else if (message instanceof Messages.SendRValue){
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
+            // one client less to await
             numberOfClientstoAwait--;
             log.info("Received R value from "+((Messages.SendRValue) message).sender);
             log.info("R values left: "+numberOfClientstoAwait);
+            // save the R value
             byte[] bytes = ((Messages.SendRValue) message).bytes;
             Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
 
             if (numberOfClientstoAwait==0){
+                // all R values received, InterRes can be calculated
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+                // send InterRes
                 log.info("InterRes sent");
             }
         }
@@ -179,7 +186,7 @@ public class ClientActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
 
-            // execute scripts with proper parameters
+            // script to calculate InterRes
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.directory(new File(System.getProperty("user.dir")));
             log.info(configuration.pathToInterRes);

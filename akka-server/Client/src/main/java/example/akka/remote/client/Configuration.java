@@ -62,6 +62,7 @@ public class Configuration {
         public int RAMInGB;
         public Messages.InstanceType instanceType;
 
+        public boolean diffPriv;
         public String datapath;
         public String testdatapath;
         public String datafilename;

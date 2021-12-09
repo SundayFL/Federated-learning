@@ -34,12 +34,14 @@ public class Configuration {
     }
 
     public static class ConfigurationDTO {
+        public boolean secureAgg;
         public int minimumNumberOfDevices;
         public String learningTaskId;
         public String serverModuleFilePathSA;
         public String serverModuleFilePath;
         public String testDataPath;
         public String pathToResources;
+        public String savedModelPathSA;
         public String savedModelPath;
         public int epochs;
         public String modelConfig;

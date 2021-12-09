@@ -46,6 +46,7 @@ public class ClientGetModelActor extends UntypedActor {
             processBuilder
                     .inheritIO()
                     .command("python", configuration.pathToClientLog,
+                            "--diff_priv", configuration.diffPriv?"True":"False",
                             "--datapath", configuration.testdatapath,
                             "--id", this.clientId,
                             "--port", String.valueOf(configuration.port),

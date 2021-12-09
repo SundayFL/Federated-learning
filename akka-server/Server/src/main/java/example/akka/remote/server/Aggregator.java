@@ -149,32 +149,42 @@ public class Aggregator extends UntypedActor {
             log.info("Found on list" + (foundOnList != null));
             log.info("Everyone alive" + allParticipantsAlive);
 
-            if (allParticipantsAlive) {
+            if (allParticipantsAlive) { // everybody is alive
                 log.info("Spreading data");
                 this.exchange(configuration.minimumNumberOfDevices - 1);
+                // spreading references to let clients exchange data
             }
         } else if (message instanceof SendInterRes) {
             // save InterRes
+            // counting down clients to await InterRes values from
             this.numberOfClientsToAwait--;
+            // how many InterRes values left
             if (numberOfClientsToAwait>0)
                 log.info("Tensor received, "+numberOfClientsToAwait+" tensor"+(numberOfClientsToAwait==1?"":"s")+" left");
             else
                 log.info("All tensors received");
+            // retrieve the binary file sent
             byte[] bytes = ((SendInterRes) message).bytes;
+            // and the sender's id
             String clientId = ((SendInterRes) message).sender;
+            // save the binary file
             File dir = new File(configuration.pathToResources+"/interRes");
             boolean make;
             if (!dir.exists()) make = dir.mkdir();
             Files.write(Paths.get(configuration.pathToResources+"/interRes/"+clientId+".pt"), bytes);
 
+            // when everybody has sent the weights
             if (numberOfClientsToAwait==0) {
-                // Learning through deciphering learned models' equation
+                // Learning through deciphering learned models from an equation
                 log.info("Run learning");
                 this.runLearning();
+                // round ends
                 log.info("Round ended");
                 finish = Instant.now();
+                // elapsed time
                 float timeOfLearning = (float) (Duration.between(start, finish).toMillis()/1000.0);
                 log.info("Time of learning round: "+timeOfLearning);
+                // tell the coordinator
                 this.coordinator.tell(new RoundEnded(), getSelf());
             }
         } else {
@@ -184,18 +194,22 @@ public class Aggregator extends UntypedActor {
 
     private void exchange(int minimum) {
         int numberOfParticipants = roundParticipants.size();
-        List<String> ids = new ArrayList<>(roundParticipants.keySet());
         Random keyGeneration = new Random();
+
+        // participants of the round with their devices' references and public keys
+        // public keys are being freshly generated
         Map<String, Messages.ContactData> contactMap = roundParticipants
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         participant -> new Messages.ContactData(participant.getValue().deviceReference, keyGeneration.nextFloat())));
 
+        // keep public keys in a map for later re-use
         this.publics = contactMap
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(participant -> '"'+participant.getKey()+'"', participant -> participant.getValue().publicKey));
+        // spread the data
         for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
             participant.getValue().deviceReference.tell(new ClientDataSpread(
                     participant.getKey(),
@@ -264,13 +278,13 @@ public class Aggregator extends UntypedActor {
         // Executing module script as a command
         processBuilder
             .inheritIO()
-            .command("python", secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
-            "--publicKeys", this.publics.toString(),
+            "--publicKeys", configuration.secureAgg?this.publics.toString():"",
             "--degree", String.valueOf(this.numberOfClientsToAwait),
             "--epochs", String.valueOf(configuration.epochs),
-            "--modelpath", configuration.savedModelPath,
+            "--modelpath", configuration.secureAgg?configuration.savedModelPathSA:configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,
             "--model_config", configuration.modelConfig,
             "--model_output", String.valueOf(configuration.targetOutputSize));
