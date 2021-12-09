@@ -231,8 +231,8 @@ async def main():
         lr=learning_rate,
         epochs=args.epochs,
         diff_priv=args.diff_priv,
-        dp_noise_variance=args.dp_noise_variance,
-        dp_threshold=args.dp_threshold
+        dp_noise_variance=float(args.dp_noise_variance),
+        dp_threshold=float(args.dp_threshold)
     )
 
     # get weights and make R values
