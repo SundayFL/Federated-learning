@@ -29,6 +29,7 @@ public class ClientGetModelActor extends UntypedActor {
                     .stream()
                     .collect(Collectors.toMap(participant -> '"'+participant.getKey()+'"', participant -> participant.getValue().publicKey));
 
+            System.out.println(this.publicKeys.toString());
             this.readRValues();
             log.info("R values ready");
             getSender().tell(new Messages.RValuesReady(), getSelf());
