@@ -1,5 +1,5 @@
 {
-  "diffPriv": false,
+  "diffPriv": true,
   "useCuda": "false",
   "RAMInGB": 8,
   "instanceType": "Computer",
