@@ -80,6 +80,9 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
 
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+    parser.add_argument("--pathToResources", help="where to store", action="store", default="")
+    parser.add_argument("--publicKeys", help="public keys", action="store", default="{}")
+    parser.add_argument("--degree", help="public keys", action="store", default=0)
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
@@ -236,7 +239,7 @@ async def main():
                 loss_values.append(worker_loss)
 
         traced_model = utils.federated_avg(models)
-        if args.model_config != 'cnn':
+        if args.model_config != 'cnn' and args.model_config != 'mnist':
             print(traced_model.classifier.state_dict())
         else:
             print(traced_model.fc2.weight.data)
