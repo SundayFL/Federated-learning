@@ -59,7 +59,7 @@ def augument_classes(data, target, mean_entries_per_class):
 def get_transformation_seq(model_config):
     #predefined values to match model expectations
     transform_seq = []
-    if (model_config == 'vgg'):
+    if (model_config == 'mobilenetv2'):
         transform_seq = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -116,7 +116,7 @@ def main( details_dict, **kwargs):  # pragma: no cover
     #check if tensors have correct dims
     sizes = list(map(np.shape, train_base.data))
     print(sizes[0])
-
+    
     # Tell the worker about the dataset
     worker.add_dataset(train_base, key="mnist")
     worker.serializer

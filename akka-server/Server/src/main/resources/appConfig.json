@@ -3,9 +3,9 @@
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "savedModelPath": "./saved_model",
-  "epochs": 50,
-  "modelConfig": "cnn",
-  "minimumNumberOfDevices": 3,
+  "epochs": 250,
+  "modelConfig": "mobilenetv2",
+  "minimumNumberOfDevices": 5,
   "targetOutputSize": 12,
   "clientModules": [
     {
