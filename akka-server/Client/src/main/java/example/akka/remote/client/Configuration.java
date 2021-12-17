@@ -77,7 +77,7 @@ public class Configuration {
         public String pathToModules;
         public String pathToModulesList;
         public String pathToResources;
-        public String pathToClientLog;
+        public String pathToLocalModel;
         public String pathToInterRes;
         public String modelConfig;
         public int dataSetId;

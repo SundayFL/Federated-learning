@@ -41,7 +41,6 @@ public class Configuration {
         public String serverModuleFilePath;
         public String testDataPath;
         public String pathToResources;
-        public String savedModelPathSA;
         public String savedModelPath;
         public int epochs;
         public String modelConfig;

@@ -50,7 +50,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default=12)
-    parser.add_argument("--modelpath", default = 'saved_model_2')
+    parser.add_argument("--modelpath", default = 'saved_model')
 
     args = parser.parse_args(args=args)
     return args

@@ -288,12 +288,13 @@ public class Aggregator extends UntypedActor {
         processBuilder
             .inheritIO()
             .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            // secure aggregation requires a different script to construct the model
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--publicKeys", configuration.secureAgg?this.publics.toString():"",
             "--degree", String.valueOf(this.roundParticipants.size()),
             "--epochs", String.valueOf(configuration.epochs),
-            "--modelpath", configuration.secureAgg?configuration.savedModelPathSA:configuration.savedModelPath,
+            "--modelpath", configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,
             "--model_config", configuration.modelConfig,
             "--model_output", String.valueOf(configuration.targetOutputSize));
