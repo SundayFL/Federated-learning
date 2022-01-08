@@ -1,19 +1,39 @@
+import logging
 import argparse
-import numpy as np
-import os
+import re
 import sys
 import asyncio
+import numpy as np
 import torch
+import random
+import torch.nn as nn
+from torchvision import models
+import torch.nn.functional as F
+from torchvision import datasets, transforms
+from pathlib import Path
 import json
 from copy import deepcopy
+import os
 from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
-from pathlib import Path
+
 import syft as sy
-from torchvision import datasets, transforms
+from syft.workers import websocket_client
+from syft.frameworks.torch.fl import utils
 import warnings
 warnings.simplefilter("ignore", np.RankWarning)
+
+
+websocket_client.TIMEOUT_INTERVAL = 60
+LOG_INTERVAL = 25
+
+logger = logging.getLogger("run_websocket_client")
+
+
+@torch.jit.script
+def loss_fn(pred, target):
+    return F.cross_entropy(input=pred, target=target.long())
 
 def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
@@ -80,6 +100,54 @@ def define_model(model_config, device, modelpath, model_output):
        model.load_state_dict(torch.load(modelpath))
     return model, test_tensor
 
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
+
+    model_config = sy.TrainConfig(
+        model=traced_model,
+        loss_fn=loss_fn,
+        batch_size=batch_size,
+        shuffle=True,
+        max_nr_batches=federate_after_n_batches,
+        epochs=1,
+        optimizer="Adam",
+        optimizer_args={"lr": learning_rate, "weight_decay": learning_rate*0.1},
+    )
+    with torch.no_grad():
+        model_config.send(test_worker)
+        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
+    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
+
+def define_participants_lists(participantsjsonlist, **kwargs_websocket):
+
+    # choose at least 30% participants that will test the models
+
+    participants = participantsjsonlist.replace("'","\"")
+    participants = json.loads(participants)
+    print(participants)
+
+    for_test = random.choices(participants, k=np.int(np.round(len(participants)*0.3)))
+    print('Clients picked for test: \n')
+    print(for_test)
+    worker_instances = []
+    worker_instances_test = []
+    for participant in participants:
+        print("----------------------")
+        print(participant['id'])
+        print(participant['port'])
+        print("----------------------")
+        if participant not in for_test:
+            worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
+        else:
+            worker_instances_test.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
+
+    for wcw in worker_instances:
+        wcw.clear_objects_remote()
+
+    for wcw in worker_instances_test:
+        wcw.clear_objects_remote()
+
+    return worker_instances, worker_instances_test
+
 async def main():
     #set up environment
     args = define_and_get_arguments()
@@ -87,8 +155,10 @@ async def main():
     torch.manual_seed(args.seed)
     print(args)
     hook = sy.TorchHook(torch)
+    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
     print(args.participantsjsonlist)
+    worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
 
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
@@ -96,8 +166,6 @@ async def main():
     model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
     #for p in model.parameters():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
-    traced_model = torch.jit.trace(model,  test_tensor.to(device))
-    traced_model.train()
 
     # extract interRes values
     publicKeys = json.loads(args.publicKeys.replace("=", ":"))
@@ -107,6 +175,9 @@ async def main():
 
     # calculate aggregated weights
     aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
+
+    for participant in publicKeys:
+        print(interResList[participant]['weights']['fc2.bias'])
 
     def setWeights(list0, lists, keys):  # recurrent calculations
         for i, x in enumerate(list0):
@@ -126,18 +197,27 @@ async def main():
         aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
     model.load_state_dict(aggregatedWeights)  # fit the model's structure
 
-    # model testing; to be brought back later
-    """
-    learning_rate = args.lr
-    for curr_round in range(1, args.epochs + 1):
-        learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
+    print(model.state_dict()['fc2.bias'])
 
-        correct_predictions = 0
-        all_predictions = 0
-        traced_model.eval()
-        results = test(worker_test, traced_model, args.batch_size, args.federate_after_n_batches, learning_rate, int(args.model_output))
+    model = torch.jit.trace(model, test_tensor.to(device))
+    model.train()
+    # model testing
+
+    learning_rate = args.lr
+    correct_predictions = 0
+    all_predictions = 0
+    model.eval()
+    if len(worker_instances_test) > 0:
+        results = await asyncio.gather(
+            *[
+                test(worker_test, model,
+                     args.batch_size,
+                     args.federate_after_n_batches, learning_rate, int(args.model_output))
+                for worker_test in worker_instances_test
+            ]
+        )
         test_loss = []
-        for curr_correct, total_predictions, loss, target_hist, predictions_hist in results:
+        for curr_correct, total_predictions, loss , target_hist, predictions_hist in results:
             correct_predictions += curr_correct
             all_predictions += total_predictions
             test_loss.append(loss)
@@ -148,11 +228,21 @@ async def main():
 
         print("Currrent accuracy: " + str(correct_predictions/all_predictions))
         print(test_loss)
-    traced_model.train()
-    """
+    model.train()
 
     if args.modelpath:
         torch.save(model.state_dict(), args.modelpath)
 
 if __name__ == "__main__":
+    # Logging setup
+    FORMAT = "%(asctime)s | %(message)s"
+    logging.basicConfig(format=FORMAT)
+    logger.setLevel(level=logging.DEBUG)
+
+    # Websockets setup
+    websockets_logger = logging.getLogger("websockets")
+    websockets_logger.setLevel(logging.INFO)
+    websockets_logger.addHandler(logging.StreamHandler())
+
+    # Run main
     asyncio.get_event_loop().run_until_complete(main())

@@ -240,6 +240,8 @@ async def main():
         weights = model.classifier.state_dict()
     else:
         weights = model.fc2.weight.data"""
+    print(model.state_dict()['fc2.bias'])
+
     weights = model.state_dict()
     if args.save_model:
         torch.save(weights, args.pathToResources+args.id+"/saved_model")
@@ -260,6 +262,7 @@ async def main():
             polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
         for w in weights:
             weights[w] = weights[w]+polynomial[client]
+        print(weights['fc2.bias'])
         print("saving R values for a specific client")
         torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost

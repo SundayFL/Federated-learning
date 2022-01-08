@@ -69,12 +69,13 @@ public class Aggregator extends UntypedActor {
     Instant start, finish;
 
     // Enable secure aggregation
-    boolean secureAgg = true;
+    boolean secureAgg;
 
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
         Configuration.ConfigurationDTO configuration = Configuration.get();
+        setSecureAgg(configuration.secureAgg);
 
         if (message instanceof StartRound) {
             // Message that round should start
@@ -122,7 +123,7 @@ public class Aggregator extends UntypedActor {
             log.info("All participants started module" + allParticipantsStartedModule);
 
             if (allParticipantsStartedModule)
-                if (secureAgg) for (ParticipantData participant : this.roundParticipants.values())
+                if (configuration.secureAgg) for (ParticipantData participant : this.roundParticipants.values())
                     participant.deviceReference.tell(new AreYouAliveQuestion(), getSelf());
                 else {
                     log.info("Run learning");
@@ -338,7 +339,7 @@ public class Aggregator extends UntypedActor {
         try {
 
             List<LearningData> listToSerialize = new ArrayList<>();
-            this.roundParticipants.entrySet().stream()
+            this.roundParticipants.entrySet()
                     .forEach(pd -> listToSerialize.add(new LearningData(pd.getKey(), pd.getValue().port)));
 
             String json = mapper.writeValueAsString(listToSerialize);
