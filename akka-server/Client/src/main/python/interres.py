@@ -38,6 +38,11 @@ def main():
     print(pathToResources+id+"/interRes.pt")
     torch.save(InterRes, pathToResources+id+"/interRes.pt")
     # save InterRes to send on Java level
+    # delete exploited files
+    for R in filelist:
+        if os.path.exists(pathToResources+"/"+id+"/"+R):
+            os.remove(pathToResources+"/"+id+"/"+R)
+    os.remove(pathToResources+"/"+id+"/"+id+"_"+id+".pt")
 
 if __name__ == "__main__":
     main()

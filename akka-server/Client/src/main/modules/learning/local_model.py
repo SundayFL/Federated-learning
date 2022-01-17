@@ -243,9 +243,6 @@ async def main():
     print(model.state_dict()['fc2.bias'])
 
     weights = model.state_dict()
-    if args.save_model:
-        torch.save(weights, args.pathToResources+args.id+"/saved_model")
-        # save model
     polynomial = {}
     print(args.public_keys)
     public_keys = json.loads(args.public_keys.replace('=', ':'))

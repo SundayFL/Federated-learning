@@ -172,6 +172,9 @@ async def main():
     interResList = {}
     for participant in publicKeys:
         interResList[participant] = {'publicKey': publicKeys[participant], 'weights': torch.load(args.pathToResources+"/interRes/"+participant+".pt")}
+        if os.path.exists(args.pathToResources+"/interRes/"+participant+".pt"):
+            os.remove(args.pathToResources+"/interRes/"+participant+".pt")
+    os.rmdir(args.pathToResources+"/interRes")
 
     # calculate aggregated weights
     aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])

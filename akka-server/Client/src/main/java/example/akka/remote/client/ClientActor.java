@@ -163,10 +163,14 @@ public class ClientActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
             byte[] bytes; // file to send
+            File tempfile;
+            boolean deleted;
             for (Map.Entry<String, Messages.ContactData> client: this.contactMap.entrySet()) {
                 // send R value to every client
                 log.info("Sending R value to "+client.getKey());
                 bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
+                tempfile = new File(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt");
+                deleted = tempfile.delete(); // delete an exploited file
                 // read a file with an R value earlier prepared and send
                 client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
@@ -190,6 +194,10 @@ public class ClientActor extends UntypedActor {
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+                File tempfile2 = new File(configuration.pathToResources+this.clientId+"/interRes.pt");
+                boolean deleted2 = tempfile2.delete();
+                File directory = new File(configuration.pathToResources+this.clientId);
+                boolean deleted3 = directory.delete();
                 // send InterRes
                 log.info("InterRes sent");
             }
