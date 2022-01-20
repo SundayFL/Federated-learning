@@ -1,5 +1,4 @@
 {
-  "diffPriv": false,
   "useCuda": "false",
   "RAMInGB": 8,
   "instanceType": "Computer",
@@ -18,6 +17,6 @@
   "pathToModulesList": "./src/main/modules/learning/modules.json",
   "pathToLocalModel": "./src/main/modules/learning/local_model.py",
   "pathToInterRes": "./src/main/python/interres.py",
-  "DP_noiseVariance": 1,
-  "DP_threshold": 0.2
+  "diffPriv": true,
+  "DP_variance": 0.5
 }

@@ -16,8 +16,10 @@ public class ClientGetModelActor extends UntypedActor {
     private String clientId;
     private int minimum;
     private Map<String, Float> publicKeys;
-    private double DP_noiseVariance;
+    private double DP_variance;
     private double DP_threshold;
+    private boolean secureAgg;
+    private boolean diffPriv;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -36,8 +38,10 @@ public class ClientGetModelActor extends UntypedActor {
             // public keys extracted to another map
 
             // differential privacy arguments
-            this.DP_noiseVariance = castedMessage.DP_noiseVariance;
+            this.secureAgg = castedMessage.secureAgg;
+            this.diffPriv = castedMessage.diffPriv;
             this.DP_threshold = castedMessage.DP_threshold;
+            this.DP_variance = castedMessage.DP_variance;
             this.readRValues();
             log.info("R values ready");
             getSender().tell(new Messages.RValuesReady(), getSelf());
@@ -64,7 +68,7 @@ public class ClientGetModelActor extends UntypedActor {
                             "--model_config", configuration.modelConfig,
                             "--epochs", String.valueOf(configuration.epochs),
                             "--diff_priv", configuration.diffPriv?"True":"False",
-                            "--dp_noise_variance", String.valueOf(DP_noiseVariance),
+                            "--dp_noise_variance", String.valueOf(DP_variance),
                             "--dp_threshold", String.valueOf(DP_threshold));
 
             Process process = processBuilder.start();

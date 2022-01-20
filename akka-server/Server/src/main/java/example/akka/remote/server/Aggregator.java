@@ -93,7 +93,7 @@ public class Aggregator extends UntypedActor {
                 this.checkReadyToRunLearning.cancel();
                 start = Instant.now();
                 for (ParticipantData participant : this.roundParticipants.values()) {
-                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig, configuration.DP_noiseVariance, configuration.DP_threshold), getSelf());
+                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig, configuration.secureAgg, configuration.DP_threshold), getSelf());
                 }
             }
         } else if (message instanceof StartLearningModule) {
@@ -225,7 +225,7 @@ public class Aggregator extends UntypedActor {
                     participant.getKey(),
                     numberOfParticipants,
                     minimum,
-                    contactMap, 0, 0 // server does not pass these values here, but fields are kept
+                    contactMap, Configuration.secureAgg, true,Configuration.DP_threshold, 0.5 // mock values
             ), getSelf());
     }
 

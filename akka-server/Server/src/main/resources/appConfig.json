@@ -1,5 +1,4 @@
 {
-  "secureAgg": true,
   "learningTaskId": "mnist",
   "serverModuleFilePathSA": "./src/main/python/polynomial.py",
   "serverModuleFilePath": "./src/main/python/server.py",
@@ -20,6 +19,6 @@
       "instanceType": "Computer"
     }
   ],
-  "DP_noiseVariance": 1,
+  "secureAgg": true,
   "DP_threshold": 0.2
 }
