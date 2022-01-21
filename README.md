@@ -41,10 +41,19 @@ Use the below for runing multiple clients:-
 
 e.g.-  2553 - akka port,
        6 id of the dataset due to TFF indexing,
-       bob - client id and
+       bob - client id
        8778 python port
+       0.5 differential privacy(security module) variance, if 0 - no differential privacy
 ```java
-mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client" -Dexec.args="2553 6 bob 8778"
+mvn exec:java -Dexec.mainClass="example.akka.remote.client.Client" -Dexec.args="2553 6 bob 8778 0.5"
+```
+
+Use the below for runing server:-
+
+e.g.-  1 - secure aggregation enabled, if 0 - disabled,
+       0.2 - differential privacy(security module) threshold  [OPTIONAL ARGUMENT],
+```java
+mvn exec:java -Dexec.mainClass="example.akka.remote.server.Server" -Dexec.args="1 0.2"
 ```
 
 Do remember to run mvn clean install to resolve any remaining dependency with akka before running the akka project.
