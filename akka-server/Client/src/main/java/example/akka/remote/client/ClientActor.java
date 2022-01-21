@@ -151,8 +151,11 @@ public class ClientActor extends UntypedActor {
             this.contactMap = castedMessage.contactMap; // clients, references and public keys
 
             // client config being set
-            castedMessage.diffPriv = this.diffPriv;
-            castedMessage.DP_variance = this.DP_variance;
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            castedMessage.diffPriv = configuration.diffPriv;
+            castedMessage.DP_variance = configuration.DP_variance;
 
             ActorSystem system = getContext().system();
             // Start reading R values through a new actor

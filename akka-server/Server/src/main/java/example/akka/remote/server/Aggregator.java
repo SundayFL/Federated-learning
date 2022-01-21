@@ -71,11 +71,15 @@ public class Aggregator extends UntypedActor {
     // Enable secure aggregation
     boolean secureAgg;
 
+    // Differential privacy threshold
+    double DP_threshold;
+
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
         Configuration.ConfigurationDTO configuration = Configuration.get();
         setSecureAgg(configuration.secureAgg);
+        setThreshold(configuration.DP_threshold);
 
         if (message instanceof StartRound) {
             // Message that round should start
@@ -225,7 +229,11 @@ public class Aggregator extends UntypedActor {
                     participant.getKey(),
                     numberOfParticipants,
                     minimum,
-                    contactMap, Configuration.secureAgg, true,Configuration.DP_threshold, 0.5 // mock values
+                    contactMap,
+                    secureAgg,
+                    true,
+                    DP_threshold,
+                    0.5 // mock values
             ), getSelf());
     }
 
@@ -445,5 +453,9 @@ public class Aggregator extends UntypedActor {
 
     public void setSecureAgg(boolean secureAgg) {
         this.secureAgg = secureAgg;
+    }
+
+    public void setThreshold(double threshold) {
+        this.DP_threshold = threshold;
     }
 }
