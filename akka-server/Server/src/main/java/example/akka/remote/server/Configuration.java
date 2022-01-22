@@ -40,7 +40,7 @@ public class Configuration {
 
     public static void FillWithArguments(ConfigurationDTO configuration) {
         configuration.secureAgg = Configuration.secureAgg;
-        System.out.println("SECURE AGG ENABLED: " + configuration.secureAgg);
+        System.out.println("secure aggregation -> " + configuration.secureAgg);
         if (Configuration.DP_threshold != null) {
             configuration.DP_threshold = Configuration.DP_threshold;
         }
@@ -59,7 +59,7 @@ public class Configuration {
             this.DP_threshold = Double.parseDouble( args[1] );
         }
 
-        System.out.println("secureAgg ENABLED: " + this.secureAgg + ", DP_threshold: " + this.DP_threshold);
+        System.out.println("secure aggregation -> " + this.secureAgg + "\ndifferential privacy threshold -> " + this.DP_threshold);
     }
 
 

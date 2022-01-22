@@ -123,10 +123,9 @@ def define_participants_lists(participantsjsonlist, **kwargs_websocket):
 
     participants = participantsjsonlist.replace("'","\"")
     participants = json.loads(participants)
-    print(participants)
 
     for_test = random.choices(participants, k=np.int(np.round(len(participants)*0.3)))
-    print('Clients picked for test: \n')
+    print('Clients chosen for test: \n')
     print(for_test)
     worker_instances = []
     worker_instances_test = []
@@ -134,11 +133,11 @@ def define_participants_lists(participantsjsonlist, **kwargs_websocket):
         print("----------------------")
         print(participant['id'])
         print(participant['port'])
-        print("----------------------")
         if participant not in for_test:
             worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
         else:
             worker_instances_test.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
+    print("----------------------")
 
     for wcw in worker_instances:
         wcw.clear_objects_remote()
@@ -157,7 +156,6 @@ async def main():
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
-    print(args.participantsjsonlist)
     worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
 
     #define model
@@ -179,9 +177,6 @@ async def main():
     # calculate aggregated weights
     aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
 
-    for participant in publicKeys:
-        print(interResList[participant]['weights']['fc2.bias'])
-
     def setWeights(list0, lists, keys):  # recurrent calculations
         for i, x in enumerate(list0):
             if np.isscalar(x):
@@ -199,8 +194,6 @@ async def main():
         )
         aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
     model.load_state_dict(aggregatedWeights)  # fit the model's structure
-
-    print(model.state_dict()['fc2.bias'])
 
     model = torch.jit.trace(model, test_tensor.to(device))
     model.train()

@@ -132,7 +132,7 @@ async def fit_model_on_worker(
 
     # Differential Privacy
     if diff_priv=="True":
-        print("Differential privacy enabled - it is being used now")
+        print("Differential privacy in use")
         # getting old weights
         old_weights = traced_model.state_dict()
 
@@ -154,7 +154,7 @@ async def fit_model_on_worker(
         # updating weights' increment in returned model
         model.load_state_dict(weights_incr)
     else:
-        print("Differential privacy disabled")
+        print("Differential privacy out of use")
 
 
     # returning updated weights
@@ -250,11 +250,9 @@ async def main():
         weights = model.classifier.state_dict()
     else:
         weights = model.fc2.weight.data"""
-    print(model.state_dict()['fc2.bias'])
 
     weights = model.state_dict()
     polynomial = {}
-    print(args.public_keys)
     public_keys = json.loads(args.public_keys.replace('=', ':'))
     for client in public_keys:
         polynomial[client] = 0
@@ -269,8 +267,6 @@ async def main():
             polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
         for w in weights:
             weights[w] = weights[w]+polynomial[client]
-        print(weights['fc2.bias'])
-        print("saving R values for a specific client")
         torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 
