@@ -31,8 +31,8 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
-            this.DP_noiseVariance = configuration.DP_noiseVariance;
-            this.DP_threshold = configuration.DP_threshold;
+            this.diffPriv = configuration.diffPriv;
+            this.DP_variance = configuration.DP_variance;
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -53,7 +53,9 @@ public class ClientActor extends UntypedActor {
     private String taskId;
     private String moduleFileName;
     private String modelConfig;
-    private double DP_noiseVariance;
+    private boolean diffPriv;
+    private boolean secureAgg;
+    private double DP_variance;
     private double DP_threshold;
 
     private ActorSelection selection;
@@ -117,10 +119,9 @@ public class ClientActor extends UntypedActor {
             Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
             this.modelConfig = messageWithModel.getModelConfig();
 
-            // if diff privacy parameteres are not set on client's side - set them using server's config
-            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
-            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
-
+            // set server's config
+            this.secureAgg = messageWithModel.secureAggr;
+            this.DP_threshold = messageWithModel.DP_threshold;
             // Start learning module
             ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
             moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig), getSelf());
@@ -149,9 +150,12 @@ public class ClientActor extends UntypedActor {
             this.numberOfClientstoAwait = castedMessage.numberOfClients; // number of clients
             this.contactMap = castedMessage.contactMap; // clients, references and public keys
 
-            // DP config update
-            castedMessage.DP_noiseVariance = this.DP_noiseVariance;
-            castedMessage.DP_threshold = this.DP_threshold;
+            // client config being set
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            castedMessage.diffPriv = configuration.diffPriv;
+            castedMessage.DP_variance = configuration.DP_variance;
 
             ActorSystem system = getContext().system();
             // Start reading R values through a new actor
@@ -163,10 +167,14 @@ public class ClientActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
             byte[] bytes; // file to send
+            File tempfile;
+            boolean deleted;
             for (Map.Entry<String, Messages.ContactData> client: this.contactMap.entrySet()) {
                 // send R value to every client
                 log.info("Sending R value to "+client.getKey());
                 bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
+                tempfile = new File(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt");
+                deleted = tempfile.delete(); // delete an exploited file
                 // read a file with an R value earlier prepared and send
                 client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
             }
@@ -190,6 +198,10 @@ public class ClientActor extends UntypedActor {
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+                File tempfile2 = new File(configuration.pathToResources+this.clientId+"/interRes.pt");
+                boolean deleted2 = tempfile2.delete();
+                File directory = new File(configuration.pathToResources+this.clientId);
+                boolean deleted3 = directory.delete();
                 // send InterRes
                 log.info("InterRes sent");
             }

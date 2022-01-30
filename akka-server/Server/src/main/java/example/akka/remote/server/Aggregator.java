@@ -69,12 +69,17 @@ public class Aggregator extends UntypedActor {
     Instant start, finish;
 
     // Enable secure aggregation
-    boolean secureAgg = true;
+    boolean secureAgg;
+
+    // Differential privacy threshold
+    double DP_threshold;
 
     @Override
     public void onReceive(Object message) throws Exception {
         log.info("onReceive({})", message);
         Configuration.ConfigurationDTO configuration = Configuration.get();
+        setSecureAgg(configuration.secureAgg);
+        setThreshold(configuration.DP_threshold);
 
         if (message instanceof StartRound) {
             // Message that round should start
@@ -92,7 +97,7 @@ public class Aggregator extends UntypedActor {
                 this.checkReadyToRunLearning.cancel();
                 start = Instant.now();
                 for (ParticipantData participant : this.roundParticipants.values()) {
-                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig, configuration.DP_noiseVariance, configuration.DP_threshold), getSelf());
+                    participant.deviceReference.tell(new StartLearningProcessCommand(configuration.modelConfig, configuration.secureAgg, configuration.DP_threshold), getSelf());
                 }
             }
         } else if (message instanceof StartLearningModule) {
@@ -122,7 +127,7 @@ public class Aggregator extends UntypedActor {
             log.info("All participants started module" + allParticipantsStartedModule);
 
             if (allParticipantsStartedModule)
-                if (secureAgg) for (ParticipantData participant : this.roundParticipants.values())
+                if (configuration.secureAgg) for (ParticipantData participant : this.roundParticipants.values())
                     participant.deviceReference.tell(new AreYouAliveQuestion(), getSelf());
                 else {
                     log.info("Run learning");
@@ -224,7 +229,11 @@ public class Aggregator extends UntypedActor {
                     participant.getKey(),
                     numberOfParticipants,
                     minimum,
-                    contactMap, 0, 0 // server does not pass these values here, but fields are kept
+                    contactMap,
+                    secureAgg,
+                    true,
+                    DP_threshold,
+                    0.5 // mock values
             ), getSelf());
     }
 
@@ -287,13 +296,14 @@ public class Aggregator extends UntypedActor {
         // Executing module script as a command
         processBuilder
             .inheritIO()
-            .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            .command("python3.8", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            // secure aggregation requires a different script to construct the model
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
             "--publicKeys", configuration.secureAgg?this.publics.toString():"",
             "--degree", String.valueOf(this.roundParticipants.size()),
             "--epochs", String.valueOf(configuration.epochs),
-            "--modelpath", configuration.secureAgg?configuration.savedModelPathSA:configuration.savedModelPath,
+            "--modelpath", configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,
             "--model_config", configuration.modelConfig,
             "--model_output", String.valueOf(configuration.targetOutputSize));
@@ -337,7 +347,7 @@ public class Aggregator extends UntypedActor {
         try {
 
             List<LearningData> listToSerialize = new ArrayList<>();
-            this.roundParticipants.entrySet().stream()
+            this.roundParticipants.entrySet()
                     .forEach(pd -> listToSerialize.add(new LearningData(pd.getKey(), pd.getValue().port)));
 
             String json = mapper.writeValueAsString(listToSerialize);
@@ -443,5 +453,9 @@ public class Aggregator extends UntypedActor {
 
     public void setSecureAgg(boolean secureAgg) {
         this.secureAgg = secureAgg;
+    }
+
+    public void setThreshold(double threshold) {
+        this.DP_threshold = threshold;
     }
 }

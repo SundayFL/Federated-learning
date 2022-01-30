@@ -22,7 +22,7 @@ from syft.workers import websocket_client
 from syft.frameworks.torch.fl import utils
 
 
-websocket_client.TIMEOUT_INTERVAL = 60
+websocket_client.TIMEOUT_INTERVAL = 600
 LOG_INTERVAL = 25
 
 logger = logging.getLogger("run_websocket_client")
