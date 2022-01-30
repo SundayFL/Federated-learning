@@ -9,7 +9,7 @@
   "epochs": 50,
   "modelConfig": "mnist",
   "id": "alice",
-  "host": "sundayfl.eastus.azurecontainer.io",
+  "host": "localhost",
   "port": "8777",
   "address": "sundayfl.eastus.azurecontainer.io:5000",
   "pathToResources": "./src/main/resources/",
