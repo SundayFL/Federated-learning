@@ -11,10 +11,11 @@
   "id": "alice",
   "host": "localhost",
   "port": "8777",
-  "address": "sundayfl2.eastus.azurecontainer.io:5000",
+  "address": "sundayfl.eastus.azurecontainer.io:5000",
   "pathToResources": "./src/main/resources/",
   "pathToModules": "./src/main/modules/learning/",
   "pathToModulesList": "./src/main/modules/learning/modules.json",
   "pathToLocalModel": "./src/main/modules/learning/local_model.py",
+  "pathToTesting": "./src/main/modules/learning/testmodel.py",
   "pathToInterRes": "./src/main/python/interres.py"
 }

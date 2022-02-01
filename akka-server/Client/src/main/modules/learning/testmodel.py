@@ -63,13 +63,13 @@ def define_and_get_arguments(args=sys.argv[1:]):
         help="if set, websocket client workers will be started in verbose mode",
     )
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
+    parser.add_argument("--id", action="store")
+    parser.add_argument("--port", action="store")
     parser.add_argument("--pathToResources", help="where to store", action="store")
-    parser.add_argument("--publicKeys", help="public keys", action="store")
-    parser.add_argument("--degree", help="public keys", action="store")
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
-    parser.add_argument("--model_output", default=12)
+    parser.add_argument("--model_output", default=10)
     parser.add_argument("--modelpath", default = 'saved_model')
 
     args = parser.parse_args(args=args)
@@ -79,25 +79,25 @@ def define_model(model_config, device, modelpath, model_output):
     model_file = Path(modelpath)
     test_tensor = torch.zeros([1, 3, 224, 224])
     if (model_config == 'vgg'):
-       model = vgg11(pretrained = True)
-       model.classifier[6].out_features = model_output
-       print(model.classifier)
-       model.eval()
-       model.to(device)
-       transform = transforms.Compose([
-           transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-       ])
-       test_tensor[0] = transform(test_tensor[0])
+        model = vgg11(pretrained = True)
+        model.classifier[6].out_features = model_output
+        print(model.classifier)
+        model.eval()
+        model.to(device)
+        transform = transforms.Compose([
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+        test_tensor[0] = transform(test_tensor[0])
 
     if (model_config == 'cnn'):
-       model = CNN(3, model_output).to(device)
+        model = CNN(3, model_output).to(device)
 
     if (model_config == 'mnist'):
-       model = MNIST().to(device)
-       test_tensor = torch.zeros([1, 1, 28, 28])
+        model = MNIST().to(device)
+        test_tensor = torch.zeros([1, 1, 28, 28])
 
     if model_file.is_file():
-       model.load_state_dict(torch.load(modelpath))
+        model.load_state_dict(torch.load(modelpath))
     return model, test_tensor
 
 async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
@@ -117,35 +117,10 @@ async def test(test_worker, traced_model, batch_size, federate_after_n_batches, 
         worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
     return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
 
-def define_participants_lists(participantsjsonlist, **kwargs_websocket):
-
-    # choose at least 30% participants that will test the models
-
-    participants = participantsjsonlist.replace("'","\"")
-    participants = json.loads(participants)
-
-    for_test = random.choices(participants, k=np.int(np.round(len(participants)*0.3)))
-    print('Clients chosen for test: \n')
-    print(for_test)
-    worker_instances = []
-    worker_instances_test = []
-    for participant in participants:
-        print("----------------------")
-        print(participant['id'])
-        print(participant['port'])
-        if participant not in for_test:
-            worker_instances.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
-        else:
-            worker_instances_test.append(sy.workers.websocket_client.WebsocketClientWorker(id=participant['id'], port=participant['port'], **kwargs_websocket))
-    print("----------------------")
-
-    for wcw in worker_instances:
-        wcw.clear_objects_remote()
-
-    for wcw in worker_instances_test:
-        wcw.clear_objects_remote()
-
-    return worker_instances, worker_instances_test
+def define_participant(id, port, **kwargs_websocket):
+    worker_instance = sy.workers.websocket_client.WebsocketClientWorker(id=id, port=port, **kwargs_websocket)
+    worker_instance.clear_objects_remote()
+    return worker_instance
 
 async def main():
     #set up environment
@@ -154,9 +129,9 @@ async def main():
     torch.manual_seed(args.seed)
     print(args)
     hook = sy.TorchHook(torch)
-    #kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
+    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
-    #worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
+    worker_instance = define_participant(args.id, args.port, **kwargs_websocket)
 
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
@@ -165,67 +140,25 @@ async def main():
     #for p in model.parameters():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
 
-    # extract interRes values
-    publicKeys = json.loads(args.publicKeys.replace("=", ":"))
-    interResList = {}
-    for participant in publicKeys:
-        interResList[participant] = {'publicKey': publicKeys[participant], 'weights': torch.load(args.pathToResources+"/interRes/"+participant+".pt")}
-        if os.path.exists(args.pathToResources+"/interRes/"+participant+".pt"):
-            os.remove(args.pathToResources+"/interRes/"+participant+".pt")
-    os.rmdir(args.pathToResources+"/interRes")
-
-    # calculate aggregated weights
-    aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
-
-    def setWeights(list0, lists, keys):  # recurrent calculations
-        for i, x in enumerate(list0):
-            if np.isscalar(x):
-                list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))[-1]/len(interResList)
-                # polynomial fit
-            else:
-                list0[i] = setWeights(list0[i], [list1[i] for list1 in lists], keys)
-        return list0
-
-    for weighttensor in aggregatedWeights:
-        aggregatedWeights[weighttensor] = setWeights(
-            np.array(aggregatedWeights[weighttensor]),
-            np.array([np.array(interResList[interRes]['weights'][weighttensor]) for interRes in interResList]),
-            np.array([interResList[interRes]['publicKey'] for interRes in interResList])
-        )
-        aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
-    model.load_state_dict(aggregatedWeights)  # fit the model's structure
-
     model = torch.jit.trace(model, test_tensor.to(device))
     model.train()
-    # model testing (moved to clients; to bring back as soon as websockets troubleshooting is resolved)
-    """
-    learning_rate = args.lr
-    correct_predictions = 0
-    all_predictions = 0
-    model.eval()
-    if len(worker_instances_test) > 0:
-        results = await asyncio.gather(
-            *[
-                test(worker_test, model,
-                     args.batch_size,
-                     args.federate_after_n_batches, learning_rate, int(args.model_output))
-                for worker_test in worker_instances_test
-            ]
-        )
-        test_loss = []
-        for curr_correct, total_predictions, loss , target_hist, predictions_hist in results:
-            correct_predictions += curr_correct
-            all_predictions += total_predictions
-            test_loss.append(loss)
-            print('Got predictions: \n')
-            print(predictions_hist)
-            print('Expected: \n')
-            print(target_hist)
+    # model testing
+    resultsfile = open(args.pathToResources+args.id+'.txt', 'w')
 
-        print("Currrent accuracy: " + str(correct_predictions/all_predictions))
-        print(test_loss)
+    learning_rate = args.lr
+    model.eval()
+    curr_correct, total_predictions, loss, target_hist, predictions_hist = await test(worker_instance, model,
+                                                                                      args.batch_size,
+                                                                                      args.federate_after_n_batches, learning_rate, int(args.model_output))
+    resultsfile.write('Got predictions: \n')
+    resultsfile.write(str(predictions_hist))
+    resultsfile.write('\nExpected: \n')
+    resultsfile.write(str(target_hist))
+    resultsfile.write("\nAccuracy: " + str(curr_correct/total_predictions))
+    resultsfile.write("\nTest loss: " + str(loss))
     model.train()
-    """
+    resultsfile.close()
+
     if args.modelpath:
         torch.save(model.state_dict(), args.modelpath)
 

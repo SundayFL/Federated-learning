@@ -200,11 +200,23 @@ public class ClientActor extends UntypedActor {
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
                 File tempfile2 = new File(configuration.pathToResources+this.clientId+"/interRes.pt");
                 boolean deleted2 = tempfile2.delete();
-                File directory = new File(configuration.pathToResources+this.clientId);
-                boolean deleted3 = directory.delete();
                 // send InterRes
                 log.info("InterRes sent");
             }
+        } else if (message instanceof Messages.TestMyModel){
+            ActorSystem system = getContext().system();
+            // Start reading R values through a new actor
+            ActorRef modelTester = system.actorOf(Props.create(ClientTestActor.class), "ClientTestActor");
+            modelTester.tell(message, getSelf());
+        } else if (message instanceof Messages.TestResults){
+            this.server.tell(message, getSelf());
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            File tempfile = new File(configuration.pathToResources+configuration.id+"/saved_model");
+            boolean deleted = tempfile.delete();
+            File directory = new File(configuration.pathToResources+this.clientId);
+            deleted = directory.delete();
         }
     }
 

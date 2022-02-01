@@ -12,16 +12,15 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.typesafe.config.ConfigFactory;
 import example.akka.remote.shared.LoggingActor;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 import scala.util.control.TailCalls;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
@@ -73,6 +72,9 @@ public class Aggregator extends UntypedActor {
 
     // Differential privacy threshold
     double DP_threshold;
+
+    // Testers number
+    private int test_counter;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -196,9 +198,17 @@ public class Aggregator extends UntypedActor {
                 // elapsed time
                 float timeOfLearning = (float) (Duration.between(start, finish).toMillis()/1000.0);
                 log.info("Time of learning round: "+timeOfLearning);
-                // tell the coordinator
-                this.coordinator.tell(new RoundEnded(), getSelf());
             }
+        } else if (message instanceof TestResults) {
+            this.test_counter--;
+            byte[] bytes = ((TestResults) message).bytes;
+            String sender = ((TestResults) message).id;
+            Files.write(Paths.get(sender+".txt"), bytes);
+            BufferedReader br = new BufferedReader(new FileReader(sender+".txt"));
+            String line;
+            while ((line = br.readLine()) != null) System.out.println(line);
+            // tell the coordinator
+            if (this.test_counter==0) this.coordinator.tell(new RoundEnded(), getSelf());
         } else {
             unhandled(message);
         }
@@ -314,6 +324,17 @@ public class Aggregator extends UntypedActor {
             System.out.println("After start");
             int exitCode = process.waitFor();
             System.out.println("After execution");
+            if (configuration.secureAgg){
+                byte[] bytes = Files.readAllBytes(Paths.get(configuration.savedModelPath));
+                List<String> testers = new ArrayList<>(this.roundParticipants.keySet());
+                Collections.shuffle(testers);
+                int testers_number = (int) Math.ceil(((double)this.roundParticipants.size())*0.3);
+                this.test_counter = testers_number;
+                for (int i=0; i<testers_number; i++){
+                    log.info("Client "+testers.get(i)+" chosen for test");
+                    this.roundParticipants.get(testers.get(i)).deviceReference.tell(new Messages.TestMyModel(bytes), getSelf());
+                }
+            }
             BufferedReader read = new BufferedReader(new InputStreamReader(
                     process.getInputStream()));
             while (read.ready()) {

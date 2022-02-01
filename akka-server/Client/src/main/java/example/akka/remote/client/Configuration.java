@@ -89,6 +89,7 @@ public class Configuration {
         public String pathToModulesList;
         public String pathToResources;
         public String pathToLocalModel;
+        public String pathToTesting;
         public String pathToInterRes;
         public String modelConfig;
         public int dataSetId;

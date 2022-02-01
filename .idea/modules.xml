@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/akka-server/Client/Client.iml" filepath="$PROJECT_DIR$/akka-server/Client/Client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/Federated-learning.iml" filepath="$PROJECT_DIR$/.idea/Federated-learning.iml" />
       <module fileurl="file://$PROJECT_DIR$/akka-server/Remote.iml" filepath="$PROJECT_DIR$/akka-server/Remote.iml" />
       <module fileurl="file://$PROJECT_DIR$/akka-server/Server/Server.iml" filepath="$PROJECT_DIR$/akka-server/Server/Server.iml" />
       <module fileurl="file://$PROJECT_DIR$/akka-server/Shared/Shared.iml" filepath="$PROJECT_DIR$/akka-server/Shared/Shared.iml" />

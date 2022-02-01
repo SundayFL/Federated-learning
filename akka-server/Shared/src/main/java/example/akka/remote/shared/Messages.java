@@ -252,6 +252,24 @@ public class Messages {
         }
     }
 
+    public static class TestMyModel implements Serializable {
+        public byte[] bytes;
+
+        public TestMyModel(byte[] bytes) {
+            this.bytes = bytes;
+        }
+    }
+
+    public static class TestResults implements Serializable {
+        public byte[] bytes;
+        public String id;
+
+        public TestResults(byte[] bytes, String id) {
+            this.bytes = bytes;
+            this.id = id;
+        }
+    }
+
     public static class RoundEnded implements Serializable { }
 
     public enum InstanceType {

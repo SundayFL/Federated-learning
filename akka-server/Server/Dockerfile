@@ -14,5 +14,5 @@ ADD src/main/resources src/main/resources
 
 EXPOSE 5000
 
-ENTRYPOINT ["java","-cp","app.jar", "example.akka.remote.server.Server"]
+ENTRYPOINT ["java","-cp","app.jar", "example.akka.remote.server.Server", "1"]
 # add "1" to list to enable secure aggregation
