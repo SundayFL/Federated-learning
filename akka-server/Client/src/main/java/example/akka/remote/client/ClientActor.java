@@ -162,6 +162,7 @@ public class ClientActor extends UntypedActor {
             ActorRef modelReader = system.actorOf(Props.create(ClientGetModelActor.class), "ClientGetModelActor");
             modelReader.tell(message, getSelf());
         } else if (message instanceof Messages.RValuesReady){
+            clientsFromWhomWeReceivedRValues.add(this.clientId);
             // sending R values to other clients
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
@@ -169,15 +170,11 @@ public class ClientActor extends UntypedActor {
             byte[] bytes; // file to send
             File tempfile;
             boolean deleted;
-            for (Map.Entry<String, Messages.ContactData> client: this.contactMap.entrySet()) {
-                // send R value to every client
-                log.info("Sending R value to "+client.getKey());
-                bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
-                tempfile = new File(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt");
-                deleted = tempfile.delete(); // delete an exploited file
-                // read a file with an R value earlier prepared and send
-                client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
-            }
+            // send R value to every client
+            log.info("Sending R values");
+            bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_random.pt"));
+            // read a file with an R value earlier prepared and send
+            server.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
         } else if (message instanceof Messages.SendRValue){
             // who has sent the values so far?
             clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
@@ -191,7 +188,7 @@ public class ClientActor extends UntypedActor {
             log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
             // retrieve and save the R value
             byte[] bytes = ((Messages.SendRValue) message).bytes;
-            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
+            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_random.pt"), bytes);
 
             if (numberOfClientstoAwait == clientsFromWhomWeReceivedRValues.size()){
                 // all R values received, InterRes can be calculated

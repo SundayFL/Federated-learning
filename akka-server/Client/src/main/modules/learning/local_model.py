@@ -252,22 +252,11 @@ async def main():
         weights = model.fc2.weight.data"""
 
     weights = model.state_dict()
-    polynomial = {}
-    public_keys = json.loads(args.public_keys.replace('=', ':'))
-    for client in public_keys:
-        polynomial[client] = 0
-    private_keys = []
-    # generate private keys
-    for m in range(int(args.minimum)):
-        private_keys.append(random.random())
+    torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
+    for w in weights:
+        weights[w] = torch.rand(weights[w].size())
     # save R values
-    for client in public_keys:
-        weights = model.state_dict()
-        for m in range(int(args.minimum)):
-            polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
-        for w in weights:
-            weights[w] = weights[w]+polynomial[client]
-        torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
+    torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_random.pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 
 if __name__ == "__main__":

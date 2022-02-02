@@ -169,36 +169,25 @@ async def main():
     publicKeys = json.loads(args.publicKeys.replace("=", ":"))
     interResList = {}
     for participant in publicKeys:
-        interResList[participant] = {'publicKey': publicKeys[participant], 'weights': torch.load(args.pathToResources+"/interRes/"+participant+".pt")}
+        interResList[participant] = torch.load(args.pathToResources+"/interRes/"+participant+".pt")
         if os.path.exists(args.pathToResources+"/interRes/"+participant+".pt"):
             os.remove(args.pathToResources+"/interRes/"+participant+".pt")
+        p = participant
     os.rmdir(args.pathToResources+"/interRes")
 
     # calculate aggregated weights
-    aggregatedWeights = deepcopy(list(interResList.items())[0][1]['weights'])
+    aggregatedWeights = {}
+    for weights in interResList[p]:
+        aggregatedWeights[weights] = torch.zeros(interResList[p][weights].size())
+        for participant in interResList:
+            aggregatedWeights[weights] = aggregatedWeights[weights] + interResList[participant][weights] / len(interResList)
 
-    def setWeights(list0, lists, keys):  # recurrent calculations
-        for i, x in enumerate(list0):
-            if np.isscalar(x):
-                list0[i] = np.polyfit(keys, np.array([list1[i] for list1 in lists]), int(args.degree))[-1]/len(interResList)
-                # polynomial fit
-            else:
-                list0[i] = setWeights(list0[i], [list1[i] for list1 in lists], keys)
-        return list0
-
-    for weighttensor in aggregatedWeights:
-        aggregatedWeights[weighttensor] = setWeights(
-            np.array(aggregatedWeights[weighttensor]),
-            np.array([np.array(interResList[interRes]['weights'][weighttensor]) for interRes in interResList]),
-            np.array([interResList[interRes]['publicKey'] for interRes in interResList])
-        )
-        aggregatedWeights[weighttensor] = torch.tensor(aggregatedWeights[weighttensor])
     model.load_state_dict(aggregatedWeights)  # fit the model's structure
 
-    model = torch.jit.trace(model, test_tensor.to(device))
-    model.train()
     # model testing (moved to clients; to bring back as soon as websockets troubleshooting is resolved)
     """
+    model = torch.jit.trace(model, test_tensor.to(device))
+    model.train()
     learning_rate = args.lr
     correct_predictions = 0
     all_predictions = 0

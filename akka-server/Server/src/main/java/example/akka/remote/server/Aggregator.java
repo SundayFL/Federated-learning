@@ -168,6 +168,11 @@ public class Aggregator extends UntypedActor {
                 this.exchange(configuration.minimumNumberOfDevices - 1);
                 // spreading references to let clients exchange data
             }
+        } else if (message instanceof SendRValue) {
+            Messages.SendRValue castedMessage = (Messages.SendRValue) message;
+            for (Map.Entry<String, ParticipantData> client: this.roundParticipants.entrySet())
+                client.getValue().deviceReference.tell(castedMessage, getSelf());
+            // server passes random values that have no meaning there, but will be useful to clients
         } else if (message instanceof SendInterRes) {
             // save InterRes
             // counting down clients to await InterRes values from
@@ -306,7 +311,7 @@ public class Aggregator extends UntypedActor {
         // Executing module script as a command
         processBuilder
             .inheritIO()
-            .command("python3.8", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
             // secure aggregation requires a different script to construct the model
             "--datapath", configuration.testDataPath,
             "--participantsjsonlist", tempvar,
