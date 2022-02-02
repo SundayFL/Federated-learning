@@ -99,12 +99,12 @@ public class Messages {
 
     public static class StartLearningProcessCommand implements Serializable {
         public String modelConfig;
-        public double DP_noiseVariance;
+        public boolean secureAggr;
         public double DP_threshold;
 
-        public StartLearningProcessCommand(String modelConfig, double DP_noiseVariance, double DP_threshold) {
+        public StartLearningProcessCommand(String modelConfig, boolean secureAggr, double DP_threshold) {
             this.modelConfig = modelConfig;
-            this.DP_noiseVariance = DP_noiseVariance;
+            this.secureAggr = secureAggr;
             this.DP_threshold = DP_threshold;
         }
 
@@ -112,9 +112,6 @@ public class Messages {
             return modelConfig;
         }
 
-        public double getDP_noiseVariance() {
-            return DP_noiseVariance;
-        }
 
         public double getDP_threshold() {
             return DP_threshold;
@@ -203,22 +200,28 @@ public class Messages {
                                 int numberOfClients,
                                 int minimum,
                                 Map<String, ContactData> contactMap,
-                                double DP_noiseVariance,
-                                double DP_threshold){
+                                boolean secureAgg,
+                                boolean diffPriv,
+                                double DP_threshold,
+                                double DP_variance){
             this.clientId = clientId;
             this.numberOfClients = numberOfClients;
             this.minimum = minimum;
             this.contactMap = contactMap;
-            this.DP_noiseVariance = DP_noiseVariance;
+            this.secureAgg = secureAgg;
+            this.diffPriv = diffPriv;
             this.DP_threshold = DP_threshold;
+            this.DP_variance = DP_variance;
         }
 
         public String clientId;
         public int numberOfClients;
         public int minimum;
         public Map<String, ContactData> contactMap;
-        public double DP_noiseVariance;
+        public boolean secureAgg;
+        public boolean diffPriv;
         public double DP_threshold;
+        public double DP_variance;
     }
 
     public static class AreYouAliveQuestion implements Serializable { }
@@ -246,6 +249,24 @@ public class Messages {
         public SendInterRes(String sender, byte[] bytes){
             this.sender=sender;
             this.bytes=bytes;
+        }
+    }
+
+    public static class TestMyModel implements Serializable {
+        public byte[] bytes;
+
+        public TestMyModel(byte[] bytes) {
+            this.bytes = bytes;
+        }
+    }
+
+    public static class TestResults implements Serializable {
+        public byte[] bytes;
+        public String id;
+
+        public TestResults(byte[] bytes, String id) {
+            this.bytes = bytes;
+            this.id = id;
         }
     }
 

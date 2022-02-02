@@ -16,8 +16,12 @@ import java.util.List;
 
 public class Configuration {
 
+    public static boolean secureAgg;  // whether to include secure aggregation in FL
+    public static Double DP_threshold; // parameter of differential privacy
+
+
     // Returns current configuration read from appConfig.json file
-    public static ConfigurationDTO get() {
+    public  static  ConfigurationDTO get() {
         ObjectMapper mapper = new ObjectMapper();
 
         SimpleModule simpleModule = new SimpleModule();
@@ -27,31 +31,60 @@ public class Configuration {
         ConfigurationDTO configuration = null;
         try {
             configuration = mapper.readValue(new File("./src/main/resources/appConfig.json"), ConfigurationDTO.class);
+            FillWithArguments(configuration);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return configuration;
     }
 
+    public static void FillWithArguments(ConfigurationDTO configuration) {
+        configuration.secureAgg = Configuration.secureAgg;
+        System.out.println("secure aggregation -> " + configuration.secureAgg);
+        if (Configuration.DP_threshold != null) {
+            configuration.DP_threshold = Configuration.DP_threshold;
+        }
+
+
+    }
+
+    // Method which saves arguments passed as execution arguments
+    public void SaveArguments(String[] args) {
+        System.out.println("Len: " + args.length);
+
+        if (args.length > 0) {
+            this.secureAgg = Integer.parseInt(args[0]) == 1;
+        }
+        if (args.length > 1) {
+            this.DP_threshold = Double.parseDouble( args[1] );
+        }
+
+        System.out.println("secure aggregation -> " + this.secureAgg + "\ndifferential privacy threshold -> " + this.DP_threshold);
+    }
+
+
     public static class ConfigurationDTO {
-        public boolean secureAgg;
         public int minimumNumberOfDevices;
         public String learningTaskId;
         public String serverModuleFilePathSA;
         public String serverModuleFilePath;
         public String testDataPath;
         public String pathToResources;
-        public String savedModelPathSA;
         public String savedModelPath;
         public int epochs;
         public String modelConfig;
         public int targetOutputSize;
-        public double DP_noiseVariance;
+        public boolean secureAgg;
         public double DP_threshold;
 
         @JsonProperty(value = "clientModules")
         public List<ClientModule> clientModules;
     }
+
+
+
+
+
 
     public static class ClientModule {
         public ClientModule(String learningTaskId, String fileName, String description, Boolean useCUDA, int minRAMInGB, Messages.InstanceType instanceType) {
