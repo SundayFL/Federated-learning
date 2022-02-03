@@ -18,10 +18,12 @@ import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 import scala.util.control.TailCalls;
 
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PublicKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -60,9 +62,6 @@ public class Aggregator extends UntypedActor {
 
     // Number of clients to await
     private int numberOfClientsToAwait;
-
-    // Public keys
-    private Map<String, Float> publics;
 
     // Time measurement
     Instant start, finish;
@@ -153,6 +152,7 @@ public class Aggregator extends UntypedActor {
 
             if(foundOnList == null) return;
             foundOnList.moduleAlive = true;
+            foundOnList.publicKey = ((IAmAlive) message).publicKey;
 
             boolean allParticipantsAlive = roundParticipants
                     .values()
@@ -165,14 +165,13 @@ public class Aggregator extends UntypedActor {
             if (allParticipantsAlive) { // everybody is alive
                 log.info( "Everyone alive!" );
                 log.info("Spreading data");
-                this.exchange(configuration.minimumNumberOfDevices - 1);
+                this.exchange();
                 // spreading references to let clients exchange data
             }
         } else if (message instanceof SendRValue) {
             Messages.SendRValue castedMessage = (Messages.SendRValue) message;
-            for (Map.Entry<String, ParticipantData> client: this.roundParticipants.entrySet())
-                client.getValue().deviceReference.tell(castedMessage, getSelf());
-            // server passes random values that have no meaning there, but will be useful to clients
+            roundParticipants.get(((SendRValue) message).receiver).deviceReference.tell(castedMessage, getSelf());
+            // server passes encrypted values
         } else if (message instanceof SendInterRes) {
             // save InterRes
             // counting down clients to await InterRes values from
@@ -219,32 +218,23 @@ public class Aggregator extends UntypedActor {
         }
     }
 
-    public void exchange(int minimum) {
+    public void exchange() {
         int numberOfParticipants = roundParticipants.size();
         Random keyGeneration = new Random();
 
         // participants of the round with their devices' references and public keys
         // public keys are generated right here
-        Map<String, Messages.ContactData> contactMap = roundParticipants
+        Map<String, PublicKey> publicKeys = roundParticipants
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        participant -> new Messages.ContactData(participant.getValue().deviceReference, keyGeneration.nextFloat())));
-
-        // keep public keys in a map for later re-use
-        String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
-        // Windows and Linux handle parsing maps differently when it comes to quotation marks
-        this.publics = contactMap
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
+                        participant -> participant.getValue().publicKey));
         // spread the data
         for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
             participant.getValue().deviceReference.tell(new ClientDataSpread(
                     participant.getKey(),
                     numberOfParticipants,
-                    minimum,
-                    contactMap,
+                    publicKeys,
                     secureAgg,
                     true,
                     DP_threshold,
@@ -262,7 +252,7 @@ public class Aggregator extends UntypedActor {
             this.address = address;
             this.interRes = new ArrayList<>();
         }
-
+        public PublicKey publicKey;
         public ActorRef deviceReference;
         public boolean moduleStarted;
         public boolean moduleAlive;
@@ -306,7 +296,6 @@ public class Aggregator extends UntypedActor {
         Configuration.ConfigurationDTO configuration = Configuration.get();
 
         String participantsJson = getParticipantsJson();
-        String tempvar = participantsJson.replace('"', '\'');
 
         // Executing module script as a command
         processBuilder
@@ -314,9 +303,7 @@ public class Aggregator extends UntypedActor {
             .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
             // secure aggregation requires a different script to construct the model
             "--datapath", configuration.testDataPath,
-            "--participantsjsonlist", tempvar,
-            "--publicKeys", configuration.secureAgg?this.publics.toString():"",
-            "--degree", String.valueOf(this.roundParticipants.size()),
+            "--participantsjsonlist", participantsJson,
             "--epochs", String.valueOf(configuration.epochs),
             "--modelpath", configuration.savedModelPath,
             "--pathToResources", configuration.pathToResources,
@@ -447,14 +434,6 @@ public class Aggregator extends UntypedActor {
 
     public void setNumberOfClientsToAwait(int numberOfClientsToAwait) {
         this.numberOfClientsToAwait = numberOfClientsToAwait;
-    }
-
-    public Map<String, Float> getPublics() {
-        return publics;
-    }
-
-    public void setPublics(Map<String, Float> publics) {
-        this.publics = publics;
     }
 
     public Instant getStart() {

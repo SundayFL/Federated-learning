@@ -35,7 +35,7 @@ def main():
     for R in filelist:
         nextR = torch.load(pathToResources+"/"+id+"/"+R)
         for tensor in nextR:
-            InterRes[tensor] = InterRes[tensor] + myR[tensor] - nextR[tensor]
+            InterRes[tensor] = InterRes[tensor] - myR[tensor] + nextR[tensor]
     print(pathToResources+id+"/interRes.pt")
     torch.save(InterRes, pathToResources+id+"/interRes.pt")
     # save InterRes to send on Java level

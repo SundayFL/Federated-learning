@@ -7,12 +7,22 @@ import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class ClientActor extends UntypedActor {
 
@@ -62,7 +72,9 @@ public class ClientActor extends UntypedActor {
     private ActorSelection injector;
     private ActorRef server;
 
-    private Map<String, Messages.ContactData> contactMap;
+    private Map<String, PublicKey> publicKeys;
+    private PrivateKey privateKey;
+    private SecretKey aes;
     private Set<String> clientsFromWhomWeReceivedRValues;
     private int numberOfClientstoAwait;
 
@@ -137,18 +149,16 @@ public class ClientActor extends UntypedActor {
             log.info("I am alive!");
             // The client is alive
             this.server = getSender(); // from here we save the server reference
-            //double cos = new Random().nextDouble();
-            //log.info("double = {}", cos);
-            //if( cos < 0.6) // for testing
-            this.server.tell(new Messages.IAmAlive(), getSelf());
-            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
-            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
-
-
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            gen.initialize(4096);
+            KeyPair pair = gen.generateKeyPair();
+            this.privateKey = pair.getPrivate();
+            PublicKey pub = pair.getPublic();
+            this.server.tell(new Messages.IAmAlive(pub), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
             Messages.ClientDataSpread castedMessage = (Messages.ClientDataSpread) message;
             this.numberOfClientstoAwait = castedMessage.numberOfClients; // number of clients
-            this.contactMap = castedMessage.contactMap; // clients, references and public keys
+            this.publicKeys = castedMessage.publicKeys;
 
             // client config being set
             Configuration.ConfigurationDTO configuration;
@@ -167,14 +177,29 @@ public class ClientActor extends UntypedActor {
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            byte[] bytes; // file to send
+            byte[] bytes, setyb, enckey;
+            // bytes is a file to send
+            // setyb ('bytes' backwards) is a temporary variable to store encoded bytes
+            // enckey is the AES key encrypted in RSA style
+            Cipher cipherRSA, cipherAES = Cipher.getInstance("AES"); // ciphers
             File tempfile;
             boolean deleted;
             // send R value to every client
             log.info("Sending R values");
             bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_random.pt"));
-            // read a file with an R value earlier prepared and send
-            server.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
+            log.info(Integer.toString(bytes.length));
+            for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet()){
+                KeyGenerator gen = KeyGenerator.getInstance("AES");
+                gen.init(128);
+                this.aes = gen.generateKey();
+                cipherAES.init(Cipher.ENCRYPT_MODE, aes);
+                setyb = cipherAES.doFinal(bytes);
+                cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+                cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
+                enckey = cipherRSA.doFinal(this.aes.getEncoded());
+                // send an encoded file and an encoded key
+                server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
+            }
         } else if (message instanceof Messages.SendRValue){
             // who has sent the values so far?
             clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
@@ -187,7 +212,13 @@ public class ClientActor extends UntypedActor {
             log.info("Received R value from "+((Messages.SendRValue) message).sender);
             log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
             // retrieve and save the R value
-            byte[] bytes = ((Messages.SendRValue) message).bytes;
+            byte[] bytes = ((Messages.SendRValue) message).bytes, deckey = ((Messages.SendRValue) message).key;
+            Cipher cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding"), cipherAES = Cipher.getInstance("AES");
+            cipherRSA.init(Cipher.DECRYPT_MODE, this.privateKey);
+            deckey = cipherRSA.doFinal(deckey);
+            SecretKey aes = new SecretKeySpec(deckey, 0, deckey.length, "AES");
+            cipherAES.init(Cipher.DECRYPT_MODE, aes);
+            bytes = cipherAES.doFinal(bytes);
             Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_random.pt"), bytes);
 
             if (numberOfClientstoAwait == clientsFromWhomWeReceivedRValues.size()){
@@ -368,14 +399,6 @@ public class ClientActor extends UntypedActor {
 
     public void setServer(ActorRef server) {
         this.server = server;
-    }
-
-    public Map<String, Messages.ContactData> getContactMap() {
-        return contactMap;
-    }
-
-    public void setContactMap(Map<String, Messages.ContactData> contactMap) {
-        this.contactMap = contactMap;
     }
 
     public int getNumberOfClientstoAwait() {

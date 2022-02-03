@@ -64,8 +64,6 @@ def define_and_get_arguments(args=sys.argv[1:]):
     )
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
     parser.add_argument("--pathToResources", help="where to store", action="store")
-    parser.add_argument("--publicKeys", help="public keys", action="store")
-    parser.add_argument("--degree", help="public keys", action="store")
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
@@ -166,9 +164,10 @@ async def main():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
 
     # extract interRes values
-    publicKeys = json.loads(args.publicKeys.replace("=", ":"))
+    participantsjsonlist = json.loads(args.participantsjsonlist)
     interResList = {}
-    for participant in publicKeys:
+    for participantdata in participantsjsonlist:
+        participant = participantdata["id"]
         interResList[participant] = torch.load(args.pathToResources+"/interRes/"+participant+".pt")
         if os.path.exists(args.pathToResources+"/interRes/"+participant+".pt"):
             os.remove(args.pathToResources+"/interRes/"+participant+".pt")

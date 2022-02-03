@@ -3,6 +3,7 @@ package example.akka.remote.shared;
 import akka.actor.ActorRef;
 
 import java.io.Serializable;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -198,16 +199,14 @@ public class Messages {
     public static class ClientDataSpread implements Serializable {
         public ClientDataSpread(String clientId,
                                 int numberOfClients,
-                                int minimum,
-                                Map<String, ContactData> contactMap,
+                                Map<String, PublicKey> publicKeys,
                                 boolean secureAgg,
                                 boolean diffPriv,
                                 double DP_threshold,
                                 double DP_variance){
             this.clientId = clientId;
             this.numberOfClients = numberOfClients;
-            this.minimum = minimum;
-            this.contactMap = contactMap;
+            this.publicKeys = publicKeys;
             this.secureAgg = secureAgg;
             this.diffPriv = diffPriv;
             this.DP_threshold = DP_threshold;
@@ -216,8 +215,7 @@ public class Messages {
 
         public String clientId;
         public int numberOfClients;
-        public int minimum;
-        public Map<String, ContactData> contactMap;
+        public Map<String, PublicKey> publicKeys;
         public boolean secureAgg;
         public boolean diffPriv;
         public double DP_threshold;
@@ -226,7 +224,12 @@ public class Messages {
 
     public static class AreYouAliveQuestion implements Serializable { }
 
-    public static class IAmAlive implements Serializable { }
+    public static class IAmAlive implements Serializable {
+        public IAmAlive(PublicKey publicKey){
+            this.publicKey = publicKey;
+        }
+        public PublicKey publicKey;
+    }
 
     public static class StartRound implements Serializable { }
 
@@ -235,10 +238,14 @@ public class Messages {
     public static class SendRValue implements Serializable {
         public String sender;
         public byte[] bytes;
+        public byte[] key;
+        public String receiver;
 
-        public SendRValue(String sender, byte[] bytes){
+        public SendRValue(String sender, byte[] bytes, byte[] key, String receiver){
             this.sender=sender;
             this.bytes=bytes;
+            this.key=key;
+            this.receiver=receiver;
         }
     }
 

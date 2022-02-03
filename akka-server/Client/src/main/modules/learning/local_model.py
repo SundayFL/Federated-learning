@@ -91,8 +91,6 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default="12")
-    parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
-    parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
     parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
     parser.add_argument("--dp_noise_variance", help="variance for differential privacy noise", action="store")

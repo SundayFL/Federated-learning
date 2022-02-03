@@ -14,8 +14,6 @@ public class ClientGetModelActor extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     private String clientId;
-    private int minimum;
-    private Map<String, Float> publicKeys;
     private double DP_variance;
     private double DP_threshold;
     private boolean secureAgg;
@@ -28,13 +26,8 @@ public class ClientGetModelActor extends UntypedActor {
             Messages.ClientDataSpread castedMessage = ((Messages.ClientDataSpread) message);
             // prepare arguments to pass to the script
             this.clientId = castedMessage.clientId; // client id
-            this.minimum = castedMessage.minimum; // minimum number of clients (for generating private keys)
             String encloser = System.getProperty("os.name").startsWith("Windows")?"\"\"":"\"";
             // Windows and Linux handle parsing maps differently when it comes to quotation marks
-            this.publicKeys = castedMessage.contactMap
-                    .entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(participant -> encloser+participant.getKey()+encloser, participant -> participant.getValue().publicKey));
             // public keys extracted to another map
 
             // differential privacy arguments
@@ -62,8 +55,6 @@ public class ClientGetModelActor extends UntypedActor {
                             "--datapath", configuration.testdatapath,
                             "--id", this.clientId,
                             "--port", String.valueOf(configuration.port),
-                            "--public_keys", this.publicKeys.toString(),
-                            "--minimum", String.valueOf(this.minimum),
                             "--pathToResources", configuration.pathToResources,
                             "--model_config", configuration.modelConfig,
                             "--epochs", String.valueOf(configuration.epochs),
