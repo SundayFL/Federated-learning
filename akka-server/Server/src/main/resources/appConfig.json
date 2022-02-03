@@ -1,15 +1,13 @@
 {
-  "secureAgg": true,
   "learningTaskId": "mnist",
-  "serverModuleFilePathSA": "./src/main/python/polynomial.py",
+  "serverModuleFilePathSA": "./src/main/python/serversecure.py",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "pathToResources": "./src/main/resources",
-  "savedModelPathSA": "./saved_model_2",
   "savedModelPath": "./saved_model",
   "epochs": 50,
   "modelConfig": "mnist",
-  "minimumNumberOfDevices": 3,
+  "minimumNumberOfDevices": 2,
   "targetOutputSize": 12,
   "clientModules": [
     {
@@ -21,6 +19,6 @@
       "instanceType": "Computer"
     }
   ],
-  "DP_noiseVariance": 1,
+  "secureAgg": true,
   "DP_threshold": 0.2
 }

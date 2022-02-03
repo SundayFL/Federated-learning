@@ -4,7 +4,13 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/akka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/../FederatedLearning/akka-server/Server/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/../FederatedLearning/akka-server/Server/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="openjdk-17" project-jdk-type="JavaSDK">

@@ -1,5 +1,4 @@
 {
-  "diffPriv": true,
   "useCuda": "false",
   "RAMInGB": 8,
   "instanceType": "Computer",
@@ -12,12 +11,11 @@
   "id": "alice",
   "host": "localhost",
   "port": "8777",
-  "address": "127.0.0.1:5000",
+  "address": "sundayfl.eastus.azurecontainer.io:5000",
   "pathToResources": "./src/main/resources/",
   "pathToModules": "./src/main/modules/learning/",
   "pathToModulesList": "./src/main/modules/learning/modules.json",
-  "pathToClientLog": "./src/main/modules/learning/client_log.py",
-  "pathToInterRes": "./src/main/python/interres.py",
-  "DP_noiseVariance": 1,
-  "DP_threshold": 0.2
+  "pathToLocalModel": "./src/main/modules/learning/local_model.py",
+  "pathToTesting": "./src/main/modules/learning/testmodel.py",
+  "pathToInterRes": "./src/main/python/interres.py"
 }

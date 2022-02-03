@@ -91,8 +91,6 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default="12")
-    parser.add_argument("--public_keys", help="public keys to compute messages", action="store")
-    parser.add_argument("--minimum", help="how many private keys to generate", action="store")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
     parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
     parser.add_argument("--dp_noise_variance", help="variance for differential privacy noise", action="store")
@@ -132,7 +130,7 @@ async def fit_model_on_worker(
 
     # Differential Privacy
     if diff_priv=="True":
-        print("Differential privacy enabled")
+        print("Differential privacy in use")
         # getting old weights
         old_weights = traced_model.state_dict()
 
@@ -154,22 +152,32 @@ async def fit_model_on_worker(
         # updating weights' increment in returned model
         model.load_state_dict(weights_incr)
     else:
-        print("Differential privacy disabled")
+        print("Differential privacy out of use")
 
 
     # returning updated weights
     return worker.id, model, loss
 
-# used in differential privacy
+# DIfferential Privacy implementation
 def setWeights(list_old, list_new, list_incr, variance, threshold):
+    eps = 0.01  # to enable switching signs by weights
     for i, x in enumerate(list_old):
         if np.isscalar(x):
             list_incr[i] = list_new[i] - list_old[i]
-            list_incr[i] = list_incr[i] + random.gauss(0, variance)
-            if list_incr[i] > list_old[i]*threshold:
-                list_incr[i] = list_old[i]*threshold
-            elif list_incr[i] < -list_old[i]*threshold:
-                list_incr[i] = -list_old[i]*threshold
+            list_incr[i] = list_incr[i] + random.gauss(0, variance) # adding noise
+
+            # setting threshold
+            if list_old[i]*threshold < 0:
+                smaller_boundary = list_old[i]*threshold - eps
+                higher_boundary = - list_old[i]*threshold + eps
+            else:
+                smaller_boundary = -list_old[i]*threshold - eps
+                higher_boundary = list_old[i]*threshold + eps
+
+            if list_incr[i] > higher_boundary:
+                list_incr[i] = higher_boundary
+            elif list_incr[i] < smaller_boundary:
+                list_incr[i] = smaller_boundary
         else:
             list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], variance, threshold)
     return list_incr
@@ -240,28 +248,13 @@ async def main():
         weights = model.classifier.state_dict()
     else:
         weights = model.fc2.weight.data"""
+
     weights = model.state_dict()
-    if args.save_model:
-        torch.save(weights, args.pathToResources+args.id+"/saved_model")
-        # save model
-    polynomial = {}
-    print(args.public_keys)
-    public_keys = json.loads(args.public_keys.replace('=', ':'))
-    for client in public_keys:
-        polynomial[client] = 0
-    private_keys = []
-    # generate private keys
-    for m in range(int(args.minimum)):
-        private_keys.append(random.random())
+    torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
+    for w in weights:
+        weights[w] = torch.rand(weights[w].size())
     # save R values
-    for client in public_keys:
-        weights = model.state_dict()
-        for m in range(int(args.minimum)):
-            polynomial[client] = (polynomial[client]+private_keys[m])*public_keys[client]
-        for w in weights:
-            weights[w] = weights[w]+polynomial[client]
-        print("saving R values for a specific client")
-        torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_"+client+".pt")
+    torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_random.pt")
     # R values are stored in their own directory in order to simplify storage while working in localhost
 
 if __name__ == "__main__":

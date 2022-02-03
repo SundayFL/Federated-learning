@@ -7,12 +7,22 @@ import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class ClientActor extends UntypedActor {
 
@@ -31,8 +41,8 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
-            this.DP_noiseVariance = configuration.DP_noiseVariance;
-            this.DP_threshold = configuration.DP_threshold;
+            this.diffPriv = configuration.diffPriv;
+            this.DP_variance = configuration.DP_variance;
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -53,14 +63,18 @@ public class ClientActor extends UntypedActor {
     private String taskId;
     private String moduleFileName;
     private String modelConfig;
-    private double DP_noiseVariance;
+    private boolean diffPriv;
+    private boolean secureAgg;
+    private double DP_variance;
     private double DP_threshold;
 
     private ActorSelection selection;
     private ActorSelection injector;
     private ActorRef server;
 
-    private Map<String, Messages.ContactData> contactMap;
+    private Map<String, PublicKey> publicKeys;
+    private PrivateKey privateKey;
+    private SecretKey aes;
     private Set<String> clientsFromWhomWeReceivedRValues;
     private int numberOfClientstoAwait;
 
@@ -117,10 +131,9 @@ public class ClientActor extends UntypedActor {
             Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
             this.modelConfig = messageWithModel.getModelConfig();
 
-            // if diff privacy parameteres are not set on client's side - set them using server's config
-            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
-            if(this.DP_noiseVariance <= 0 ) this.DP_noiseVariance = messageWithModel.getDP_noiseVariance();
-
+            // set server's config
+            this.secureAgg = messageWithModel.secureAggr;
+            this.DP_threshold = messageWithModel.DP_threshold;
             // Start learning module
             ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
             moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig), getSelf());
@@ -136,39 +149,56 @@ public class ClientActor extends UntypedActor {
             log.info("I am alive!");
             // The client is alive
             this.server = getSender(); // from here we save the server reference
-            //double cos = new Random().nextDouble();
-            //log.info("double = {}", cos);
-            //if( cos < 0.6) // for testing
-            this.server.tell(new Messages.IAmAlive(), getSelf());
-            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
-            //this.server.tell(new Messages.IAmAlive(), getSelf()); // for testing
-
-
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            gen.initialize(4096);
+            KeyPair pair = gen.generateKeyPair();
+            this.privateKey = pair.getPrivate();
+            PublicKey pub = pair.getPublic();
+            this.server.tell(new Messages.IAmAlive(pub), getSelf());
         } else if (message instanceof Messages.ClientDataSpread){
             Messages.ClientDataSpread castedMessage = (Messages.ClientDataSpread) message;
             this.numberOfClientstoAwait = castedMessage.numberOfClients; // number of clients
-            this.contactMap = castedMessage.contactMap; // clients, references and public keys
+            this.publicKeys = castedMessage.publicKeys;
 
-            // DP config update
-            castedMessage.DP_noiseVariance = this.DP_noiseVariance;
-            castedMessage.DP_threshold = this.DP_threshold;
+            // client config being set
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            castedMessage.diffPriv = configuration.diffPriv;
+            castedMessage.DP_variance = configuration.DP_variance;
 
             ActorSystem system = getContext().system();
             // Start reading R values through a new actor
             ActorRef modelReader = system.actorOf(Props.create(ClientGetModelActor.class), "ClientGetModelActor");
             modelReader.tell(message, getSelf());
         } else if (message instanceof Messages.RValuesReady){
+            clientsFromWhomWeReceivedRValues.add(this.clientId);
             // sending R values to other clients
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            byte[] bytes; // file to send
-            for (Map.Entry<String, Messages.ContactData> client: this.contactMap.entrySet()) {
-                // send R value to every client
-                log.info("Sending R value to "+client.getKey());
-                bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_"+client.getKey()+".pt"));
-                // read a file with an R value earlier prepared and send
-                client.getValue().reference.tell(new Messages.SendRValue(this.clientId, bytes), getSelf());
+            byte[] bytes, setyb, enckey;
+            // bytes is a file to send
+            // setyb ('bytes' backwards) is a temporary variable to store encoded bytes
+            // enckey is the AES key encrypted in RSA style
+            Cipher cipherRSA, cipherAES = Cipher.getInstance("AES"); // ciphers
+            File tempfile;
+            boolean deleted;
+            // send R value to every client
+            log.info("Sending R values");
+            bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_random.pt"));
+            log.info(Integer.toString(bytes.length));
+            for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet()){
+                KeyGenerator gen = KeyGenerator.getInstance("AES");
+                gen.init(128);
+                this.aes = gen.generateKey();
+                cipherAES.init(Cipher.ENCRYPT_MODE, aes);
+                setyb = cipherAES.doFinal(bytes);
+                cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+                cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
+                enckey = cipherRSA.doFinal(this.aes.getEncoded());
+                // send an encoded file and an encoded key
+                server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
             }
         } else if (message instanceof Messages.SendRValue){
             // who has sent the values so far?
@@ -182,17 +212,39 @@ public class ClientActor extends UntypedActor {
             log.info("Received R value from "+((Messages.SendRValue) message).sender);
             log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
             // retrieve and save the R value
-            byte[] bytes = ((Messages.SendRValue) message).bytes;
-            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_"+this.clientId+".pt"), bytes);
+            byte[] bytes = ((Messages.SendRValue) message).bytes, deckey = ((Messages.SendRValue) message).key;
+            Cipher cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding"), cipherAES = Cipher.getInstance("AES");
+            cipherRSA.init(Cipher.DECRYPT_MODE, this.privateKey);
+            deckey = cipherRSA.doFinal(deckey);
+            SecretKey aes = new SecretKeySpec(deckey, 0, deckey.length, "AES");
+            cipherAES.init(Cipher.DECRYPT_MODE, aes);
+            bytes = cipherAES.doFinal(bytes);
+            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_random.pt"), bytes);
 
             if (numberOfClientstoAwait == clientsFromWhomWeReceivedRValues.size()){
                 // all R values received, InterRes can be calculated
                 this.calculateInterRes();
                 byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
                 this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+                File tempfile2 = new File(configuration.pathToResources+this.clientId+"/interRes.pt");
+                boolean deleted2 = tempfile2.delete();
                 // send InterRes
                 log.info("InterRes sent");
             }
+        } else if (message instanceof Messages.TestMyModel){
+            ActorSystem system = getContext().system();
+            // Start reading R values through a new actor
+            ActorRef modelTester = system.actorOf(Props.create(ClientTestActor.class), "ClientTestActor");
+            modelTester.tell(message, getSelf());
+        } else if (message instanceof Messages.TestResults){
+            this.server.tell(message, getSelf());
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            File tempfile = new File(configuration.pathToResources+configuration.id+"/saved_model");
+            boolean deleted = tempfile.delete();
+            File directory = new File(configuration.pathToResources+this.clientId);
+            deleted = directory.delete();
         }
     }
 
@@ -347,14 +399,6 @@ public class ClientActor extends UntypedActor {
 
     public void setServer(ActorRef server) {
         this.server = server;
-    }
-
-    public Map<String, Messages.ContactData> getContactMap() {
-        return contactMap;
-    }
-
-    public void setContactMap(Map<String, Messages.ContactData> contactMap) {
-        this.contactMap = contactMap;
     }
 
     public int getNumberOfClientstoAwait() {
