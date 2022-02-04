@@ -252,6 +252,7 @@ async def main():
     weights = model.state_dict()
     torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
     for w in weights:
+        s = torch.seed()
         weights[w] = torch.rand(weights[w].size())
     # save R values
     torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_random.pt")

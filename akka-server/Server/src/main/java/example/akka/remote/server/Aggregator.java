@@ -213,6 +213,8 @@ public class Aggregator extends UntypedActor {
             BufferedReader br = new BufferedReader(new FileReader(sender+".txt"));
             String line;
             while ((line = br.readLine()) != null) System.out.println(line);
+            File temp = new File(sender+".txt");
+            boolean deleted = temp.delete();
             // tell the coordinator
             if (this.test_counter==0) this.coordinator.tell(new RoundEnded(), getSelf());
         } else {

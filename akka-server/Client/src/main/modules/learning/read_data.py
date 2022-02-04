@@ -90,7 +90,6 @@ class ImportData():
                 self.data = np.array(self.data)
                 self.targets = np.array(self.targets)
 
-        print(self.targets)
         unique, counts = np.unique(self.targets, return_counts=True)
         print(dict(zip(unique, counts)))
         self.data, self.targets

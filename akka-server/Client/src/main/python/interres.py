@@ -43,7 +43,8 @@ def main():
     for R in filelist:
         if os.path.exists(pathToResources+"/"+id+"/"+R):
             os.remove(pathToResources+"/"+id+"/"+R)
-    os.remove(pathToResources+"/"+id+"/"+id+"_random.pt")
+    os.remove(pathToResources+id+"/"+id+"_random.pt")
+    os.remove(pathToResources+id+"/saved_model.pt")
 
 if __name__ == "__main__":
     main()
