@@ -105,7 +105,6 @@ public class Aggregator extends UntypedActor {
                 }
             }
         } else if (message instanceof StartLearningModule) {
-            this.numberOfClientsToAwait = roundParticipants.size();
             // Message when any of participants started their modules and server can start his own learning module
             // Updates corresponding device entity
             ActorRef sender = getSender();
@@ -225,6 +224,7 @@ public class Aggregator extends UntypedActor {
         this.testers = new ArrayList<>(this.roundParticipants.keySet());
         Collections.shuffle(this.testers);
         this.test_counter = (int) Math.ceil(((double)this.roundParticipants.size())*0.3);
+        for (int i=roundParticipants.size(); i>this.test_counter; i--) this.testers.remove(i-1);
 
         // training participants of the round with their public keys
         Map<String, PublicKey> publicKeys = roundParticipants
@@ -233,18 +233,20 @@ public class Aggregator extends UntypedActor {
                 .filter(participant -> !this.testers.contains(participant.getKey())) // testers left out
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         participant -> participant.getValue().publicKey));
+        this.numberOfClientsToAwait = publicKeys.size();
         // spread the data to trainers
-        for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
+        for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet()){
             if (!this.testers.contains(participant.getKey()))
                 participant.getValue().deviceReference.tell(new ClientDataSpread(
-                    participant.getKey(),
-                    roundParticipants.size()-this.test_counter,
-                    publicKeys,
-                    secureAgg,
-                    true,
-                    DP_threshold,
-                    0.5 // mock values
-            ), getSelf());
+                        participant.getKey(),
+                        publicKeys.size(),
+                        publicKeys,
+                        secureAgg,
+                        true,
+                        DP_threshold,
+                        0.5 // mock values
+                ), getSelf());
+        }
     }
 
     // Stores information about each participant

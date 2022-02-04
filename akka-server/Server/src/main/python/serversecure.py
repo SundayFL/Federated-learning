@@ -168,10 +168,11 @@ async def main():
     interResList = {}
     for participantdata in participantsjsonlist:
         participant = participantdata["id"]
-        interResList[participant] = torch.load(args.pathToResources+"/interRes/"+participant+".pt")
-        if os.path.exists(args.pathToResources+"/interRes/"+participant+".pt"):
-            os.remove(args.pathToResources+"/interRes/"+participant+".pt")
-        p = participant
+        weightpath = args.pathToResources+"/interRes/"+participant+".pt"
+        if os.path.exists(weightpath):
+            interResList[participant] = torch.load(weightpath)
+            os.remove(weightpath)
+            p = participant
     os.rmdir(args.pathToResources+"/interRes")
 
     # calculate aggregated weights

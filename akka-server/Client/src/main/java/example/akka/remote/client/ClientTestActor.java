@@ -41,7 +41,7 @@ public class ClientTestActor extends UntypedActor {
         Configuration configurationHandler = new Configuration();
         try {
             configuration = configurationHandler.get();
-            Files.write(Paths.get(configuration.pathToResources+configuration.id+"/saved_model"), this.model);
+            Files.write(Paths.get(configuration.pathToResources+configuration.id+"_saved_model"), this.model);
 
             // execute script in order to retrieve weights and make R values of them
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -54,7 +54,7 @@ public class ClientTestActor extends UntypedActor {
                             "--port", String.valueOf(configuration.port),
                             "--pathToResources", configuration.pathToResources,
                             "--model_config", configuration.modelConfig,
-                            "--modelpath", configuration.pathToResources+configuration.id+"/saved_model");
+                            "--modelpath", configuration.pathToResources+configuration.id+"_saved_model");
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

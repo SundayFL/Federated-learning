@@ -74,7 +74,6 @@ public class ClientActor extends UntypedActor {
 
     private Map<String, PublicKey> publicKeys;
     private PrivateKey privateKey;
-    private SecretKey aes;
     private Set<String> clientsFromWhomWeReceivedRValues;
     private int numberOfClientstoAwait;
 
@@ -182,6 +181,7 @@ public class ClientActor extends UntypedActor {
             // setyb ('bytes' backwards) is a temporary variable to store encoded bytes
             // enckey is the AES key encrypted in RSA style
             Cipher cipherRSA, cipherAES = Cipher.getInstance("AES"); // ciphers
+            SecretKey aes;
             File tempfile;
             boolean deleted;
             // send R value to every client
@@ -191,12 +191,12 @@ public class ClientActor extends UntypedActor {
             for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet()){
                 KeyGenerator gen = KeyGenerator.getInstance("AES");
                 gen.init(128);
-                this.aes = gen.generateKey();
+                aes = gen.generateKey();
                 cipherAES.init(Cipher.ENCRYPT_MODE, aes);
                 setyb = cipherAES.doFinal(bytes);
                 cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
                 cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
-                enckey = cipherRSA.doFinal(this.aes.getEncoded());
+                enckey = cipherRSA.doFinal(aes.getEncoded());
                 // send an encoded file and an encoded key
                 server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
             }
@@ -241,10 +241,8 @@ public class ClientActor extends UntypedActor {
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
-            File tempfile = new File(configuration.pathToResources+configuration.id+"/saved_model");
+            File tempfile = new File(configuration.pathToResources+configuration.id+"_saved_model");
             boolean deleted = tempfile.delete();
-            File directory = new File(configuration.pathToResources+this.clientId);
-            deleted = directory.delete();
         }
     }
 
