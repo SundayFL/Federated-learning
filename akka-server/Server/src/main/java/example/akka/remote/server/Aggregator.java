@@ -48,6 +48,9 @@ public class Aggregator extends UntypedActor {
     // Participants taking part in the round
     private Map<String, ParticipantData> roundParticipants;
 
+    // Participants testing the model
+    private List<String> testers;
+
     // Logger
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
@@ -219,21 +222,23 @@ public class Aggregator extends UntypedActor {
     }
 
     public void exchange() {
-        int numberOfParticipants = roundParticipants.size();
-        Random keyGeneration = new Random();
+        this.testers = new ArrayList<>(this.roundParticipants.keySet());
+        Collections.shuffle(this.testers);
+        this.test_counter = (int) Math.ceil(((double)this.roundParticipants.size())*0.3);
 
-        // participants of the round with their devices' references and public keys
-        // public keys are generated right here
+        // training participants of the round with their public keys
         Map<String, PublicKey> publicKeys = roundParticipants
                 .entrySet()
                 .stream()
+                .filter(participant -> !this.testers.contains(participant.getKey())) // testers left out
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         participant -> participant.getValue().publicKey));
-        // spread the data
+        // spread the data to trainers
         for (Map.Entry<String, ParticipantData> participant : this.roundParticipants.entrySet())
-            participant.getValue().deviceReference.tell(new ClientDataSpread(
+            if (!this.testers.contains(participant.getKey()))
+                participant.getValue().deviceReference.tell(new ClientDataSpread(
                     participant.getKey(),
-                    numberOfParticipants,
+                    roundParticipants.size()-this.test_counter,
                     publicKeys,
                     secureAgg,
                     true,
@@ -318,13 +323,9 @@ public class Aggregator extends UntypedActor {
             System.out.println("After execution");
             if (configuration.secureAgg){
                 byte[] bytes = Files.readAllBytes(Paths.get(configuration.savedModelPath));
-                List<String> testers = new ArrayList<>(this.roundParticipants.keySet());
-                Collections.shuffle(testers);
-                int testers_number = (int) Math.ceil(((double)this.roundParticipants.size())*0.3);
-                this.test_counter = testers_number;
-                for (int i=0; i<testers_number; i++){
-                    log.info("Client "+testers.get(i)+" chosen for test");
-                    this.roundParticipants.get(testers.get(i)).deviceReference.tell(new Messages.TestMyModel(bytes), getSelf());
+                for (String tester: this.testers){
+                    log.info("Client "+tester+" chosen for test");
+                    this.roundParticipants.get(tester).deviceReference.tell(new Messages.TestMyModel(bytes), getSelf());
                 }
             }
             BufferedReader read = new BufferedReader(new InputStreamReader(
