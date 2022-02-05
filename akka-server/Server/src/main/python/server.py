@@ -81,8 +81,6 @@ def define_and_get_arguments(args=sys.argv[1:]):
 
     parser.add_argument("--datapath", help="show program version", action="store", default="../data")
     parser.add_argument("--pathToResources", help="where to store", action="store", default="")
-    parser.add_argument("--publicKeys", help="public keys", action="store", default="{}")
-    parser.add_argument("--degree", help="public keys", action="store", default=0)
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
