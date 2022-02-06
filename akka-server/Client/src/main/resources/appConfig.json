@@ -11,7 +11,7 @@
   "id": "alice",
   "host": "localhost",
   "port": "8777",
-  "address": "sundayfl.eastus.azurecontainer.io:5000",
+  "address": "sundayflserver.eastus.azurecontainer.io:5000",
   "pathToResources": "./src/main/resources/",
   "pathToModules": "./src/main/modules/learning/",
   "pathToModulesList": "./src/main/modules/learning/modules.json",
