@@ -259,7 +259,6 @@ public class Aggregator extends UntypedActor {
             this.moduleAlive = false;
             this.port = port;
             this.address = address;
-            this.interRes = new ArrayList<>();
         }
         public PublicKey publicKey;
         public ActorRef deviceReference;
@@ -267,7 +266,6 @@ public class Aggregator extends UntypedActor {
         public boolean moduleAlive;
         public int port;
         public String address;
-        public List<Float> interRes;
     }
 
     // Starts new round
