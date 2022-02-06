@@ -3,12 +3,19 @@
   "RAMInGB": 8,
   "instanceType": "Computer",
   "datapath": "./src/main/modules/data",
+  "testdatapath": "./src/main/python/data",
   "datafilename": "data_equal_pt.npy",
   "targetfilename": "target_equal_pt.npy",
+  "epochs": 50,
+  "modelConfig": "mnist",
   "id": "alice",
   "host": "localhost",
   "port": "8777",
-  "address": "127.0.0.1:5000",
+  "address": "sundayflserver.eastus.azurecontainer.io:5000",
+  "pathToResources": "./src/main/resources/",
   "pathToModules": "./src/main/modules/learning/",
-  "pathToModulesList": "./src/main/modules/learning/modules.json"
+  "pathToModulesList": "./src/main/modules/learning/modules.json",
+  "pathToLocalModel": "./src/main/modules/learning/local_model.py",
+  "pathToTesting": "./src/main/modules/learning/testmodel.py",
+  "pathToInterRes": "./src/main/python/interres.py"
 }

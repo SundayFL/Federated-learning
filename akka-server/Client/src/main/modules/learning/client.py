@@ -11,7 +11,7 @@ from custom_dataset import CustomDataset
 from torch.utils.data import Dataset, DataLoader
 import syft as sy
 import numpy as np
-from torchvision import  transforms
+from torchvision import transforms
 from PIL import Image
 # Arguments
 parser = argparse.ArgumentParser(description="Run websocket server worker.")
@@ -35,13 +35,14 @@ parser.add_argument("--data_file_name", help="name of to data file", action="sto
 parser.add_argument("--target_file_name", help="name of targets file", action="store", default="target.npy")
 parser.add_argument("--data_set_id", type=int, help="id of data set", action="store", default= 1)
 parser.add_argument("--model_config", type=str, help="chosen nn configuration", action="store", default='vgg')
+parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
 
 possible_augmentations = A.Compose(
                             [A.Blur(blur_limit=3), 
                             A.GridDistortion(), 
                             A.OpticalDistortion(),
                             A.RandomRotate90(), 
-                            A.HorizontalFlip(0.2) , 
+                            A.HorizontalFlip(0.2),
                             A.GaussNoise(),
                             A.Sharpen()])
 
@@ -51,7 +52,7 @@ def augument_classes(data, target, mean_entries_per_class):
     entries_to_generate = int(mean_entries_per_class - len(target))
     for i in range(entries_to_generate):
         ind = np.random.choice(list(range(0, len(target))))
-        new_entry =  Image.fromarray(np.uint8(possible_augmentations(image=np.array(data[ind]))['image']))
+        new_entry = Image.fromarray(np.uint8(possible_augmentations(image=np.array(data[ind]))['image']))
         new_entries.append(new_entry)
         new_targets.append(target[0])
     return new_entries, new_targets
@@ -80,7 +81,7 @@ def get_transformation_seq(model_config):
         raise Exception('Model config not found')
     return transform_seq
 
-def main( details_dict, **kwargs):  # pragma: no cover
+def main(details_dict, **kwargs):  # pragma: no cover
     """Helper function for spinning up a websocket participant."""
     #os.chdir("./akka-server/Client/src/main/modules")
     # Create websocket worker
@@ -96,7 +97,7 @@ def main( details_dict, **kwargs):  # pragma: no cover
         data_file_name = str(data_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
         target_file_name= str(target_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
 
-    dataset = ImportData(data_path= data_file_name, target_path= target_file_name)
+    dataset = ImportData(data_path = data_file_name, target_path = target_file_name)
     dataset.data = [Image.fromarray(np.uint8(im)) for im in dataset.data]
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
     dict_entries = dict(zip(unique_classes, counts))
@@ -111,9 +112,9 @@ def main( details_dict, **kwargs):  # pragma: no cover
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
     transformation_seq = get_transformation_seq(details_dict["model_config"])
     train_base = CustomDataset(imported_data=dataset, 
-     transform = transformation_seq)
+    transform = transformation_seq)
     train_base.targets = th.tensor(train_base.targets, dtype = th.int64)
-    #check if tensors have correct dims
+    # check if tensors have correct dims
     sizes = list(map(np.shape, train_base.data))
     print(sizes[0])
 

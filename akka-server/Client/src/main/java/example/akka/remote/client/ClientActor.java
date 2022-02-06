@@ -1,18 +1,34 @@
 package example.akka.remote.client;
 
 import akka.actor.*;
+import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
 import scala.concurrent.duration.FiniteDuration;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class ClientActor extends UntypedActor {
+
+    public ClientActor(String forTesting){
+
+    }
 
     public ClientActor() {
         try {
@@ -25,11 +41,14 @@ public class ClientActor extends UntypedActor {
             this.pathToModules = configuration.pathToModules;
             this.port = configuration.port;
             this.clientId = configuration.id;
+            this.diffPriv = configuration.diffPriv;
+            this.DP_variance = configuration.DP_variance;
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
             this.selection = getContext().actorSelection("akka.tcp://AkkaRemoteServer@" + address + "/user/Selector");
             this.injector = getContext().actorSelection("akka.tcp://AkkaRemoteServer@" + address + "/user/Injector");
+            this.clientsFromWhomWeReceivedRValues = new HashSet<>();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -44,9 +63,19 @@ public class ClientActor extends UntypedActor {
     private String taskId;
     private String moduleFileName;
     private String modelConfig;
+    private boolean diffPriv;
+    private boolean secureAgg;
+    private double DP_variance;
+    private double DP_threshold;
 
     private ActorSelection selection;
     private ActorSelection injector;
+    private ActorRef server;
+
+    private Map<String, PublicKey> publicKeys;
+    private PrivateKey privateKey;
+    private Set<String> clientsFromWhomWeReceivedRValues;
+    private int numberOfClientstoAwait;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -71,7 +100,7 @@ public class ClientActor extends UntypedActor {
             // Set module filename
             this.moduleFileName = module.fileName;
             // When we confirm that we have module we can ask server to join round
-            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.address, this.port), getSelf());
             log.info("After send to selector, address -> " + this.address);
         } else if(message instanceof Messages.GetModulesListResponse) {
             // Find the best module
@@ -87,7 +116,7 @@ public class ClientActor extends UntypedActor {
             ModulesManager.SaveModule(this.taskId, module.fileName);
             log.info("Module list saved");
             this.moduleFileName = module.fileName;
-            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.port), getSelf());
+            selection.tell(new Messages.JoinRoundRequest(LocalDateTime.now(), this.taskId, this.clientId, this.address, this.port), getSelf());
         } else if (message instanceof Messages.JoinRoundResponse) {
             // Response if device can join round
             Messages.JoinRoundResponse result = (Messages.JoinRoundResponse) message;
@@ -101,22 +130,126 @@ public class ClientActor extends UntypedActor {
             Messages.StartLearningProcessCommand messageWithModel = (Messages.StartLearningProcessCommand) message;
             this.modelConfig = messageWithModel.getModelConfig();
 
+            // set server's config
+            this.secureAgg = messageWithModel.secureAggr;
+            this.DP_threshold = messageWithModel.DP_threshold;
             // Start learning module
-            ActorRef moduleRummer = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
-            moduleRummer.tell(new RunModule(this.moduleFileName, this.modelConfig), getSelf());
+            ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
+            moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig), getSelf());
 
             ActorRef server = getSender();
-            FiniteDuration delay =  new FiniteDuration(60, TimeUnit.SECONDS);
+            FiniteDuration delay =  new FiniteDuration(10, TimeUnit.SECONDS);
 
-            // Tell server, after 60 sec, that script has been ran
+            // Tell server, after 10 sec, that script has been run
             system
                 .scheduler()
                 .scheduleOnce(delay, server, new Messages.StartLearningModule(), system.dispatcher(), getSelf());
+        } else if (message instanceof Messages.AreYouAliveQuestion){
+            log.info("I am alive!");
+            // The client is alive
+            this.server = getSender(); // from here we save the server reference
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            gen.initialize(4096);
+            KeyPair pair = gen.generateKeyPair();
+            this.privateKey = pair.getPrivate();
+            PublicKey pub = pair.getPublic();
+            this.server.tell(new Messages.IAmAlive(pub), getSelf());
+        } else if (message instanceof Messages.ClientDataSpread){
+            Messages.ClientDataSpread castedMessage = (Messages.ClientDataSpread) message;
+            this.numberOfClientstoAwait = castedMessage.numberOfClients; // number of clients
+            this.publicKeys = castedMessage.publicKeys;
+
+            // client config being set
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            castedMessage.diffPriv = configuration.diffPriv;
+            castedMessage.DP_variance = configuration.DP_variance;
+
+            ActorSystem system = getContext().system();
+            // Start reading R values through a new actor
+            ActorRef modelReader = system.actorOf(Props.create(ClientGetModelActor.class), "ClientGetModelActor");
+            modelReader.tell(message, getSelf());
+        } else if (message instanceof Messages.RValuesReady){
+            clientsFromWhomWeReceivedRValues.add(this.clientId);
+            // sending R values to other clients
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            byte[] bytes, setyb, enckey;
+            // bytes is a file to send
+            // setyb ('bytes' backwards) is a temporary variable to store encoded bytes
+            // enckey is the AES key encrypted in RSA style
+            Cipher cipherRSA, cipherAES = Cipher.getInstance("AES"); // ciphers
+            SecretKey aes;
+            File tempfile;
+            boolean deleted;
+            // send R value to every client
+            log.info("Sending R values");
+            bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_random.pt"));
+            for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet())
+                if (!clientsFromWhomWeReceivedRValues.contains(clientData.getKey())){
+                    KeyGenerator gen = KeyGenerator.getInstance("AES");
+                    gen.init(128);
+                    aes = gen.generateKey();
+                    cipherAES.init(Cipher.ENCRYPT_MODE, aes);
+                    setyb = cipherAES.doFinal(bytes);
+                    cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+                    cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
+                    enckey = cipherRSA.doFinal(aes.getEncoded());
+                    // send an encoded file and an encoded key
+                    server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
+                }
+        } else if (message instanceof Messages.SendRValue){
+            // who has sent the values so far?
+            clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
+            log.info(clientsFromWhomWeReceivedRValues.toString());
+            log.info(String.valueOf(clientsFromWhomWeReceivedRValues.size()));
+
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            log.info("Received R value from "+((Messages.SendRValue) message).sender);
+            log.info("R values left: "+(numberOfClientstoAwait - clientsFromWhomWeReceivedRValues.size()));
+            // retrieve and save the R value
+            byte[] bytes = ((Messages.SendRValue) message).bytes, deckey = ((Messages.SendRValue) message).key;
+            Cipher cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding"), cipherAES = Cipher.getInstance("AES");
+            cipherRSA.init(Cipher.DECRYPT_MODE, this.privateKey);
+            deckey = cipherRSA.doFinal(deckey);
+            SecretKey aes = new SecretKeySpec(deckey, 0, deckey.length, "AES");
+            cipherAES.init(Cipher.DECRYPT_MODE, aes);
+            bytes = cipherAES.doFinal(bytes);
+            Files.write(Paths.get(configuration.pathToResources+this.clientId+"/"+((Messages.SendRValue) message).sender+"_random.pt"), bytes);
+
+            if (numberOfClientstoAwait == clientsFromWhomWeReceivedRValues.size()){
+                // all R values received, InterRes can be calculated
+                this.calculateInterRes();
+                byte[] bytes2 = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/interRes.pt"));
+                this.server.tell(new Messages.SendInterRes(this.clientId, bytes2), getSelf());
+                File temp = new File(configuration.pathToResources+this.clientId+"/interRes.pt");
+                boolean deleted2 = temp.delete();
+                temp = new File(configuration.pathToResources+this.clientId);
+                deleted2 = temp.delete();
+                // send InterRes
+                log.info("InterRes sent");
+            }
+        } else if (message instanceof Messages.TestMyModel){
+            ActorSystem system = getContext().system();
+            // Start reading R values through a new actor
+            ActorRef modelTester = system.actorOf(Props.create(ClientTestActor.class), "ClientTestActor");
+            modelTester.tell(message, getSelf());
+        } else if (message instanceof Messages.TestResults){
+            this.server.tell(message, getSelf());
+            Configuration.ConfigurationDTO configuration;
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+            File tempfile = new File(configuration.pathToResources+configuration.id+"_saved_model");
+            boolean deleted = tempfile.delete();
         }
     }
 
     // Saves file - module
-    private void SaveFile(Messages.GetModuleResponse result) {
+    public void SaveFile(Messages.GetModuleResponse result) {
         try (FileOutputStream fos = new FileOutputStream(pathToModules + result.fileName)) {
             fos.write(result.content);
         } catch (Exception e) {
@@ -125,8 +258,32 @@ public class ClientActor extends UntypedActor {
         }
     }
 
+    public void calculateInterRes(){
+        log.info("Calculation");
+        Configuration.ConfigurationDTO configuration;
+        try {
+            Configuration configurationHandler = new Configuration();
+            configuration = configurationHandler.get();
+
+            // script to calculate InterRes
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.directory(new File(System.getProperty("user.dir")));
+            log.info(configuration.pathToInterRes);
+            processBuilder
+                    .inheritIO()
+                    .command("python", configuration.pathToInterRes,
+                            "--pathToResources", configuration.pathToResources,
+                            "--id", configuration.id);
+
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Finds module that meets requirements
-    private Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
+    public Messages.ModuleData findProperModuleStrategy(List<Messages.ModuleData> modules) throws Exception {
         try {
             Configuration configurationHandler = new Configuration();
             Configuration.ConfigurationDTO configuration = configurationHandler.get();
@@ -151,14 +308,104 @@ public class ClientActor extends UntypedActor {
         }
     }
 
-    // Run module message
-    // TODO should be moved to messages
-    public static class RunModule {
-        public RunModule(String moduleFileName, String modelConfig) {
-            this.moduleFileName = moduleFileName;
-            this.modelConfig = modelConfig;
-        }
-        public String moduleFileName;
-        public String modelConfig;
+
+
+    // GETTERS & SETTERS
+
+
+    public LoggingAdapter getLog() {
+        return log;
+    }
+
+    public void setLog(LoggingAdapter log) {
+        this.log = log;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPathToModules() {
+        return pathToModules;
+    }
+
+    public void setPathToModules(String pathToModules) {
+        this.pathToModules = pathToModules;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
+
+    public String getModuleFileName() {
+        return moduleFileName;
+    }
+
+    public void setModuleFileName(String moduleFileName) {
+        this.moduleFileName = moduleFileName;
+    }
+
+    public String getModelConfig() {
+        return modelConfig;
+    }
+
+    public void setModelConfig(String modelConfig) {
+        this.modelConfig = modelConfig;
+    }
+
+    public ActorSelection getSelection() {
+        return selection;
+    }
+
+    public void setSelection(ActorSelection selection) {
+        this.selection = selection;
+    }
+
+    public ActorSelection getInjector() {
+        return injector;
+    }
+
+    public void setInjector(ActorSelection injector) {
+        this.injector = injector;
+    }
+
+    public ActorRef getServer() {
+        return server;
+    }
+
+    public void setServer(ActorRef server) {
+        this.server = server;
+    }
+
+    public int getNumberOfClientstoAwait() {
+        return numberOfClientstoAwait;
+    }
+
+    public void setNumberOfClientstoAwait(int numberOfClientstoAwait) {
+        this.numberOfClientstoAwait = numberOfClientstoAwait;
     }
 }

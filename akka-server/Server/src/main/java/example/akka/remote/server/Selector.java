@@ -45,10 +45,11 @@ public class Selector extends UntypedActor {
             log.info("Selector path: " + deviceReference.path());
             int port = ((JoinRoundRequest) message).port;
             String clientId = ((JoinRoundRequest) message).clientId;
+            String address = ((JoinRoundRequest) message).address;
             deviceReference.tell(new JoinRoundResponse(this.isRoundActive, this.aggregator), getSelf());
 
             // tell aggregator about new device
-            this.aggregator.tell(new InformAggregatorAboutNewParticipant(deviceReference, clientId, port), getSelf());
+            this.aggregator.tell(new InformAggregatorAboutNewParticipant(deviceReference, clientId, address, port), getSelf());
         } else if (message instanceof StartRoundCoordinatorSelector) {
             this.isRoundActive = true;
             this.aggregator = ((StartRoundCoordinatorSelector) message).aggregator;

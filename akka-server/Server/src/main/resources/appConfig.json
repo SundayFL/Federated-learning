@@ -1,10 +1,12 @@
 {
   "learningTaskId": "mnist",
+  "serverModuleFilePathSA": "./src/main/python/serversecure.py",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
+  "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",
   "epochs": 50,
-  "modelConfig": "cnn",
+  "modelConfig": "mnist",
   "minimumNumberOfDevices": 3,
   "targetOutputSize": 12,
   "clientModules": [
@@ -16,5 +18,7 @@
       "minRAMInGB": 1,
       "instanceType": "Computer"
     }
-  ]
+  ],
+  "secureAgg": true,
+  "DP_threshold": 0.2
 }
