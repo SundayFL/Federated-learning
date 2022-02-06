@@ -24,7 +24,7 @@ from syft.workers import websocket_client
 from syft.frameworks.torch.fl import utils
 
 
-websocket_client.TIMEOUT_INTERVAL = 60
+websocket_client.TIMEOUT_INTERVAL = 600
 LOG_INTERVAL = 25
 
 logger = logging.getLogger("run_websocket_client")
@@ -57,7 +57,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description="Run federated learning using websocket client workers."
     )
-    parser.add_argument("--batch_size", type=int, default=32, help="batch size of the training")
+    parser.add_argument("--batch_size", type=int, default=128, help="batch size of the training")
     parser.add_argument(
         "--test_batch_size", type=int, default=128, help="batch size used for the test data"
     )
