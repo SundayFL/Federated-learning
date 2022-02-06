@@ -187,19 +187,18 @@ public class ClientActor extends UntypedActor {
             // send R value to every client
             log.info("Sending R values");
             bytes = Files.readAllBytes(Paths.get(configuration.pathToResources+this.clientId+"/"+this.clientId+"_random.pt"));
-            for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet())
-                if (!clientsFromWhomWeReceivedRValues.contains(clientData.getKey())){
-                    KeyGenerator gen = KeyGenerator.getInstance("AES");
-                    gen.init(128);
-                    aes = gen.generateKey();
-                    cipherAES.init(Cipher.ENCRYPT_MODE, aes);
-                    setyb = cipherAES.doFinal(bytes);
-                    cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
-                    cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
-                    enckey = cipherRSA.doFinal(aes.getEncoded());
-                    // send an encoded file and an encoded key
-                    server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
-                }
+            for (Map.Entry<String, PublicKey> clientData: publicKeys.entrySet()){
+                KeyGenerator gen = KeyGenerator.getInstance("AES");
+                gen.init(128);
+                aes = gen.generateKey();
+                cipherAES.init(Cipher.ENCRYPT_MODE, aes);
+                setyb = cipherAES.doFinal(bytes);
+                cipherRSA = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+                cipherRSA.init(Cipher.ENCRYPT_MODE, clientData.getValue());
+                enckey = cipherRSA.doFinal(aes.getEncoded());
+                // send an encoded file and an encoded key
+                server.tell(new Messages.SendRValue(this.clientId, setyb, enckey, clientData.getKey()), getSelf());
+            }
         } else if (message instanceof Messages.SendRValue){
             // who has sent the values so far?
             clientsFromWhomWeReceivedRValues.add( ((Messages.SendRValue) message).sender );
