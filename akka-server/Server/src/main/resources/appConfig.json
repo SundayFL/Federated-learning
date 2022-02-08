@@ -6,8 +6,8 @@
   "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",
   "epochs": 250,
-  "modelConfig": "mobilenetv2",
-  "minimumNumberOfDevices": 5,
+  "modelConfig": "mnist",
+  "minimumNumberOfDevices": 3,
   "targetOutputSize": 12,
   "clientModules": [
     {
