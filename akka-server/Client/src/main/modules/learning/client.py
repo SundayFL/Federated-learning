@@ -60,7 +60,7 @@ def augument_classes(data, target, mean_entries_per_class):
 def get_transformation_seq(model_config):
     #predefined values to match model expectations
     transform_seq = []
-    if (model_config == 'vgg'):
+    if (model_config == 'mobilenetv2'):
         transform_seq = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),

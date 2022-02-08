@@ -13,7 +13,7 @@ from torchvision import datasets, transforms
 from pathlib import Path
 import json
 import os
-from torchvision.models import vgg11
+from torchvision.models.mobilenet import mobilenet_v2
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 
@@ -65,11 +65,11 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument(
         "--federate_after_n_batches",
         type=int,
-        default=10,
+        default=1,
         help="number of training steps performed on each remote worker before averaging",
     )
-    parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
-    parser.add_argument("--cuda", action="store_true", help="use cuda")
+    parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
+    parser.add_argument("--cuda", default = True, action="store_true", help="use cuda")
     parser.add_argument("--seed", type=int, default=1, help="seed used for randomization")
     parser.add_argument("--save_model", action="store_true", help="if set, model will be saved")
     parser.add_argument(
@@ -99,6 +99,7 @@ async def fit_model_on_worker(
     curr_round: int,
     max_nr_batches: int,
     lr: float,
+    device: str
 ):
 
     train_config = sy.TrainConfig(
@@ -112,12 +113,12 @@ async def fit_model_on_worker(
             optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
     train_config.send(worker)
-    loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
+    loss = await worker.async_fit(dataset_key="mnist", return_ids=[0], device = device)
     model = train_config.model_ptr.get().obj
     return worker.id, model, loss
 
 
-async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output, device):
     
     model_config = sy.TrainConfig(
         model=traced_model,
@@ -131,16 +132,16 @@ async def test(test_worker, traced_model, batch_size, federate_after_n_batches, 
     )
     with torch.no_grad():
         model_config.send(test_worker)
-        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
-    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
+        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = False, nr_bins = model_output, device = device)
+    #return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
+    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss']
 
 def define_model(model_config, device, modelpath, model_output): 
     model_file = Path(modelpath)
     test_tensor = torch.zeros([1, 3, 224, 224])
-    if (model_config == 'vgg'):
-        model = vgg11(pretrained = True)
-        model.classifier[6].out_features = model_output
-        print(model.classifier)
+    if (model_config == 'mobilenetv2'):
+        model = mobilenet_v2(pretrained = True)
+        model.classifier[1].out_features = model_output
         model.eval()
         model.to(device)
         transform = transforms.Compose([
@@ -165,7 +166,7 @@ def define_participants_lists(participantsjsonlist, **kwargs_websocket):
     participants = json.loads(participants)
     print(participants)
 
-    for_test = random.choices(participants, k=np.int(np.round(len(participants)*0.3)))
+    for_test = random.choices(participants, k = np.int(np.round(len(participants)*0.3)))
     print('Clients picked for test: \n')
     print(for_test)
     worker_instances = []
@@ -202,13 +203,15 @@ async def main():
 
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
+    print(torch.cuda.is_available())
     device = torch.device("cuda" if use_cuda else "cpu")
     model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
     #for p in model.parameters():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
     traced_model = torch.jit.trace(model,  test_tensor.to(device))
     traced_model.train()
-
+    best_loss = np.Inf
+    early_stopping = 25
     learning_rate = args.lr
     for curr_round in range(1, args.epochs + 1):
         logger.info("Training epoch %s/%s", curr_round, args.epochs)
@@ -222,6 +225,7 @@ async def main():
                     curr_round=curr_round,
                     max_nr_batches=args.federate_after_n_batches,
                     lr=learning_rate,
+                    device = device
                 )
                 for worker in worker_instances
             ]
@@ -237,11 +241,14 @@ async def main():
                 loss_values.append(worker_loss)
 
         traced_model = utils.federated_avg(models)
-        if args.model_config != 'cnn' and args.model_config != 'mnist':
-            print(traced_model.classifier.state_dict())
-        else:
-            print(traced_model.fc2.weight.data)
-        learning_rate = max(0.98 * learning_rate, args.lr * 0.01)
+        # if args.model_config != 'cnn':
+        #     print(traced_model.classifier.state_dict())
+        # else:
+        #     print(traced_model.fc2.weight.data)
+        # if curr_round > 0:
+        #     learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
+        # else:
+        #     learning_rate = learning_rate / 2
 
         correct_predictions = 0
         all_predictions = 0     
@@ -251,22 +258,35 @@ async def main():
                 *[
                     test(worker_test, traced_model, 
                     args.batch_size,
-                    args.federate_after_n_batches, learning_rate, int(args.model_output))    
+                    args.federate_after_n_batches, learning_rate, int(args.model_output),
+                    device = "cuda" if use_cuda else "cpu")
                     for worker_test in worker_instances_test      
                 ]         
             )
             test_loss = []
-            for curr_correct, total_predictions, loss , target_hist, predictions_hist in results:
+            for curr_correct, total_predictions, loss in results:#, target_hist, predictions_hist in results:
                 correct_predictions += curr_correct
                 all_predictions += total_predictions
                 test_loss.append(loss)
-                print('Got predictions: \n')
-                print(predictions_hist)
-                print('Expected: \n')
-                print(target_hist)
-  
+                # print('Got predictions: \n')
+                # print(predictions_hist)
+                # print('Expected: \n')
+                # print(target_hist)
+
+            mean_loss = np.mean(np.asarray(test_loss))
             print("Currrent accuracy: " + str(correct_predictions/all_predictions))  
             print(test_loss)          
+            print(mean_loss)
+            if best_loss > mean_loss:
+                best_loss = mean_loss
+                stop = 0
+                learning_rate = 0.98 * learning_rate
+            else:
+                stop += 1
+                learning_rate = 0.9 * learning_rate
+                #learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
+            if stop >= early_stopping:
+                print('Warning! Test loss is not improving for 20 iterations or more.')
         traced_model.train()
 
     if args.modelpath:
