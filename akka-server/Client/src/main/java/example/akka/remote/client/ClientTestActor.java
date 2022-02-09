@@ -54,7 +54,8 @@ public class ClientTestActor extends UntypedActor {
                             "--port", String.valueOf(configuration.port),
                             "--pathToResources", configuration.pathToResources,
                             "--model_config", configuration.modelConfig,
-                            "--modelpath", configuration.pathToResources+configuration.id+"_saved_model");
+                            "--modelpath", configuration.pathToResources+configuration.id+"_saved_model",
+                            "--learningTaskId", configuration.learningTaskId);
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

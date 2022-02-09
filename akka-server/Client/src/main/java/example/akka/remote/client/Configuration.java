@@ -92,6 +92,7 @@ public class Configuration {
         public String pathToTesting;
         public String pathToInterRes;
         public String modelConfig;
+        public String learningTaskId;
         public int dataSetId;
         public boolean diffPriv;
         public double DP_variance;

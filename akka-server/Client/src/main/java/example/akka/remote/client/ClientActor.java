@@ -133,6 +133,7 @@ public class ClientActor extends UntypedActor {
             // set server's config
             this.secureAgg = messageWithModel.secureAggr;
             this.DP_threshold = messageWithModel.DP_threshold;
+            this.DP_threshold = messageWithModel.DP_threshold;
             // Start learning module
             ActorRef moduleRunner = system.actorOf(Props.create(ClientRunModuleActor.class), "ClientRunModuleActor");
             moduleRunner.tell(new Messages.RunModule(this.moduleFileName, this.modelConfig), getSelf());

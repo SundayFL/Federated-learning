@@ -16,6 +16,7 @@ import os
 from torchvision.models.mobilenet import mobilenet_v2
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
+from model_configurations.mimic_model import MIMIC
 
 import syft as sy
 from syft.workers import websocket_client
@@ -86,6 +87,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default=12)
     parser.add_argument("--modelpath", default = 'saved_model')
+    parser.add_argument("--learningTaskId", default = 'mnist')
 
     args = parser.parse_args(args=args)
     return args
@@ -99,7 +101,8 @@ async def fit_model_on_worker(
     curr_round: int,
     max_nr_batches: int,
     lr: float,
-    device: str
+    device: str,
+    learningTaskId: str
 ):
 
     train_config = sy.TrainConfig(
@@ -113,12 +116,12 @@ async def fit_model_on_worker(
             optimizer_args={"lr": lr, "weight_decay": lr*0.1},
     )
     train_config.send(worker)
-    loss = await worker.async_fit(dataset_key="mnist", return_ids=[0], device = device)
+    loss = await worker.async_fit(dataset_key=learningTaskId, return_ids=[0], device = device)
     model = train_config.model_ptr.get().obj
     return worker.id, model, loss
 
 
-async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output, device):
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output, device, learningTaskId):
     
     model_config = sy.TrainConfig(
         model=traced_model,
@@ -132,7 +135,7 @@ async def test(test_worker, traced_model, batch_size, federate_after_n_batches, 
     )
     with torch.no_grad():
         model_config.send(test_worker)
-        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = False, nr_bins = model_output, device = device)
+        worker_result = test_worker.evaluate(dataset_key=learningTaskId, return_histograms = False, nr_bins = model_output, device = device)
     #return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
     return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss']
 
@@ -155,6 +158,9 @@ def define_model(model_config, device, modelpath, model_output):
     if (model_config == 'mnist'):
         model = MNIST().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
+    if (model_config == 'mimic'):
+        model = MIMIC().to(device)
+        test_tensor = torch.zeros([1, 48, 19])
 
     if model_file.is_file():
         model.load_state_dict(torch.load(modelpath))
@@ -225,7 +231,8 @@ async def main():
                     curr_round=curr_round,
                     max_nr_batches=args.federate_after_n_batches,
                     lr=learning_rate,
-                    device = device
+                    device = device,
+                    learningTaskId=args.learningTaskId
                 )
                 for worker in worker_instances
             ]
@@ -259,7 +266,7 @@ async def main():
                     test(worker_test, traced_model, 
                     args.batch_size,
                     args.federate_after_n_batches, learning_rate, int(args.model_output),
-                    device = "cuda" if use_cuda else "cpu")
+                    device = "cuda" if use_cuda else "cpu", args.learningTaskId)
                     for worker_test in worker_instances_test      
                 ]         
             )

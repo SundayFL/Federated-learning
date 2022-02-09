@@ -36,6 +36,8 @@ parser.add_argument("--target_file_name", help="name of targets file", action="s
 parser.add_argument("--data_set_id", type=int, help="id of data set", action="store", default= 1)
 parser.add_argument("--model_config", type=str, help="chosen nn configuration", action="store", default='vgg')
 parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
+parser.add_argument("--learningTaskId", default="mnist")
+
 
 possible_augmentations = A.Compose(
                             [A.Blur(blur_limit=3), 
@@ -77,6 +79,10 @@ def get_transformation_seq(model_config):
         transform_seq = transforms.Compose([
             transforms.ToTensor()])
 
+    if (model_config == 'mimic'):
+        transform_seq = transforms.Compose([
+            transforms.ToTensor()])
+
     if (transform_seq == []):
         raise Exception('Model config not found')
     return transform_seq
@@ -97,19 +103,29 @@ def main(details_dict, **kwargs):  # pragma: no cover
         data_file_name = str(data_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
         target_file_name= str(target_prefix + '_' + str(details_dict["data_set_id"]) + '.npy')
 
+
+
     dataset = ImportData(data_path = data_file_name, target_path = target_file_name)
     dataset.data = [Image.fromarray(np.uint8(im)) for im in dataset.data]
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
     dict_entries = dict(zip(unique_classes, counts))
     mean_entries_per_class = len(dataset.targets)/len(unique_classes)
-    for image_class in unique_classes:
-        index_target = np.squeeze(np.argwhere(dataset.targets == image_class))
+
+
+    if(details_dict["learningTaskId"] == "mnist"):
+        for image_class in unique_classes:
+            index_target = np.squeeze(np.argwhere(dataset.targets == image_class))
         if dict_entries[image_class] < mean_entries_per_class and dict_entries[image_class] > 3:
             new_entries, new_targets = augument_classes([dataset.data[i] for i in index_target], [dataset.targets[i] for i in index_target], mean_entries_per_class)
             dataset.data = dataset.data + new_entries
             dataset.targets = np.concatenate((dataset.targets, new_targets))
 
+
     unique_classes, counts = np.unique(dataset.targets, return_counts=True)
+
+
+
+
     transformation_seq = get_transformation_seq(details_dict["model_config"])
     train_base = CustomDataset(imported_data=dataset, 
     transform = transformation_seq)
@@ -119,7 +135,8 @@ def main(details_dict, **kwargs):  # pragma: no cover
     print(sizes[0])
 
     # Tell the worker about the dataset
-    worker.add_dataset(train_base, key="mnist")
+    # worker.add_dataset(train_base, key="mnist")
+    worker.add_dataset(train_base, key=details_dict["learningTaskId"])
     worker.serializer
     # Start worker
 
@@ -147,7 +164,8 @@ if __name__ == "__main__":
         "data_file_name": args.data_file_name,
         "target_file_name": args.target_file_name,
         "datapath": args.datapath, 
-        "model_config": args.model_config
+        "model_config": args.model_config,
+        "learningTaskId": args.learningTaskId
     }
 
     main(details_dict, **kwargs)

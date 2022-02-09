@@ -18,6 +18,7 @@ public class ClientGetModelActor extends UntypedActor {
     private double DP_threshold;
     private boolean secureAgg;
     private boolean diffPriv;
+    private boolean learningTaskId;
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -60,7 +61,8 @@ public class ClientGetModelActor extends UntypedActor {
                             "--epochs", String.valueOf(configuration.epochs),
                             "--diff_priv", configuration.diffPriv?"True":"False",
                             "--dp_noise_variance", String.valueOf(DP_variance),
-                            "--dp_threshold", String.valueOf(DP_threshold));
+                            "--dp_threshold", String.valueOf(DP_threshold),
+                            "--learningTaskId", String.valueOf(configuration.learningTaskId));
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

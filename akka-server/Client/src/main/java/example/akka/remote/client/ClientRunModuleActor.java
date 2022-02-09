@@ -54,7 +54,8 @@ public class ClientRunModuleActor extends UntypedActor {
                             "--host", configuration.host,
                             "--port", String.valueOf(configuration.port),
                             "--data_set_id", String.valueOf(configuration.dataSetId),
-                            "--model_config", modelConfig);
+                            "--model_config", modelConfig,
+                            "--learningTaskId", configuration.learningTaskId);
 
             Process process = processBuilder.start();
             int exitCode = process.waitFor();

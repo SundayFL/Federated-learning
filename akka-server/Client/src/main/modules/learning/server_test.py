@@ -46,8 +46,14 @@ def main(datapath, data_set_id, **kwargs):  # pragma: no cover
     train_base = sy.BaseDataset(data=data, targets=targets)
 
     # Tell the worker about the dataset
-    worker.add_dataset(train_base, key="mnist")
+    #worker.add_dataset(train_base, key="mnist") # tests not implemented for mimic !
 
+    # FOR MIMIC
+    train_base = CustomDataset(imported_data=dataset,
+                               transform = transformation_seq)
+    train_base.targets = th.tensor(train_base.targets, dtype = th.int64)
+
+    worker.add_dataset(train_base, key="mimic")
     # Start worker
     worker.start()
 

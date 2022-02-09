@@ -8,6 +8,7 @@
   "targetfilename": "target_equal_pt.npy",
   "epochs": 50,
   "modelConfig": "mnist",
+  "learningTaskId": "mnist",
   "id": "alice",
   "host": "localhost",
   "port": "8777",

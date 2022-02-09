@@ -18,6 +18,7 @@ import codecs
 from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
+from model_configurations.mimic_model import MIMIC
 
 import syft as sy
 from syft.workers import websocket_client
@@ -95,6 +96,8 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
     parser.add_argument("--dp_noise_variance", help="variance for differential privacy noise", action="store")
     parser.add_argument("--dp_threshold", help="threshold for differential privacy max weight incr", action="store")
+    parser.add_argument("--learningTaskId", default="mnist")
+
 
     args = parser.parse_args(args=args)
     return args
@@ -109,7 +112,8 @@ async def fit_model_on_worker(
     epochs: int,
     diff_priv: bool,
     dp_noise_variance: float,
-    dp_threshold: float
+    dp_threshold: float,
+    learningTaskId: str
 ):
 
     train_config = sy.TrainConfig(
@@ -124,7 +128,10 @@ async def fit_model_on_worker(
     )
 
     train_config.send(worker)
-    loss = await worker.async_fit(dataset_key="mnist", return_ids=[0])
+
+    print("STEP C - before fit")
+    loss = await worker.async_fit(dataset_key=learningTaskId, return_ids=[0])
+    print("STEP D - after fit")
     model = train_config.model_ptr.get().obj
 
 
@@ -201,6 +208,9 @@ def define_model(model_config, device, model_output):
     if (model_config == 'mnist'):
         model = MNIST().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
+    if (model_config == 'mimic'):
+        model = MIMIC().to(device)
+        test_tensor = torch.zeros([1, 48, 19])
     return model, test_tensor
 
 def define_participant(id, port, **kwargs_websocket):
@@ -240,7 +250,8 @@ async def main():
         epochs=args.epochs,
         diff_priv=args.diff_priv,
         dp_noise_variance=float(args.dp_noise_variance),
-        dp_threshold=float(args.dp_threshold)
+        dp_threshold=float(args.dp_threshold),
+        learningTaskId=args.learningTaskId
     )
 
     # get weights and make R values

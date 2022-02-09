@@ -17,6 +17,7 @@ import os
 from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
+from model_configurations.mimic_model import MIMIC
 
 import syft as sy
 from syft.workers import websocket_client
@@ -69,6 +70,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--model_config", default="vgg")
     parser.add_argument("--model_output", default=12)
     parser.add_argument("--modelpath", default = 'saved_model')
+    parser.add_argument("--learningTaskId", default = 'mnist')
 
     args = parser.parse_args(args=args)
     return args
@@ -94,11 +96,15 @@ def define_model(model_config, device, modelpath, model_output):
        model = MNIST().to(device)
        test_tensor = torch.zeros([1, 1, 28, 28])
 
+    if (model_config == 'mimic'):
+        model = MIMIC().to(device)
+        test_tensor = torch.zeros([1, 48, 19])
+
     if model_file.is_file():
        model.load_state_dict(torch.load(modelpath))
     return model, test_tensor
 
-async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output):
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output, learningTaskId):
 
     model_config = sy.TrainConfig(
         model=traced_model,
@@ -112,7 +118,7 @@ async def test(test_worker, traced_model, batch_size, federate_after_n_batches, 
     )
     with torch.no_grad():
         model_config.send(test_worker)
-        worker_result = test_worker.evaluate(dataset_key="mnist", return_histograms = True, nr_bins = model_output)
+        worker_result = test_worker.evaluate(dataset_key=learningTaskId, return_histograms = True, nr_bins = model_output)
     return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
 
 def define_participants_lists(participantsjsonlist, **kwargs_websocket):
@@ -197,7 +203,7 @@ async def main():
             *[
                 test(worker_test, model,
                      args.batch_size,
-                     args.federate_after_n_batches, learning_rate, int(args.model_output))
+                     args.federate_after_n_batches, learning_rate, int(args.model_output), args.learningTaskId)
                 for worker_test in worker_instances_test
             ]
         )
