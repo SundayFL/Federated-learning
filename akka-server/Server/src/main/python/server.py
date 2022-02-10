@@ -266,7 +266,7 @@ async def main():
                     test(worker_test, traced_model, 
                     args.batch_size,
                     args.federate_after_n_batches, learning_rate, int(args.model_output),
-                    device = "cuda" if use_cuda else "cpu", args.learningTaskId)
+                    "cuda" if use_cuda else "cpu", args.learningTaskId)
                     for worker_test in worker_instances_test      
                 ]         
             )
