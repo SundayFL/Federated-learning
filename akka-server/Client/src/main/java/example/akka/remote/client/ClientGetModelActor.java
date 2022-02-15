@@ -7,14 +7,12 @@ import example.akka.remote.shared.Messages;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ClientGetModelActor extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     private String clientId;
-    private double DP_variance;
+    private double DP_std;
     private double DP_threshold;
     private boolean secureAgg;
     private boolean diffPriv;
@@ -35,7 +33,7 @@ public class ClientGetModelActor extends UntypedActor {
             this.secureAgg = castedMessage.secureAgg;
             this.diffPriv = castedMessage.diffPriv;
             this.DP_threshold = castedMessage.DP_threshold;
-            this.DP_variance = castedMessage.DP_variance;
+            this.DP_std = castedMessage.DP_std;
             this.readRValues();
             log.info("R values ready");
             getSender().tell(new Messages.RValuesReady(), getSelf());
@@ -60,7 +58,7 @@ public class ClientGetModelActor extends UntypedActor {
                             "--model_config", configuration.modelConfig,
                             "--epochs", String.valueOf(configuration.epochs),
                             "--diff_priv", configuration.diffPriv?"True":"False",
-                            "--dp_noise_variance", String.valueOf(DP_variance),
+                            "--dp_noise_std", String.valueOf( DP_std ),
                             "--dp_threshold", String.valueOf(DP_threshold),
                             "--learningTaskId", String.valueOf(configuration.learningTaskId));
 

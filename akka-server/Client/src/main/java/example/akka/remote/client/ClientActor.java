@@ -1,7 +1,6 @@
 package example.akka.remote.client;
 
 import akka.actor.*;
-import akka.actor.dsl.Creators;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import example.akka.remote.shared.Messages;
@@ -21,8 +20,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 public class ClientActor extends UntypedActor {
 
@@ -42,7 +39,7 @@ public class ClientActor extends UntypedActor {
             this.port = configuration.port;
             this.clientId = configuration.id;
             this.diffPriv = configuration.diffPriv;
-            this.DP_variance = configuration.DP_variance;
+            this.DP_std = configuration.DP_std;
 
             // Getting the other actors
             // // flserver.eastus.azurecontainer.io:5000 - azure address
@@ -65,7 +62,7 @@ public class ClientActor extends UntypedActor {
     private String modelConfig;
     private boolean diffPriv;
     private boolean secureAgg;
-    private double DP_variance;
+    private double DP_std;
     private double DP_threshold;
 
     private ActorSelection selection;
@@ -165,7 +162,7 @@ public class ClientActor extends UntypedActor {
             Configuration configurationHandler = new Configuration();
             configuration = configurationHandler.get();
             castedMessage.diffPriv = configuration.diffPriv;
-            castedMessage.DP_variance = configuration.DP_variance;
+            castedMessage.DP_std = configuration.DP_std;
 
             ActorSystem system = getContext().system();
             // Start reading R values through a new actor

@@ -94,7 +94,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--model_output", default="12")
     parser.add_argument("--pathToResources", help="pass path to resources", action="store")
     parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
-    parser.add_argument("--dp_noise_variance", help="variance for differential privacy noise", action="store")
+    parser.add_argument("--dp_noise_std", help="standard deviation for differential privacy noise", action="store")
     parser.add_argument("--dp_threshold", help="threshold for differential privacy max weight incr", action="store")
     parser.add_argument("--learningTaskId", default="mnist")
 
@@ -111,7 +111,7 @@ async def fit_model_on_worker(
     lr: float,
     epochs: int,
     diff_priv: bool,
-    dp_noise_variance: float,
+    dp_noise_std: float,
     dp_threshold: float,
     learningTaskId: str
 ):
@@ -152,7 +152,7 @@ async def fit_model_on_worker(
                 np.array(old_weights[layer]),
                 np.array(new_weights[layer]),
                 np.array(weights_incr[layer]),
-                dp_noise_variance,
+                dp_noise_std,
                 dp_threshold
             ))
 
@@ -166,12 +166,12 @@ async def fit_model_on_worker(
     return worker.id, model, loss
 
 # DIfferential Privacy implementation
-def setWeights(list_old, list_new, list_incr, variance, threshold):
+def setWeights(list_old, list_new, list_incr, std, threshold):
     eps = 0.01  # to enable switching signs by weights
     for i, x in enumerate(list_old):
         if np.isscalar(x):
             list_incr[i] = list_new[i] - list_old[i]
-            list_incr[i] = list_incr[i] + random.gauss(0, variance) # adding noise
+            list_incr[i] = list_incr[i] + random.gauss(0, std) # adding noise
 
             # setting threshold
             if list_old[i]*threshold < 0:
@@ -186,7 +186,7 @@ def setWeights(list_old, list_new, list_incr, variance, threshold):
             elif list_incr[i] < smaller_boundary:
                 list_incr[i] = smaller_boundary
         else:
-            list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], variance, threshold)
+            list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], std, threshold)
     return list_incr
 
 def define_model(model_config, device, model_output):
@@ -249,7 +249,7 @@ async def main():
         lr=learning_rate,
         epochs=args.epochs,
         diff_priv=args.diff_priv,
-        dp_noise_variance=float(args.dp_noise_variance),
+        dp_noise_std=float(args.dp_noise_std),
         dp_threshold=float(args.dp_threshold),
         learningTaskId=args.learningTaskId
     )

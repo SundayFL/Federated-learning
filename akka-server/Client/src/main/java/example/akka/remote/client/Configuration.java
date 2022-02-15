@@ -12,7 +12,7 @@ public class Configuration {
     public static String id; // Id of the client e.g. alice
     public static Integer port; // port on which the client is working
     public static boolean diffPriv;
-    public static double DP_variance;
+    public static double DP_std;
 
     // Method which saves arguments passed as execution arguments
     public void SaveArguments(String[] args) {
@@ -28,19 +28,19 @@ public class Configuration {
             this.port = Integer.parseInt(args[3]);
         }
         if (args.length > 4) {
-            double DP_variance = Double.parseDouble( args[4] );
+            double DP_std = Double.parseDouble( args[4] );
 
-            if(DP_variance <= 0){
+            if(DP_std <= 0){
                 this.diffPriv = false;
-                this.DP_variance = 0;
+                this.DP_std = 0;
             }
             else {
                 this.diffPriv = true;
-                this.DP_variance = DP_variance;
+                this.DP_std = DP_std;
             }
 
         }
-        System.out.println("dataSetId: " + this.dataSetId + ", id: " + this.id + ", port: " + this.port + ", DP: " + this.diffPriv + ", DP_var: " + this.DP_variance);
+        System.out.println("dataSetId: " + this.dataSetId + ", id: " + this.id + ", port: " + this.port + ", DP: " + this.diffPriv + ", DP_std: " + this.DP_std);
     }
 
     // Method which returns configuration from appConfig.json file
@@ -95,7 +95,7 @@ public class Configuration {
         public String learningTaskId;
         public int dataSetId;
         public boolean diffPriv;
-        public double DP_variance;
+        public double DP_std;
     }
 }
 

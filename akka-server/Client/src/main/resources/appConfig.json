@@ -18,5 +18,7 @@
   "pathToModulesList": "./src/main/modules/learning/modules.json",
   "pathToLocalModel": "./src/main/modules/learning/local_model.py",
   "pathToTesting": "./src/main/modules/learning/testmodel.py",
-  "pathToInterRes": "./src/main/python/interres.py"
+  "pathToInterRes": "./src/main/python/interres.py",
+  "diffPriv": true,
+  "DP_std": 0.3
 }

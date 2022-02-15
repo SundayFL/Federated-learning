@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -203,14 +202,14 @@ public class Messages {
                                 boolean secureAgg,
                                 boolean diffPriv,
                                 double DP_threshold,
-                                double DP_variance){
+                                double DP_std){
             this.clientId = clientId;
             this.numberOfClients = numberOfClients;
             this.publicKeys = publicKeys;
             this.secureAgg = secureAgg;
             this.diffPriv = diffPriv;
             this.DP_threshold = DP_threshold;
-            this.DP_variance = DP_variance;
+            this.DP_std = DP_std;
         }
 
         public String clientId;
@@ -219,7 +218,7 @@ public class Messages {
         public boolean secureAgg;
         public boolean diffPriv;
         public double DP_threshold;
-        public double DP_variance;
+        public double DP_std;
     }
 
     public static class AreYouAliveQuestion implements Serializable { }
