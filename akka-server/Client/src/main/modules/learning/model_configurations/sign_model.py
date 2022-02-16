@@ -5,9 +5,9 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 
-class Gestures(nn.Module):
+class Sign(nn.Module):
     def __init__(self):
-        super(Gestures, self).__init__()
+        super(Sign, self).__init__()
         self.conv1 = nn.Conv2d(1,6,kernel_size = 3,stride = 1,padding = 1) #input: (m,28,28,1) output: (m,28,28,6)
         self.max1 = nn.MaxPool2d(kernel_size = (2,2),stride = 2) #input: (m,28,28,6) output: (m,14,14,6)
         self.conv2 = nn.Conv2d(6,16,kernel_size = 5,stride = 1,padding = 0) #input: (m,14,14,6) output: (m,10,10,16)

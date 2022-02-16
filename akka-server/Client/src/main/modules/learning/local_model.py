@@ -20,7 +20,7 @@ from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from model_configurations.mimic_model import MIMIC
 from model_configurations.chess_model import Chess
-from model_configurations.gestures_model import Gestures
+from model_configurations.sign_model import Sign
 
 import syft as sy
 from syft.workers import websocket_client
@@ -167,7 +167,7 @@ async def fit_model_on_worker(
     # returning updated weights
     return worker.id, model, loss
 
-# DIfferential Privacy implementation
+# Differential Privacy implementation
 def setWeights(list_old, list_new, list_incr, std, threshold):
     eps = 0.01  # to enable switching signs by weights
     for i, x in enumerate(list_old):
@@ -219,7 +219,7 @@ def define_model(model_config, device, model_output):
         model = MIMIC().to(device)
         test_tensor = torch.zeros([1, 48, 19])
     if (model_config == 'gestures'):
-        model = Gestures().to(device)
+        model = Sign().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
     return model, test_tensor
 
