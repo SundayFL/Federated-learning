@@ -18,7 +18,7 @@ class ImportData():
                 targets = loaded_data[target_name].to_numpy()
             except:
                 targets = np.empty(0)
-            data = loaded_data.drop(target_name).to_numpy()
+            data = loaded_data.drop(target_name, axis=1).to_numpy()
         return data, targets
 
     def read_images_from_folder(self, data_path):

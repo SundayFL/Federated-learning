@@ -18,6 +18,8 @@ from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from model_configurations.mimic_model import MIMIC
+from model_configurations.chess_model import Chess
+from model_configurations.nnd_model import Neural_Network_deep
 
 import syft as sy
 from syft.workers import websocket_client
@@ -68,7 +70,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--participantsjsonlist", help="show program version", action="store", default="{}")
     parser.add_argument("--epochs", type=int, help="show program version", action="store", default=10)
     parser.add_argument("--model_config", default="vgg")
-    parser.add_argument("--model_output", default=12)
+    parser.add_argument("--model_output", default=5)
     parser.add_argument("--modelpath", default = 'saved_model')
     parser.add_argument("--learningTaskId", default = 'mnist')
 
@@ -96,9 +98,16 @@ def define_model(model_config, device, modelpath, model_output):
        model = MNIST().to(device)
        test_tensor = torch.zeros([1, 1, 28, 28])
 
+    if (model_config == 'chess'):
+        model = Chess().to(device)
+        test_tensor = torch.zeros([1, 1, 64, 64])
+
     if (model_config == 'mimic'):
         model = MIMIC().to(device)
         test_tensor = torch.zeros([1, 48, 19])
+    if (model_config == 'nnd'):
+        model = Neural_Network_deep().to(device)
+        test_tensor = torch.zeros([1, 1, 28, 28])
 
     if model_file.is_file():
        model.load_state_dict(torch.load(modelpath))

@@ -1,17 +1,17 @@
 {
-  "learningTaskId": "mnist",
+  "learningTaskId": "nnd",
   "serverModuleFilePathSA": "./src/main/python/serversecure.py",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",
   "epochs": 250,
-  "modelConfig": "mnist",
+  "modelConfig": "nnd",
   "minimumNumberOfDevices": 2,
   "targetOutputSize": 12,
   "clientModules": [
     {
-      "learningTaskId": "mnist",
+      "learningTaskId": "nnd",
       "fileName": "server.py",
       "description": "Server",
       "useCUDA": true,

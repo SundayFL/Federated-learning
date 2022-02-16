@@ -19,6 +19,8 @@ from torchvision.models import vgg11
 from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from model_configurations.mimic_model import MIMIC
+from model_configurations.chess_model import Chess
+from model_configurations.nnd_model import Neural_Network_deep
 
 import syft as sy
 from syft.workers import websocket_client
@@ -58,7 +60,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description="Run federated learning using websocket client workers."
     )
-    parser.add_argument("--batch_size", type=int, default=128, help="batch size of the training")
+    parser.add_argument("--batch_size", type=int, default=32, help="batch size of the training")
     parser.add_argument(
         "--test_batch_size", type=int, default=128, help="batch size used for the test data"
     )
@@ -71,7 +73,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
         default=10,
         help="number of training steps performed on each remote worker before averaging",
     )
-    parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
+    parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
     parser.add_argument("--cuda", action="store_true", help="use cuda")
     parser.add_argument("--seed", type=int, default=1, help="seed used for randomization")
     parser.add_argument("--save_model", action="store_false", help="if set, model will be saved")
@@ -148,7 +150,7 @@ async def fit_model_on_worker(
 
         # calculating weights increment
         for layer in weights_incr:
-            weights_incr[layer] = torch.tensor(setWeights(
+            weights_incr[layer] = weights_incr[layer] + torch.tensor(setWeights(
                 np.array(old_weights[layer]),
                 np.array(new_weights[layer]),
                 np.array(weights_incr[layer]),
@@ -208,9 +210,17 @@ def define_model(model_config, device, model_output):
     if (model_config == 'mnist'):
         model = MNIST().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
+
+    if (model_config == 'chess'):
+        model = Chess().to(device)
+        test_tensor = torch.zeros([1, 1, 64, 64])
+
     if (model_config == 'mimic'):
         model = MIMIC().to(device)
         test_tensor = torch.zeros([1, 48, 19])
+    if (model_config == 'nnd'):
+        model = Neural_Network_deep().to(device)
+        test_tensor = torch.zeros([1, 1, 28, 28])
     return model, test_tensor
 
 def define_participant(id, port, **kwargs_websocket):
