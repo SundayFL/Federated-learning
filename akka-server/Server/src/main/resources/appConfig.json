@@ -1,17 +1,17 @@
 {
-  "learningTaskId": "nnd",
+  "learningTaskId": "gestures",
   "serverModuleFilePathSA": "./src/main/python/serversecure.py",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "pathToResources": "./src/main/resources",
   "savedModelPath": "./saved_model",
   "epochs": 250,
-  "modelConfig": "nnd",
+  "modelConfig": "gestures",
   "minimumNumberOfDevices": 2,
   "targetOutputSize": 12,
   "clientModules": [
     {
-      "learningTaskId": "nnd",
+      "learningTaskId": "gestures",
       "fileName": "server.py",
       "description": "Server",
       "useCUDA": true,

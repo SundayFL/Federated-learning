@@ -75,7 +75,7 @@ def get_transformation_seq(model_config):
             transforms.CenterCrop(224),
             transforms.ToTensor()])
     
-    if model_config in ['mnist', 'chess', 'mimic', 'nnd']:
+    if model_config in ['mnist', 'chess', 'mimic', 'gestures']:
         transform_seq = transforms.Compose([
             transforms.ToTensor()])
 

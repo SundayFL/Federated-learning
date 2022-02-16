@@ -1,4 +1,4 @@
 [{"taskId":"mimic","fileName":"client.py"},
   {"taskId":"mnist","fileName":"client.py"},
   {"taskId":"chess","fileName":"client.py"},
-  {"taskId":"nnd","fileName":"client.py"}]
+  {"taskId":"gestures","fileName":"client.py"}]
