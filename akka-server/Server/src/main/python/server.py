@@ -18,7 +18,7 @@ from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from model_configurations.mimic_model import MIMIC
 from model_configurations.chess_model import Chess
-from model_configurations.gestures_model import Gestures
+from model_configurations.sign_model import Gestures
 
 import syft as sy
 from syft.workers import websocket_client
