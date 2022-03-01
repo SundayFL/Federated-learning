@@ -169,7 +169,7 @@ public class ClientActor extends UntypedActor {
             ActorRef modelReader = system.actorOf(Props.create(ClientGetModelActor.class), "ClientGetModelActor");
             modelReader.tell(message, getSelf());
         } else if (message instanceof Messages.RValuesReady){
-            clientsFromWhomWeReceivedRValues.add(this.clientId);
+            //clientsFromWhomWeReceivedRValues.add(this.clientId);
             // sending R values to other clients
             Configuration.ConfigurationDTO configuration;
             Configuration configurationHandler = new Configuration();

@@ -68,6 +68,7 @@ public class Configuration {
         } else {
             System.out.println("PORT IS NULL");
         }
+        configuration.DP_std = this.DP_std;
 
     }
 
