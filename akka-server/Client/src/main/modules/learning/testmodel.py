@@ -19,7 +19,7 @@ from model_configurations.simple_cnn import CNN
 from model_configurations.mnist_model import MNIST
 from model_configurations.mimic_model import MIMIC
 from model_configurations.chess_model import Chess
-from model_configurations.gestures_model import Gestures
+from model_configurations.sign_model import Sign
 
 import syft as sy
 from syft.workers import websocket_client
@@ -108,7 +108,7 @@ def define_model(model_config, device, modelpath, model_output):
         model = MIMIC().to(device)
         test_tensor = torch.zeros([1, 48, 19])
     if (model_config == 'gestures'):
-        model = Gestures().to(device)
+        model = Sign().to(device)
         test_tensor = torch.zeros([1, 1, 28, 28])
 
     if model_file.is_file():
