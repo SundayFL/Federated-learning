@@ -58,6 +58,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description="Run federated learning using websocket client workers."
     )
+    parser.add_argument("--secure_agg", default="False", action="store", help="secure aggregation")
     parser.add_argument("--batch_size", type=int, default=32, help="batch size of the training")
     parser.add_argument(
         "--test_batch_size", type=int, default=128, help="batch size used for the test data"
@@ -210,10 +211,6 @@ async def main():
     torch.manual_seed(args.seed)
     print(args)
     hook = sy.TorchHook(torch)
-    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
-    #define participants
-    print(args.participantsjsonlist)
-    worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
 
     #define model
     use_cuda = args.cuda and torch.cuda.is_available()
@@ -222,87 +219,115 @@ async def main():
     model, test_tensor = define_model(args.model_config, device, args.modelpath, int(args.model_output))
     #for p in model.parameters():
     #    p.register_hook(lambda grad: torch.clamp(grad, -6, 6))
-    traced_model = torch.jit.trace(model,  test_tensor.to(device))
-    traced_model.train()
-    best_loss = np.Inf
-    early_stopping = 25
-    learning_rate = args.lr
-    for curr_round in range(1, args.epochs + 1):
-        logger.info("Training epoch %s/%s", curr_round, args.epochs)
-        results = await asyncio.gather(
-            *[
-                fit_model_on_worker(
-                    
-                    worker=worker,
-                    traced_model=traced_model,
-                    batch_size=args.batch_size,
-                    curr_round=curr_round,
-                    max_nr_batches=args.federate_after_n_batches,
-                    lr=learning_rate,
-                    device = device,
-                    learningTaskId=args.learningTaskId
-                )
-                for worker in worker_instances
-            ]
-        )
-        models = {}
-        models_list =[]
-        loss_values = []
+    kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
+    #define participants
+    print(args.participantsjsonlist)
 
-        for worker_id, worker_model, worker_loss in results:
-            if worker_model is not None:
-                models[worker_id] = worker_model
-                models_list.append(worker_model)
-                loss_values.append(worker_loss)
+    if args.secure_agg=="True": # while using secure aggregation
+        participantsjsonlist = json.loads(args.participantsjsonlist)
+        interResList = {} #make list of participants' weights
+        for participantdata in participantsjsonlist:
+            participant = participantdata["id"]
+            weightpath = args.pathToResources+"/interRes/"+participant+".pt"
+            if os.path.exists(weightpath): # cleanup
+                interResList[participant] = torch.load(weightpath)
+                os.remove(weightpath)
+                p = participant
+        os.rmdir(args.pathToResources+"/interRes") # cleanup
 
-        traced_model = utils.federated_avg(models)
-        # if args.model_config != 'cnn':
-        #     print(traced_model.classifier.state_dict())
-        # else:
-        #     print(traced_model.fc2.weight.data)
-        # if curr_round > 0:
-        #     learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
-        # else:
-        #     learning_rate = learning_rate / 2
+        # calculate aggregated weights
+        aggregatedWeights = {}
+        for weights in interResList[p]:
+            aggregatedWeights[weights] = torch.zeros(interResList[p][weights].size())
+            for participant in interResList:
+                aggregatedWeights[weights] = aggregatedWeights[weights] + interResList[participant][weights] / len(interResList)
 
-        correct_predictions = 0
-        all_predictions = 0     
-        traced_model.eval()
-        if len(worker_instances_test) > 0 :
+        model.load_state_dict(aggregatedWeights) # load model
+        traced_model = model
+
+    else: # if no secure aggregation
+        worker_instances, worker_instances_test = define_participants_lists(args.participantsjsonlist, **kwargs_websocket)
+        traced_model = torch.jit.trace(model,  test_tensor.to(device))
+        traced_model.train()
+        best_loss = np.Inf
+        early_stopping = 25
+        learning_rate = args.lr
+        for curr_round in range(1, args.epochs + 1):
+            logger.info("Training epoch %s/%s", curr_round, args.epochs)
             results = await asyncio.gather(
                 *[
-                    test(worker_test, traced_model, 
-                    args.batch_size,
-                    args.federate_after_n_batches, learning_rate, int(args.model_output),
-                    "cuda" if use_cuda else "cpu", args.learningTaskId)
-                    for worker_test in worker_instances_test      
-                ]         
-            )
-            test_loss = []
-            for curr_correct, total_predictions, loss in results:#, target_hist, predictions_hist in results:
-                correct_predictions += curr_correct
-                all_predictions += total_predictions
-                test_loss.append(loss)
-                # print('Got predictions: \n')
-                # print(predictions_hist)
-                # print('Expected: \n')
-                # print(target_hist)
+                    fit_model_on_worker(
 
-            mean_loss = np.mean(np.asarray(test_loss))
-            print("Currrent accuracy: " + str(correct_predictions/all_predictions))  
-            print(test_loss)          
-            print(mean_loss)
-            if best_loss > mean_loss:
-                best_loss = mean_loss
-                stop = 0
-                learning_rate = 0.98 * learning_rate
-            else:
-                stop += 1
-                learning_rate = 0.9 * learning_rate
-                #learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
-            if stop >= early_stopping:
-                print('Warning! Test loss is not improving for 20 iterations or more.')
-        traced_model.train()
+                        worker=worker,
+                        traced_model=traced_model,
+                        batch_size=args.batch_size,
+                        curr_round=curr_round,
+                        max_nr_batches=args.federate_after_n_batches,
+                        lr=learning_rate,
+                        device = device,
+                        learningTaskId=args.learningTaskId
+                    )
+                    for worker in worker_instances
+                ]
+            )
+            models = {}
+            models_list =[]
+            loss_values = []
+
+            for worker_id, worker_model, worker_loss in results:
+                if worker_model is not None:
+                    models[worker_id] = worker_model
+                    models_list.append(worker_model)
+                    loss_values.append(worker_loss)
+
+            traced_model = utils.federated_avg(models)
+            # if args.model_config != 'cnn':
+            #     print(traced_model.classifier.state_dict())
+            # else:
+            #     print(traced_model.fc2.weight.data)
+            # if curr_round > 0:
+            #     learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
+            # else:
+            #     learning_rate = learning_rate / 2
+
+            correct_predictions = 0
+            all_predictions = 0
+            traced_model.eval()
+            if len(worker_instances_test) > 0 :
+                results = await asyncio.gather(
+                    *[
+                        test(worker_test, traced_model,
+                        args.batch_size,
+                        args.federate_after_n_batches, learning_rate, int(args.model_output),
+                        "cuda" if use_cuda else "cpu", args.learningTaskId)
+                        for worker_test in worker_instances_test
+                    ]
+                )
+                test_loss = []
+                for curr_correct, total_predictions, loss in results:#, target_hist, predictions_hist in results:
+                    correct_predictions += curr_correct
+                    all_predictions += total_predictions
+                    test_loss.append(loss)
+                    # print('Got predictions: \n')
+                    # print(predictions_hist)
+                    # print('Expected: \n')
+                    # print(target_hist)
+
+                mean_loss = np.mean(np.asarray(test_loss))
+                print("Currrent accuracy: " + str(correct_predictions/all_predictions))
+                print(test_loss)
+                print(mean_loss)
+                if best_loss > mean_loss:
+                    best_loss = mean_loss
+                    stop = 0
+                    learning_rate = 0.98 * learning_rate
+                else:
+                    stop += 1
+                    learning_rate = 0.9 * learning_rate
+                    #learning_rate = learning_rate/ (np.sqrt(curr_round + 1))
+                if stop >= early_stopping:
+                    print('Warning! Test loss is not improving for 20 iterations or more.')
+            traced_model.train()
 
     if args.modelpath:
         torch.save(traced_model.state_dict(), args.modelpath)

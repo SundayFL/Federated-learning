@@ -307,15 +307,16 @@ public class Aggregator extends UntypedActor {
         // Executing module script as a command
         processBuilder
             .inheritIO()
-            .command("python", configuration.secureAgg?configuration.serverModuleFilePathSA:configuration.serverModuleFilePath,
+            .command("python", configuration.serverModuleFilePath,
             // secure aggregation requires a different script to construct the model
-            "--datapath", configuration.testDataPath,
-            "--participantsjsonlist", participantsJson,
-            "--epochs", String.valueOf(configuration.epochs),
-            "--modelpath", configuration.savedModelPath,
-            "--pathToResources", configuration.pathToResources,
-            "--model_config", configuration.modelConfig,
-            "--model_output", String.valueOf(configuration.targetOutputSize),
+                    "--secure_agg", configuration.secureAgg?"True":"False",
+                    "--datapath", configuration.testDataPath,
+                    "--participantsjsonlist", participantsJson,
+                    "--epochs", String.valueOf(configuration.epochs),
+                    "--modelpath", configuration.savedModelPath,
+                    "--pathToResources", configuration.pathToResources,
+                    "--model_config", configuration.modelConfig,
+                    "--model_output", String.valueOf(configuration.targetOutputSize),
                     "--learningTaskId", String.valueOf(configuration.learningTaskId));
 
         try {
