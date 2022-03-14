@@ -50,7 +50,8 @@ public class ClientGetModelActor extends UntypedActor {
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder
                     .inheritIO()
-                    .command("python", configuration.pathToLocalModel,
+                    .command("python", configuration.pathToClientLearning,
+                            "--mode", "training",
                             "--datapath", configuration.testdatapath,
                             "--id", this.clientId,
                             "--port", String.valueOf(configuration.port),

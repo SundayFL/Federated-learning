@@ -89,8 +89,7 @@ public class Configuration {
         public String pathToModules;
         public String pathToModulesList;
         public String pathToResources;
-        public String pathToLocalModel;
-        public String pathToTesting;
+        public String pathToClientLearning;
         public String pathToInterRes;
         public String modelConfig;
         public String learningTaskId;

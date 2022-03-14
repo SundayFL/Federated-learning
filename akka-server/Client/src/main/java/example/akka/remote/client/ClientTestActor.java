@@ -48,7 +48,8 @@ public class ClientTestActor extends UntypedActor {
             processBuilder.directory(new File(System.getProperty("user.dir")));
             processBuilder
                     .inheritIO()
-                    .command("python", configuration.pathToTesting,
+                    .command("python", configuration.pathToClientLearning,
+                            "--mode", "testing",
                             "--datapath", configuration.testdatapath,
                             "--id", configuration.id,
                             "--port", String.valueOf(configuration.port),

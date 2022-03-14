@@ -60,6 +60,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description="Run federated learning using websocket client workers."
     )
+    parser.add_argument("--mode", default="training", help="training or testing")
     parser.add_argument("--batch_size", type=int, default=32, help="batch size of the training")
     parser.add_argument(
         "--test_batch_size", type=int, default=128, help="batch size used for the test data"
@@ -98,6 +99,7 @@ def define_and_get_arguments(args=sys.argv[1:]):
     parser.add_argument("--diff_priv", help="whether to include differential privacy", action="store")
     parser.add_argument("--dp_noise_std", help="standard deviation for differential privacy noise", action="store")
     parser.add_argument("--dp_threshold", help="threshold for differential privacy max weight incr", action="store")
+    parser.add_argument("--modelpath", default = 'saved_model')
     parser.add_argument("--learningTaskId", default="mnist")
 
 
@@ -191,6 +193,23 @@ def setWeights(list_old, list_new, list_incr, std, threshold):
             list_incr[i] = setWeights(list_old[i], list_new[i], list_incr[i], std, threshold)
     return list_incr
 
+async def test(test_worker, traced_model, batch_size, federate_after_n_batches, learning_rate, model_output, learningTaskId):
+    model_config = sy.TrainConfig(
+        model=traced_model,
+        loss_fn=loss_fn,
+        batch_size=batch_size,
+        shuffle=True,
+        max_nr_batches=federate_after_n_batches,
+        epochs=1,
+        optimizer="Adam",
+        optimizer_args={"lr": learning_rate, "weight_decay": learning_rate*0.1},
+    )
+    with torch.no_grad():
+        model_config.send(test_worker)
+        worker_result = test_worker.evaluate(dataset_key=learningTaskId, return_histograms = True, nr_bins = model_output)
+
+    return worker_result['nr_correct_predictions'], worker_result['nr_predictions'], worker_result['loss'], worker_result['histogram_target'],  worker_result['histogram_predictions']
+
 def define_model(model_config, device, model_output):
     test_tensor = torch.zeros([1, 3, 224, 224])
     if (model_config == 'vgg'):
@@ -234,8 +253,6 @@ async def main():
     #os.chdir('./akka-server/Client/')
     torch.manual_seed(args.seed)
     print(args)
-    if not os.path.exists(args.pathToResources+args.id):
-        os.mkdir(args.pathToResources+args.id)
     hook = sy.TorchHook(torch)
     kwargs_websocket = {"hook": hook, "verbose": args.verbose, "host": 'localhost'}
     #define participants
@@ -250,34 +267,51 @@ async def main():
     traced_model = torch.jit.trace(model,  test_tensor.to(device))
     traced_model.train()
 
-    learning_rate = args.lr
-    worker_id, model, loss_value = await fit_model_on_worker(
-        worker=worker_instance,
-        traced_model=traced_model,
-        batch_size=args.batch_size,
-        max_nr_batches=args.federate_after_n_batches,
-        lr=learning_rate,
-        epochs=args.epochs,
-        diff_priv=args.diff_priv,
-        dp_noise_std=float(args.dp_noise_std),
-        dp_threshold=float(args.dp_threshold),
-        learningTaskId=args.learningTaskId
-    )
+    if args.mode=="training":
+        if not os.path.exists(args.pathToResources+args.id):
+            os.mkdir(args.pathToResources+args.id)
+        learning_rate = args.lr
+        worker_id, model, loss_value = await fit_model_on_worker(
+            worker=worker_instance,
+            traced_model=traced_model,
+            batch_size=args.batch_size,
+            max_nr_batches=args.federate_after_n_batches,
+            lr=learning_rate,
+            epochs=args.epochs,
+            diff_priv=args.diff_priv,
+            dp_noise_std=float(args.dp_noise_std),
+            dp_threshold=float(args.dp_threshold),
+            learningTaskId=args.learningTaskId
+        )
 
-    # get weights and make R values
-    """if args.model_config != 'cnn' and args.model_config != 'mnist':
-        weights = model.classifier.state_dict()
-    else:
-        weights = model.fc2.weight.data"""
+        # get weights and make R values
+        weights = model.state_dict()
+        torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
+        for w in weights:
+            s = torch.seed()
+            weights[w] = torch.rand(weights[w].size())
+        # save R values
+        torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_random.pt")
+        # R values are stored in their own directory in order to simplify storage while working in localhost
 
-    weights = model.state_dict()
-    torch.save(weights, args.pathToResources+args.id+"/saved_model.pt")
-    for w in weights:
-        s = torch.seed()
-        weights[w] = torch.rand(weights[w].size())
-    # save R values
-    torch.save(weights, args.pathToResources+args.id+"/"+args.id+"_random.pt")
-    # R values are stored in their own directory in order to simplify storage while working in localhost
+    elif args.mode=="testing":
+        resultsfile = open(args.pathToResources+args.id+'.txt', 'w')
+        learning_rate = args.lr
+        model.eval()
+        curr_correct, total_predictions, loss, target_hist, predictions_hist = await test(worker_instance, traced_model,
+                                                                                          args.batch_size,
+                                                                                          args.federate_after_n_batches, learning_rate, int(args.model_output), args.learningTaskId)
+        resultsfile.write('Got predictions: \n')
+        resultsfile.write(str(predictions_hist))
+        resultsfile.write('\nExpected: \n')
+        resultsfile.write(str(target_hist))
+        resultsfile.write("\nAccuracy: " + str(curr_correct/total_predictions))
+        resultsfile.write("\nTest loss: " + str(loss))
+        model.train()
+        resultsfile.close()
+
+        if args.modelpath:
+            torch.save(model.state_dict(), args.modelpath)
 
 if __name__ == "__main__":
     # Logging setup
