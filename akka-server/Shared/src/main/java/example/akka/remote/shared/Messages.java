@@ -186,15 +186,6 @@ public class Messages {
         public InstanceType instanceType;
     }
 
-    public static class ContactData implements Serializable {
-        public ContactData(ActorRef reference, Float publicKey){
-            this.reference=reference;
-            this.publicKey=publicKey;
-        }
-        public ActorRef reference;
-        public Float publicKey;
-    }
-
     public static class ClientDataSpread implements Serializable {
         public ClientDataSpread(String clientId,
                                 int numberOfClients,

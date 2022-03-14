@@ -1,6 +1,5 @@
 {
   "learningTaskId": "gestures",
-  "serverModuleFilePathSA": "./src/main/python/serversecure.py",
   "serverModuleFilePath": "./src/main/python/server.py",
   "testDataPath": "./src/main/python/data",
   "pathToResources": "./src/main/resources",
