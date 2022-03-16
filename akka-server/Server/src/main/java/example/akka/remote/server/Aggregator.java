@@ -302,7 +302,7 @@ public class Aggregator extends UntypedActor {
 
         Configuration.ConfigurationDTO configuration = Configuration.get();
 
-        String participantsJson = getParticipantsJson();
+        String participantsJson = getParticipantsJson().replace('"', '\'');
 
         // Executing module script as a command
         processBuilder

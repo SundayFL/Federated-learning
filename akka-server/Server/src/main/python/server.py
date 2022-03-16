@@ -224,7 +224,7 @@ async def main():
     print(args.participantsjsonlist)
 
     if args.secure_agg=="True": # while using secure aggregation
-        participantsjsonlist = json.loads(args.participantsjsonlist)
+        participantsjsonlist = json.loads(args.participantsjsonlist.replace("'","\""))
         interResList = {} #make list of participants' weights
         for participantdata in participantsjsonlist:
             participant = participantdata["id"]
