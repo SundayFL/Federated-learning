@@ -33,7 +33,7 @@ class ImportData():
                 if np.shape(curr_image)[2] == 4:
                     curr_image = self.convert_image(curr_image)
                 data.append(curr_image)
-        data = np.asarray(data) 
+        data = np.asarray(data)
         return data, targets
 
     def read_matlab_file(self, data_path, data_root, data_name, target_path, target_name):
@@ -89,7 +89,7 @@ class ImportData():
                 self.data = [np.array(el) for el in self.data]
                 self.data = np.array(self.data)
                 self.targets = np.array(self.targets)
-        
+
         unique, counts = np.unique(self.targets, return_counts=True)
         print(dict(zip(unique, counts)))
         self.data, self.targets

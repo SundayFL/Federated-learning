@@ -12,7 +12,12 @@ import java.io.InputStreamReader;
 
 public class Server {
 
-    public static void main(String... args) {
+    public static void main(String[] args) {
+
+        // Saving passed arguments
+        SaveArguments(args);
+
+
         // Creating environment
         ActorSystem system = ActorSystem.create("AkkaRemoteServer", ConfigFactory.load());
 
@@ -22,4 +27,11 @@ public class Server {
         // Create an actor
         ActorRef injector = system.actorOf(Props.create(Injector.class), "Injector");
     }
+
+    // Saving arguments in static properties
+    private static void SaveArguments(String[] args) {
+        Configuration configuration = new Configuration();
+        configuration.SaveArguments(args);
+    }
+
 }
